@@ -1,0 +1,152 @@
+!!! 5
+html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/2008/fbml')
+  //
+     head 
+  head
+    title syaberi-house
+    //
+       meta 
+    meta(charset='UTF-8')
+    meta(name='description', content='')
+    meta(name='keywords', content='')
+    //
+       meta ogp 
+    meta(property='go:title', content='')
+    meta(property='go:type', content='site')
+    meta(property='go:url', content='')
+    meta(property='go:description', content='')
+    meta(property='go:image', content='')
+    meta(property='go:site_name', content='syaberi-house')
+    meta(property='fb:page_id', content='')
+    //
+       link 
+    link(href='/css/style.css', rel='stylesheet', type='text/css', media='all')
+    link(href='/css/mypage.css', rel='stylesheet', type='text/css', media='all')
+    script(src='/js/iscroll.js', type='text/javascript')
+    script(src="/js/jquery-1.6.1.min.js", type='text/javascript')
+    script(src="/js/jquery.crypt.js", type='text/javascript')
+  //
+     body 
+  body.mypage
+    #container
+      //
+         container 
+      #wrapper
+        //
+           wrapper 
+        #scroller
+          //
+             iscroller 
+          //
+             header 
+          header#globalheader
+            .logo
+              h3
+                img(src='/img/logo-mini.png', alt='syaberi-house')
+          //
+             content-wrapper 
+          section#content-wrapper
+            .container
+              //
+                 container 
+              .overlay-home
+              .content
+                //
+                   content 
+                .content-header
+                  //
+                     content-header 
+                  .title
+                    //
+                       title 
+                    img.logo(src='/img/homelogo-mini.png', alt='シャベリ家 syaberi-house')
+                  //
+                     /title 
+                  .user
+                    //
+                       user 
+                    form(action="/create-house", method="post")
+                      input#house_name(name="house_name", type="hidden", value="")
+                      button#button-create-room(name="create-house")
+                        img(src='/img/createhouse.png')
+                  //
+                     /user 
+                //
+                   /content-header 
+                div(style='clear: both;')
+
+                .content-body
+                  //
+                     content-body 
+                  .houses
+                    //
+                       houses 
+                    .live
+                      //
+                         live 
+                    for house in house_list
+                      a(href='/h/'+house.url_id)
+                        .house
+                          //
+                             house 
+                          .badge
+                            img(src='/img/live-badge.png')
+                          - if (house.image)
+                            .img(style='background-image: url(#{house.image});')
+                          - else
+                            .img(style='background-image: url(/img/shiba.jpg);')
+                          .title
+                            #{house.name}
+                      //
+                         /house 
+                    //
+                       /live 
+                    div(style='clear: both;')
+                    .blog
+                      //
+                         blog 
+                      .house
+                        //
+                           house 
+                        .img(style='background-image: url();')
+                        .title
+                          | [公式ハウス]少女時代スターバックスコラボ記念LiveChat
+                      //
+                         /house 
+                    //
+                       /blog 
+                  //
+                     /houses 
+                  div(style='clear: both;')
+                //
+                   /content-body 
+                div(style='clear: both;')
+              //
+                 /container 
+            //
+               /content 
+          //
+             footer 
+          footer#globalfooter
+        //
+           /iscroller 
+      //
+         /wrapper 
+      //
+         audience 
+      #footer
+        #icon_area.user
+          img.img(src='#{user_image}')
+          span.name #{user_name}
+          a(href='/logout')
+            span(style="margin-left:50px;color:white;") logout
+    //
+       /container 
+
+  script
+    var now = new Date();
+    var nowstr = now.getTime().toString();
+    var b64 = $().crypt({method:"b64enc",source:nowstr});
+    var house_value = $().crypt({method:"md5",source:b64});
+    $('#house_name').val(house_value);
+

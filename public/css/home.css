@@ -1,0 +1,27 @@
+/* 
+syaberi-house.net Layout Stylesheet
+v0.0.1
+Last Updated: 2011-12-04
+Author: Kunshiro Murayama
+*/
+
+body.home{
+	background-position: top center;
+	background-color: #fafafa;
+	
+	color: #303333;
+	line-height: 1.28;
+}
+
+.overlay-home{
+	position:absolute;
+	top:0; /* These positions makes sure that the overlay */
+	bottom:0;  /* will cover the entire parent */
+	left:0;
+	width:100%;
+	background:#ffffff;
+}
+
+.login-home{
+	padding:80px;
+}

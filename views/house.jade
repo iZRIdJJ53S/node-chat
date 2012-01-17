@@ -1,0 +1,59 @@
+!!! 5
+html(lang='ja')
+  head
+    title しゃべくり - シャベリ家
+    meta(charset='UTF-8')
+    meta(name='description', content='シャベリ家')
+    meta(name='keywords', content='チャット,シャベリハウス,シャベリ家,しゃべりはうす')
+    meta(property='go:title', content='')
+    meta(property='go:type', content='site')
+    meta(property='go:url', content='')
+    meta(property='go:description', content='')
+    meta(property='go:image', content='')
+    meta(property='go:site_name', content='syaberi-house')
+    meta(property='fb:page_id', content='')
+    link(href='/css/style.css', rel='stylesheet', type='text/css', media='all')
+    link(href='/css/home.css', rel='stylesheet', type='text/css', media='all')
+    script(src='/js/iscroll.js', type='text/javascript')
+    script(src="/js/jquery-1.6.1.min.js", type='text/javascript')
+    script(src="/js/jquery.crypt.js", type='text/javascript')
+  body.home
+  header
+    h1 シャベリ家
+
+    //ログインしてるかどうか？
+  - if (!everyauth.loggedIn)
+    h2 ログインして下さい
+    #fb-login.fb_button(style='background-position: left -188px')
+    a.fb_button_medium(href='/auth/facebook')
+      span#fb_login_text.fb_button_text
+        //Connect with Facebook
+    #twitter-login
+      a(href='/auth/twitter', style='border: 0px')
+        img(style='border: 0px', src='/img/sign-in-with-twitter-l.png')
+
+  - else
+    h2 ログイン済み
+    h3
+      a(href='/logout') Logout
+
+    section(class="create-house")
+      h2 create house
+      form(action="/create-house", method="post")
+        input#house_name(name="house_name", type="hidden", value="")
+        button#button-create-room(name="create-house") Create House
+
+    section(class="recent-house")
+      h2 Recent House
+      for house in house_list
+        p
+          a(href='/h/'+house.url_id) #{house.name}
+  footer
+    .footer-wrapper
+      //img.logo(src='/img/logo_g.jpg', alt='シャベリ家')
+  script
+    var now = new Date();
+    var nowstr = now.getTime().toString();
+    var b64 = $().crypt({method:"b64enc",source:nowstr});
+    var house_value = $().crypt({method:"md5",source:b64});
+    $('#house_name').val(house_value);

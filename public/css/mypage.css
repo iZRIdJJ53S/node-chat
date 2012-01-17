@@ -1,0 +1,92 @@
+/* 
+syaberi-house.net Layout Stylesheet
+v0.0.1
+Last Updated: 2011-12-04
+Author: Kunshiro Murayama
+*/
+
+body.mypage{
+	background-position: top center;
+	background-color: #fafafa;
+	
+	color: #303333;
+	line-height: 1.28;
+}
+
+.overlay-home{
+	position:absolute;
+	top:0; /* These positions makes sure that the overlay */
+	bottom:0;  /* will cover the entire parent */
+	left:0;
+	width:100%;
+	background:#ffffff;
+}
+
+.login-home{
+	padding:80px;
+}
+
+/*
+ * content
+ *
+ *
+ */
+#content-wrapper .container .content .content-header .title .logo{
+	float: left;
+	padding-left: 10px;
+	height: 48px;
+}
+
+#content-wrapper .container .content .content-header .user{
+	float: right;
+	padding-top: 12px;
+	padding-right: 10px;
+}
+#content-wrapper .container .content .content-header .user .icon{
+	float: left;
+
+}
+#content-wrapper .container .content .content-header .user .name{
+	float: right;
+	padding-top: 16px;
+	padding-left: 8px;
+	font-size: 12px;
+}
+
+#content-wrapper .container .content .content-body{
+}
+#content-wrapper .container .content .content-body .houses{
+	padding-top: 10px;
+}
+#content-wrapper .container .content .content-body .houses .house{
+	float: left;
+	width: 220px;
+	min-height: 200px;
+	margin: 6px;
+	padding: 3px;
+	border: 1px #dfdfdf solid;
+	background-color: #fff;
+}
+#content-wrapper .container .content .content-body .houses .house:hover{
+	padding: 1px;
+	border: 3px #c6e15b solid;
+}
+#content-wrapper .container .content .content-body .houses .house .badge{
+	position: relative;
+	top: -3px;
+	left: -3px;
+	z-index: 1;
+	height: 0px;
+}
+#content-wrapper .container .content .content-body .houses .house .img{
+	width: 220px;
+	height: 100px;
+	background-position: center top;
+	background-size: 220px;
+}
+#content-wrapper .container .content .content-body .houses .house .title{
+	font-size: 12px;
+	font-weight: bold;
+	padding: 8px 6px;
+}
+
