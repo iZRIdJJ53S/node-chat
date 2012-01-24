@@ -20,6 +20,9 @@ var house = {
       console.log( '['+url_id+'__'+house_id+'] join house client: ok' );
       that.socket.emit( 'join', url_id, house_id, user_id, user_image, that.socket.socket.sessionid);
 
+      // tweet-list
+      that.socket.emit('get-twitter-list', url_id, house_id);
+
       that._bindPublishers();
       that._bindSubscribers();
     });
@@ -81,6 +84,26 @@ var house = {
       }
     });
 
+
+    // 最新tweet
+    this.socket.on('recent-tweet', function(data) {
+      // data の配列数をカウント
+      var max_loop = data.length;
+      if (max_loop == 0) {
+        // 何もしない
+      } else {
+        // あえてのカウントダウン
+        // (user:tweet-received)のDOM 操作が積み上げ型だから
+        // 古いデータを先に渡す必要がある為
+        for (var i = max_loop-1; i >= 0; i--) {
+          var received_data = data[i];
+          received_data['cnt'] = i;
+          $.publish( 'user:tweet-received', received_data);
+        }
+      }
+    });
+
+
     // タイピング中を受信したら
 //    this.socket.on('user-typing', function(data) {
 //      $.publish('user:typing', data);
@@ -91,6 +114,9 @@ var house = {
       $.publish('audience:click-emotion', data);
     });
 
+    this.socket.on('click-star', function(data) {
+      $.publish('chat:click-star', data);
+    });
   },
 
   _bindSubscribers: function () {
@@ -115,6 +141,12 @@ var house = {
     $.subscribe('audi:click-emotion', function(event, message) {
       that.socket.emit('click-emotion',
         message.userName, message.userId, message.userMessage, message.user_id
+      );
+    });
+
+    $.subscribe('chat:click-star', function(event, message) {
+      that.socket.emit('click-star',
+        message.userName, message.userId, message.click_id, message.user_id
       );
     });
   }

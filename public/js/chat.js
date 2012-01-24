@@ -21,6 +21,19 @@ var chat = {
 
   _bindEvents: function () {
     var that = this;
+    var star_list = this.messageList.find('.star');
+
+    this.messageList.find('.star').live('click', function (event) {
+      var star_id = $(this).attr('id');
+//      console.log(star_id);
+
+      // サーバーへpush して全クライアントへ配信してもらう
+      $.publish('chat:click-star', {
+        'userName': that.userName, 'userId': '',
+        'click_id': star_id, 'user_id': that.user_id
+      });
+    });
+
 
 //    this.userMessage.keydown(function (event) {
 //      var userMessage = $( this ).val()
@@ -119,6 +132,12 @@ var chat = {
       }
     });
 
+    $.subscribe( 'user:tweet-received', function ( event, data ) {
+      that._addTweet(data.comment_id, data.userName, data.user_image
+        , data.userMessage, data.image_src, data.message_time
+      );
+    });
+
 //    $.subscribe('user:typing', function ( event, data ) {
 //      $('#tmp_message_area').text(data.userName+' さんがタイピング中です...');
 //      clearTimeout(tmp_timer);
@@ -126,6 +145,44 @@ var chat = {
 //    });
 
   },
+
+  _addTweet: function ( tweet_id, userName, user_image, userMessage, image_src, message_time) {
+    var text_node = $('<div id="text_node"></div>');
+    userMessage = text_node.text(userMessage).html();
+    // 改行br変換
+    userMessage = userMessage.replace(/\n/g, '<br />');
+    //console.log('text_node,message: ');console.log(userMessage);
+    //console.log('message_time: ');console.log(message_time);
+
+
+    // URL 変換
+    if (isURL(userMessage)) {
+      if (getURL(userMessage)) {
+        userMessage = replaceURL(userMessage);
+      }
+    }
+
+    var image_node = '';
+    // メッセージ部分
+    var voice_node = $('<div class="voice">');
+    var icon_node  = $('<div class="icon">');
+    var chat_content_node = $('<div class="chat-content">');
+
+    var star_node = $('<a href="#" id="'+tweet_id+'" class="star">').text('★');
+
+    voice_node.prepend($('<div class="name">').text(userName));
+    voice_node.append($('<div class="message">').html(userMessage));
+    voice_node.append(image_node);
+    voice_node.append($('<div class="time">').text(message_time));
+    voice_node.append($('<div id="star_'+tweet_id+'">').html(star_node));
+
+    chat_content_node.prepend(voice_node);
+    chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
+    this.messageList.prepend(chat_content_node);
+
+  },
+
+
 
   _addMessage: function ( userName, user_image, userMessage, image_src, message_time) {
     var text_node = $('<div id="text_node"></div>');

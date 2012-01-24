@@ -48,6 +48,8 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_RULES      = 'rules'
   , TABLE_COMMENTS   = 'comments'
   , TABLE_OFFCOMMENTS = 'offcomments'
+  , TABLE_STREAM_LOGS = 'stream_logs'
+  , TABLE_CLICK_LOGS  = 'click_logs'
   ;
 
 
@@ -422,6 +424,53 @@ app.get('/h/:id', function (req, res) {
             results[0].image = '/img/shiba.jpg';
           }
           res.render('home', { 'layout': false,
+            'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
+            'house_image': results[0].image, 'house_desc': results[0].description,
+            'user_name': req.session.auth.name, 'user_image': req.session.auth.image,
+            'user_id': req.session.auth.user_id
+          });
+          return;
+        }
+      }
+    );
+  }
+
+});
+
+
+// --------------------------------------------------------
+// twitter_house_room
+// --------------------------------------------------------
+app.get('/tweet/:id', function (req, res) {
+  // ID が正しいかチェックする
+  // 正しくなければ、topへリダイレクトする
+  var url_id = (req.params.id) ? req.params.id : '';
+
+  if (!req.session || !req.session.auth) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  if (url_id == '') {
+    res.send('id error: id null');
+    return;
+  } else {
+    // URLパラメータが正しいかDB に聞いてみる
+    client.query(
+      'SELECT id, name, image, description FROM '+TABLE_HOUSES+' WHERE url_id = ?',
+      [url_id],
+      function(err, results, fields) {
+        if (err) {throw err;}
+        if (results.length == 0) {
+          res.send('id error: no result');
+          return;
+        } else {
+          if (results[0].image == '') {
+            // デフォルトの背景画像
+            results[0].image = '/img/shiba.jpg';
+          }
+          res.render('twitter-home', { 'layout': false,
             'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
             'house_image': results[0].image, 'house_desc': results[0].description,
             'user_name': req.session.auth.name, 'user_image': req.session.auth.image,
@@ -920,6 +969,98 @@ var house = io
       })
 
     });
+
+    /**
+     * ----------------------------------------------------
+     * star が押された場合
+     * ----------------------------------------------------
+     */
+    socket.on('click-star', function (userName, userId, click_id, user_id) {
+      socket.get('house_data', function(err, house_data) {
+        if (err) {return;}
+        var resArray = [];
+        // house_data を分解
+        if (house_data) {
+          resArray = house_data.split('___');
+        } else {
+          return;
+        }
+
+        // 自分自身以外の全員へデータ送る
+//        socket.broadcast.to(resArray[0]).emit('click-star', {
+//          'userName': userName, 'userId': userId, 'click_id': click_id
+//        });
+
+        client.query(
+          'INSERT INTO '+TABLE_CLICK_LOGS+' (created_at, house_id,'
+          +' user_id, body'
+          +') VALUES (NOW(), ?, ?, ?)',
+          [resArray[1], user_id, click_id],
+          function(err, results) {
+            if (err) {
+              throw err;
+            } else {
+              return;
+            }
+          }
+        );
+      })
+
+    });
+
+
+    /**
+     * ----------------------------------------------------
+     * twitter list
+     * ----------------------------------------------------
+     */
+    socket.on('get-twitter-list', function (url_id, house_id) {
+      logger.info('get-twitter-list---------ok');
+      // 最新のコメント100件分を取得
+      client.query(
+        'SELECT id, created_at, user_name, body, tweet_id_str, profile_image_url'
+        +' FROM '+TABLE_STREAM_LOGS
+        +' WHERE house_id = ?'
+        +' ORDER BY created_at DESC LIMIT 100',
+        [house_id],
+        function(err, results, fields) {
+          if (err) {throw err;}
+          if (!results[0]) {
+            // DB に無し。
+
+          } else {
+            // DB に有り。
+            var max_result = results.length
+              , send_data = [];
+            //logger.debug('最新のコメント10件-----');logger.debug(results);
+            for (var i = 0; i < max_result; i++) {
+              var tmp_data = results[i];
+              // 日付を変換する
+              var date = new Date(tmp_data.created_at)
+                , date_txt = ''
+                ;
+
+              date_txt = date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate();
+              date_txt+= "  "+date.toLocaleTimeString();
+              //logger.debug('date_txt---------');logger.debug(date_txt);
+
+              // データを溜め込んでいく
+              send_data[i] = {'comment_id': tmp_data.id,
+                'message_time': date_txt, 'userMessage': tmp_data.body,
+                'image_src': '', 'userName': tmp_data.user_name,
+                'user_image': tmp_data.profile_image_url, 'iframeURL': ''
+              };
+
+            }
+
+
+            // クライアント(自分だけ)へデータを送る
+            socket.to(url_id).emit('recent-tweet', send_data);
+          }
+        }
+      );
+    });
+
 
     /**
      * ----------------------------------------------------
