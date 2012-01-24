@@ -22,7 +22,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
        link 
     link(href='/css/style.css', rel='stylesheet', type='text/css', media='all')
     link(href='/css/home.css', rel='stylesheet', type='text/css', media='all')
-    script(src='/js/iscroll.js', type='text/javascript')
+
 
   //
      body 
@@ -63,11 +63,10 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                      content-body 
                   center
                     img(src='/img/homelogo.png', alt='シャベリ家 syaberi-house')
-                    .login-home
+                    #login_home(class="login-home")
                       a(href='/auth/twitter')
                         img(src='/img/sign-in-with-twitter-l.png', style='margin:2em')
-                      img(src='/img/facebook-login-button.png', style='margin:2em')
-                      img(src='/img/mixi-login_btn.gif', style='margin:2em')
+                    #output
                 //
                    /content-body 
                 div(style='clear: both;')
@@ -87,3 +86,22 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
       #footer
     //
        /container 
+    script(src='/js/iscroll.js', type='text/javascript')
+    script(src='/js/jquery-1.6.1.min.js', type='text/javascript')
+    script
+      if (window.WebSocket) {
+        //var error_msg = 'このブラウザではwebsocketは利用できます';
+        //$('#login_home').empty();
+        //$('#login_home').html(error_msg);
+      } else {
+        var error_msg = 'このブラウザではwebsocketは利用できません';
+        error_msg += '<br />Google Chrome の利用をオススメします';
+        $('#login_home').empty();
+        $('#login_home').html(error_msg);
+        var cssObj = {
+          backgroundColor: '#FFE1E1',
+          fontSize: '150%'
+        }
+        $('#login_home').css(cssObj);
+      }
+

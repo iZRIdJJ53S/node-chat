@@ -25,6 +25,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
     script(src='/js/iscroll.js', type='text/javascript')
     script(src="/js/jquery-1.6.1.min.js", type='text/javascript')
     script(src="/js/jquery.crypt.js", type='text/javascript')
+
   //
      body 
   body.mypage
@@ -78,7 +79,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                 .content-body
                   //
                      content-body 
-                  .houses
+                  #houses(class="houses")
                     //
                        houses 
                     .live
@@ -149,4 +150,18 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
     var b64 = $().crypt({method:"b64enc",source:nowstr});
     var house_value = $().crypt({method:"md5",source:b64});
     $('#house_name').val(house_value);
+
+    if (window.WebSocket) {
+      //var error_msg = 'このブラウザではwebsocketは利用できます';
+    } else {
+      var error_msg = 'このブラウザではwebsocketは利用できません';
+      error_msg += '<br />Google Chrome の利用をオススメします';
+      $('#houses').empty();
+      $('#houses').html(error_msg);
+      var cssObj = {
+        backgroundColor: '#FFE1E1',
+        fontSize: '150%'
+      }
+      $('#houses').css(cssObj);
+    }
 
