@@ -43,7 +43,7 @@ var chat = {
 
       // shiftKey だったら改行
       if (event.shiftKey === true) {
-        console.log('shiftKey');console.log(event.shiftKey);
+        // new line
       } else {
 
         if (event.keyCode == 13) {
@@ -176,7 +176,8 @@ var chat = {
     // メッセージ部分
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
-    var time_node  = $('<div class="time" title="'+message_time+'">');
+    var utc_time   = this._changeTimeStamp(message_time);
+    var time_node  = $('<abbr class="time">').attr('title', utc_time);
     var chat_content_node = $('<div class="chat-content">');
 
     var star_node = $('<a href="#" id="'+tweet_id+'" class="star">').text('★');
@@ -218,14 +219,14 @@ var chat = {
       tmp_image_src = image_src.replace('.jpg', '');
       image_node = $('<img id="user_img_'+tmp_image_src+'" class="img">');
       image_node.attr('src', image_src);
-      console.log('image_node_html: '+image_node);console.log(image_node);
+      //console.log('image_node_html: '+image_node);console.log(image_node);
     }
 
     // チャットメッセージ部分
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
-    var time_node  = $('<div class="time">').attr('title', message_time);
-    //var time_node  = $('<div class="time" title="'+message_time+'">');
+    var utc_time   = this._changeTimeStamp(message_time);
+    var time_node  = $('<abbr class="time">').attr('title', utc_time);
     var chat_content_node = $('<div class="chat-content">');
 
 //    if (userName == 'me') {
@@ -240,6 +241,9 @@ var chat = {
 
       this.messageList2.empty();
       this.messageList2.prepend(chat_content_node);
+
+      $('#lines1 abbr.time').timeago();
+
 //    } else {
 //      this.messageList.prepend($('<dl>').append($('<dt>').html(userMessage).append(image_node))
 //        .append($('<dd>').html('<img src="'+user_image+'">'+userName))
@@ -272,7 +276,6 @@ var chat = {
       // 動画ID を抜き出す
       var nico_vid = iframeURL.match(/(sm[0-9]+)/);
       if (nico_vid[1]) {
-console.log('nico_id');console.log(nico_vid[1]);
         //var iframe_tag = '<script type="text/javascript" src="';
         var iframe_tag = '<iframe width="500" height="300" src="';
         iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
@@ -303,10 +306,47 @@ console.log('nico_id');console.log(nico_vid[1]);
 
 
   _getCurrentTime: function () {
-    var date = new Date();
-    var date_txt = date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate();
-    date_txt += "  "+date.toLocaleTimeString();
-    //date_txt += "  "+date.getHours()+":"+date.getMinutes();
-    return date_txt;
+    var d = new Date();
+    var month = d.getUTCMonth();
+    month++;
+    if (month < 10) {month = "0" + month;}
+    var day = d.getUTCDate();
+    if (day < 10) {day="0" + day;}
+    var year = d.getUTCFullYear();
+    var hour = d.getUTCHours();
+    if (hour < 10) {hour = "0" + hour;}
+    var minute = d.getUTCMinutes();
+    if (minute < 10) {minute = "0" + minute;}
+    var second = d.getUTCSeconds();
+    if (second < 10) {second = "0" + second;}
+    var newdate = year+"-"+month+"-"+day+"T"+hour+":"+minute+":"+second+"Z";
+
+    //var date = new Date();
+    //var date_txt = date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate();
+    //date_txt += "  "+date.toLocaleTimeString();
+    return newdate;
+  },
+
+  _changeTimeStamp: function (time_str) {
+    if (!time_str) {return false;}
+    var year = time_str.substring(0, 4);
+    var month = time_str.substring(5, 7);
+    //if (month < 10) {month = '0' + month;}
+    var day   = time_str.substring(8, 10);
+    if (day < 10) {day = '0' + day;}
+    var hour  = time_str.substring(11, 13);
+    if (hour < 10) {hour = '0' + hour;}
+    var minute = time_str.substring(14, 16);
+    if (minute < 10) {minute = '0' + minute;}
+    var second = time_str.substring(17, 19);
+    if (second < 10) {second = '0' + second;}
+
+    var newdate = year+'-'+month+'-'+day+'T'+hour+':'+minute+':'+second+'Z';
+    //var d = new Date(Date.UTC(year, month, day, hour, minute, second));
+    //var newdate = d.toUTCString();
+    //console.log(month);
+    return newdate;
   }
+
 };
+

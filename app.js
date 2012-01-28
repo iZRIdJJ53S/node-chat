@@ -835,17 +835,18 @@ var house = io
             for (var i = 0; i < max_result; i++) {
               var tmp_data = results[i];
               // 日付を変換する
-              var date = new Date(tmp_data.created_at)
-                , date_txt = ''
-                ;
+              //var date = new Date(tmp_data.created_at)
+              //  , date_txt = ''
+              //  ;
 
-              date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-              date_txt+= "T"+date.toLocaleTimeString();
+              //date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+              //date_txt+= "T"+date.toLocaleTimeString();
               //logger.debug('date_txt---------');logger.debug(date_txt);
 
               // データを溜め込んでいく
               send_data[i] = {'comment_id': tmp_data.id,
-                'message_time': date_txt, 'userMessage': tmp_data.body,
+                'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
+                //'message_time': date_txt, 'userMessage': tmp_data.body,
                 'image_src': tmp_data.cmt_image, 'userName': tmp_data.name,
                 'user_image': tmp_data.usr_image, 'iframeURL': ''
               };
@@ -1036,17 +1037,18 @@ var house = io
             for (var i = 0; i < max_result; i++) {
               var tmp_data = results[i];
               // 日付を変換する
-              var date = new Date(tmp_data.created_at)
-                , date_txt = ''
-                ;
+              //var date = new Date(tmp_data.created_at)
+              //  , date_txt = ''
+              //  ;
 
-              date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-              date_txt+= "T"+date.toLocaleTimeString();
+              //date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+              //date_txt+= "T"+date.toLocaleTimeString();
               //logger.debug('date_txt---------');logger.debug(date_txt);
 
               // データを溜め込んでいく
               send_data[i] = {'comment_id': tmp_data.id,
-                'message_time': date_txt, 'userMessage': tmp_data.body,
+                'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
+                //'message_time': date_txt, 'userMessage': tmp_data.body,
                 'image_src': '', 'userName': tmp_data.user_name,
                 'user_image': tmp_data.profile_image_url, 'iframeURL': ''
               };
