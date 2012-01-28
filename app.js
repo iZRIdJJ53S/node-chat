@@ -839,8 +839,8 @@ var house = io
                 , date_txt = ''
                 ;
 
-              date_txt = date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate();
-              date_txt+= "  "+date.toLocaleTimeString();
+              date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+              date_txt+= "T"+date.toLocaleTimeString();
               //logger.debug('date_txt---------');logger.debug(date_txt);
 
               // データを溜め込んでいく
@@ -1040,8 +1040,8 @@ var house = io
                 , date_txt = ''
                 ;
 
-              date_txt = date.getFullYear()+"/"+(date.getMonth()+1)+"/"+date.getDate();
-              date_txt+= "  "+date.toLocaleTimeString();
+              date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+              date_txt+= "T"+date.toLocaleTimeString();
               //logger.debug('date_txt---------');logger.debug(date_txt);
 
               // データを溜め込んでいく

@@ -35,46 +35,56 @@ var chat = {
     });
 
 
-//    this.userMessage.keydown(function (event) {
-//      var userMessage = $( this ).val()
-//        , image_src   = $('#user_up_img').attr('src')
-//        , iframeURL = ''
-//        ;
-//
-//      if ((event.keyCode == 13 ) && (userMessage || image_src)) {
-//
-//        // image_src が優先
-//        if (image_src) {
-//          that._setIframeArea(image_src);
-//        } else {
-//          if (isURL(userMessage)) {
-//            if (getURL(userMessage)) {
-////              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
-//               iframeURL = getURL(userMessage);
-//               that._setIframeArea(iframeURL);
-//            }
-//          }
-//        }
-//
-//        // 自分自身(クライアント)へ描画
-//        var message_time = that._getCurrentTime();
-//        that._addMessage(that.userName, that.user_image, userMessage, image_src, message_time);
-//        // サーバーへpush して全クライアントへ配信してもらう
-//        $.publish( 'user:message-sent', {
-//          'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
-//          'userMessage': userMessage, 'iframeURL': iframeURL, 'image_src': image_src,
-//          'message_time': message_time
-//        });
-//
-//        that._clearInputUserMessage();
-//
-//      // タイピング中というステータスを送信する
-//      } else {
-////        $.publish('user:typing', {
-////          'user_id': that.user_id, 'userName': that.userName
-////        });
-//      }
-//    });
+    this.userMessage.keydown(function (event) {
+      var userMessage = $( this ).val()
+        , image_src   = $('#user_up_img').attr('src')
+        , iframeURL = ''
+        ;
+
+      // shiftKey だったら改行
+      if (event.shiftKey === true) {
+        console.log('shiftKey');console.log(event.shiftKey);
+      } else {
+
+        if (event.keyCode == 13) {
+          if (userMessage || image_src) {
+            // image_src が優先
+            if (image_src) {
+              that._setIframeArea(image_src);
+            } else {
+              if (isURL(userMessage)) {
+                if (getURL(userMessage)) {
+    //              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
+                   iframeURL = getURL(userMessage);
+                   that._setIframeArea(iframeURL);
+                }
+              }
+            }
+    
+            // 自分自身(クライアント)へ描画
+            var message_time = that._getCurrentTime();
+            that._addMessage(that.userName, that.user_image, userMessage, image_src, message_time);
+            // サーバーへpush して全クライアントへ配信してもらう
+            $.publish( 'user:message-sent', {
+              'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
+              'userMessage': userMessage, 'iframeURL': iframeURL, 'image_src': image_src,
+              'message_time': message_time
+            });
+    
+            that._clearInputUserMessage();
+    
+          // タイピング中というステータスを送信する
+          //} else {
+    //        $.publish('user:typing', {
+    //          'user_id': that.user_id, 'userName': that.userName
+    //        });
+            return false;
+          } else {
+            return false;
+          }
+        }
+      }
+    });
 
     this.submitter.click(function (event) {
       var userMessage = that.userMessage.val()
@@ -166,6 +176,7 @@ var chat = {
     // メッセージ部分
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
+    var time_node  = $('<div class="time" title="'+message_time+'">');
     var chat_content_node = $('<div class="chat-content">');
 
     var star_node = $('<a href="#" id="'+tweet_id+'" class="star">').text('★');
@@ -173,7 +184,7 @@ var chat = {
     voice_node.prepend($('<div class="name">').text(userName));
     voice_node.append($('<div class="message">').html(userMessage));
     voice_node.append(image_node);
-    voice_node.append($('<div class="time">').text(message_time));
+    voice_node.append(time_node).text(message_time);
     voice_node.append($('<div id="star_'+tweet_id+'">').html(star_node));
 
     chat_content_node.prepend(voice_node);
@@ -213,13 +224,15 @@ var chat = {
     // チャットメッセージ部分
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
+    var time_node  = $('<div class="time">').attr('title', message_time);
+    //var time_node  = $('<div class="time" title="'+message_time+'">');
     var chat_content_node = $('<div class="chat-content">');
 
 //    if (userName == 'me') {
       voice_node.prepend($('<div class="name">').text(userName));
       voice_node.append($('<div class="message">').html(userMessage));
       voice_node.append(image_node);
-      voice_node.append($('<div class="time">').text(message_time));
+      voice_node.append(time_node.text(message_time));
 
       chat_content_node.prepend(voice_node);
       chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
@@ -241,12 +254,10 @@ var chat = {
 
   _setIframeArea: function (iframeURL) {
     this.iframeArea.empty();
-    // youtube 無し
-    if (iframeURL.indexOf('youtube.com') == -1) {
-      this.iframeArea.prepend($('<iframe width="500" height="460">').attr('src', iframeURL));
+
 
     // youtube 有り
-    } else {
+    if (iframeURL.indexOf('youtube.com') !== -1) {
       // 動画ID を抜き出す
       var youtube_vid = iframeURL.match(/[&\?]v=([\d\w]+)/);
       if (youtube_vid[1]) {
@@ -255,6 +266,26 @@ var chat = {
         iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
         this.iframeArea.prepend(iframe_tag);
       }
+
+    // nicovideo 有り
+    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {
+      // 動画ID を抜き出す
+      var nico_vid = iframeURL.match(/(sm[0-9]+)/);
+      if (nico_vid[1]) {
+console.log('nico_id');console.log(nico_vid[1]);
+        //var iframe_tag = '<script type="text/javascript" src="';
+        var iframe_tag = '<iframe width="500" height="300" src="';
+        iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
+        iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
+//        iframe_tag += '"></script>';
+//        iframe_tag += '<noscript><a href="http://www.nicovideo.jp/watch/'+nico_vid[1]+'" target="_blank">';
+//        iframe_tag += 'nicovideo で見る</a></noscript>';
+        this.iframeArea.prepend(iframe_tag);
+      }
+
+    // 該当なし。その他
+    } else {
+      this.iframeArea.prepend($('<iframe width="500" height="460">').attr('src', iframeURL));
     }
     //this.iframeArea.attr('src', iframeURL);
   },
@@ -267,6 +298,7 @@ var chat = {
     $('#html_image_preview').remove();
     $('#user_up_img').remove();
     $('#drop_message').show();
+    $('#message1').height(50).css({minHeight:50}); // textarea の高さを初期化
   },
 
 
