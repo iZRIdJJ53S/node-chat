@@ -50,6 +50,7 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_OFFCOMMENTS = 'offcomments'
   , TABLE_STREAM_LOGS = 'stream_logs'
   , TABLE_CLICK_LOGS  = 'click_logs'
+  , TABLE_COMMENT_STREAM  = 'comment_stream'
   ;
 
 
@@ -110,9 +111,9 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
     [name, source],
     function(err, results, fields) {
       if (err) {throw err;}
-      logger.debug('----- oauth-sql:results ');logger.debug(results);
+      //logger.debug('----- oauth-sql:results ');logger.debug(results);
       if (!results[0]) {
-        logger.debug('----- oauth-sql-mode:insert ');
+        //logger.debug('----- oauth-sql-mode:insert ');
         // DB に無し。INSERT
         client.query(
           'INSERT INTO '+TABLE_USERS+
@@ -127,7 +128,7 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
           }
         );
       } else {
-        logger.debug('----- oauth-sql-mode:update ');
+        //logger.debug('----- oauth-sql-mode:update ');
         // DB に有り。UPDATE
         client.query(
           'UPDATE '+TABLE_USERS+
@@ -390,15 +391,15 @@ app.get('/h/:id', function (req, res) {
   // ID が正しいかチェックする
   // 正しくなければ、topへリダイレクトする
   var url_id = (req.params.id) ? req.params.id : '';
-  logger.debug('----- app.get/h/:id,url_id_typeof: ');logger.debug(typeof url_id);
-  logger.debug('----- app.get/h/:id,url_id: ');logger.debug(url_id);
+  //logger.debug('----- app.get/h/:id,url_id_typeof: ');logger.debug(typeof url_id);
+  //logger.debug('----- app.get/h/:id,url_id: ');logger.debug(url_id);
 
   if (!req.session || !req.session.auth) {
     // ログインしていないので、リダイレクト
     res.redirect('/');
     return;
   }
-  logger.debug('----- app.get/h/:id,req.session.auth: ');logger.debug(req.session.auth);
+  //logger.debug('----- app.get/h/:id,req.session.auth: ');logger.debug(req.session.auth);
 
   if (url_id == '') {
     res.send('id error: id null');
@@ -414,7 +415,7 @@ app.get('/h/:id', function (req, res) {
       [url_id],
       function(err, results, fields) {
         if (err) {throw err;}
-        logger.debug('----- app.get/h/:id,results: ');logger.debug(results);
+        //logger.debug('----- app.get/h/:id,results: ');logger.debug(results);
         if (results.length == 0) {
           res.send('id error: no result');
           return;
@@ -424,53 +425,6 @@ app.get('/h/:id', function (req, res) {
             results[0].image = '/img/shiba.jpg';
           }
           res.render('home', { 'layout': false,
-            'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
-            'house_image': results[0].image, 'house_desc': results[0].description,
-            'user_name': req.session.auth.name, 'user_image': req.session.auth.image,
-            'user_id': req.session.auth.user_id
-          });
-          return;
-        }
-      }
-    );
-  }
-
-});
-
-
-// --------------------------------------------------------
-// twitter_house_room
-// --------------------------------------------------------
-app.get('/tweet/:id', function (req, res) {
-  // ID が正しいかチェックする
-  // 正しくなければ、topへリダイレクトする
-  var url_id = (req.params.id) ? req.params.id : '';
-
-  if (!req.session || !req.session.auth) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
-
-  if (url_id == '') {
-    res.send('id error: id null');
-    return;
-  } else {
-    // URLパラメータが正しいかDB に聞いてみる
-    client.query(
-      'SELECT id, name, image, description FROM '+TABLE_HOUSES+' WHERE url_id = ?',
-      [url_id],
-      function(err, results, fields) {
-        if (err) {throw err;}
-        if (results.length == 0) {
-          res.send('id error: no result');
-          return;
-        } else {
-          if (results[0].image == '') {
-            // デフォルトの背景画像
-            results[0].image = '/img/shiba.jpg';
-          }
-          res.render('twitter-home', { 'layout': false,
             'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
             'house_image': results[0].image, 'house_desc': results[0].description,
             'user_name': req.session.auth.name, 'user_image': req.session.auth.image,
@@ -499,7 +453,7 @@ app.post('/create-house', function (req, res) {
 
 
   // リクエストを取得
-  logger.info('----- app.post/create-house: ');logger.info(req.body);
+  //logger.info('----- app.post/create-house: ');logger.info(req.body);
   var house_name = '';
   if (req.body.house_name) {
     //postデータはreq.body.xxxで受け取る
@@ -523,8 +477,8 @@ app.post('/create-house', function (req, res) {
           'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_HOUSES,
           function(err, results) {
             if (err) {throw err;}
-            logger.debug(results);
-            logger.debug(results[0].last_id);
+            //logger.debug(results);
+            //logger.debug(results[0].last_id);
             // house にリダイレクト
             res.redirect('http://rank-life.com/houses/edit/'+results[0].last_id);
             return;
@@ -561,8 +515,8 @@ app.post('/upload', function (req, res) {
       files.push([field, file]);
     })
     .on('end', function() {
-      logger.debug('---> upload done');
-      logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
+      //logger.debug('---> upload done');
+      //logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
 //      var tmp_arr = files[0];
 //      logger.debug(tmp_arr[1].path);
       var tmp_path = files[0][1].path.split('/');
@@ -660,10 +614,10 @@ var house = io
      */
     socket.on('join', function (url_id, house_id, user_id, user_image, sessionid, fn) {
 
-      logger.debug('----- join client sessionid: ');logger.debug(sessionid);
+      //logger.debug('----- join client sessionid: ');logger.debug(sessionid);
       // ユーザーを追加
       socket.join(url_id);
-      logger.debug('----- join server sessionid: ');logger.debug(socket.sessionid);
+      //logger.debug('----- join server sessionid: ');logger.debug(socket.sessionid);
       //logger.debug('----- join socketdata: ');logger.debug(socket.manager.rooms);
       // house 情報をset
       socket.set('house_data', url_id+'___'+house_id);
@@ -691,7 +645,7 @@ var house = io
         [house_id, '%,'+user_id+',%'],
         function(err, results, fields) {
           if (err) {throw err;}
-          logger.debug('----- socket.on(join),results: ');logger.debug(results);
+          //logger.debug('----- socket.on(join),results: ');logger.debug(results);
           if (results.length == 0) {
             // オーディエンス true
             if (audience_list[sessionid]) {
@@ -733,7 +687,6 @@ var house = io
             var member_id = socket.manager.rooms['/houses/'+url_id][i];
 
             var disp_type = type_list[member_id];
-            console.log('disp_type-------------');console.log(disp_type);
 
             // member から画像url を取得する
             if (disp_type == 'avatar') {
@@ -746,7 +699,7 @@ var house = io
           }
 
 
-          logger.debug('----- join members-data: ');logger.debug(avatar_members);
+          //logger.debug('----- join members-data: ');logger.debug(avatar_members);
           // 自分自身のみへデータ送る
           socket.to(url_id).emit('user join', {
             'session_id': sessionid, 'avatar_img': user_image, 'avatar_members': avatar_members
@@ -873,15 +826,15 @@ var house = io
      */
     socket.on('chat message',
     function (user_id, userName, user_image, message, iframeURL, image_src, message_time) {
-      logger.info('chat message received: ok');
+      //logger.info('chat message received: ok');
       socket.get('house_data', function(err, house_data) {
-        logger.info('house_data: '+house_data);
+        //logger.info('house_data: '+house_data);
 
         // house_data を分解
         var resArray = house_data.split('___');
-        logger.info('url_id: '+resArray[0]);
-        logger.info('house_id: '+resArray[1]);
-        logger.info('frameURL: '+iframeURL);
+        //logger.info('url_id: '+resArray[0]);
+        //logger.info('house_id: '+resArray[1]);
+        //logger.info('frameURL: '+iframeURL);
         socket.broadcast.to(resArray[0]).emit('chat message', {
           'userName': userName, 'user_image': user_image,
           'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
@@ -889,7 +842,7 @@ var house = io
         });
 
         if (!image_src) {image_src = '';}
-        // TODO:ユーザー認証が出来たらDB格納用の値を取得する
+        // オリジナルコメントテーブルに格納 
         client.query(
           'INSERT INTO '+TABLE_COMMENTS+' (created_at, house_id,'+
           ' user_id, body, image'+
@@ -903,9 +856,32 @@ var house = io
             }
           }
         );
+
+        // comment-streamテーブルにも格納
+        // (読みだす時にこのテーブルだけを読みこめばいいように楽する為)
+        client.query(
+          'INSERT INTO '+TABLE_COMMENT_STREAM+' (created_at, house_id'+
+          ', user_id, user_id_str, user_name, body, image, max_id_str'+
+          ', profile_image_url, profile_image_url_https'+
+          ', source, to_user, to_user_id, to_user_id_str, to_user_name'+
+          ', type'+
+          ') VALUES ('+
+          '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
+          ')',
+          [resArray[1], user_id, '', userName, message, image_src, ''
+            , user_image, '', '', '', '', '', '', 'cmt'
+          ],
+          function(err, results) {
+            if (err) {
+              throw err;
+            } else {
+              return;
+            }
+          }
+        );
       })
 
-//      logger.info('socket.manager.rooms: ');logger.info(socket.manager.rooms);
+      //logger.info('socket.manager.rooms: ');logger.info(socket.manager.rooms);
 //      logger.info('socket.manager.roomClients: ');logger.info(socket.manager.roomClients);
 
     });
@@ -1016,7 +992,7 @@ var house = io
      * ----------------------------------------------------
      */
     socket.on('get-twitter-list', function (url_id, house_id) {
-      logger.info('get-twitter-list---------ok');
+      //logger.info('get-twitter-list---------ok');
       // 最新のコメント100件分を取得
       client.query(
         'SELECT id, created_at, user_name, body, tweet_id_str, profile_image_url'

@@ -177,6 +177,7 @@ var chat = {
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
     var utc_time   = this._changeTimeStamp(message_time);
+    var easy_time  = this._changeEasyTimeStamp(message_time);
     var time_node  = $('<abbr class="time">').attr('title', utc_time);
     var chat_content_node = $('<div class="chat-content">');
 
@@ -185,13 +186,14 @@ var chat = {
     voice_node.prepend($('<div class="name">').text(userName));
     voice_node.append($('<div class="message">').html(userMessage));
     voice_node.append(image_node);
-    voice_node.append(time_node).text(message_time);
+    voice_node.append(time_node.text(easy_time));
     voice_node.append($('<div id="star_'+tweet_id+'">').html(star_node));
 
     chat_content_node.prepend(voice_node);
     chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
     this.messageList.prepend(chat_content_node);
 
+    $('#lines1 abbr.time').timeago();
   },
 
 
@@ -226,6 +228,7 @@ var chat = {
     var voice_node = $('<div class="voice">');
     var icon_node  = $('<div class="icon">');
     var utc_time   = this._changeTimeStamp(message_time);
+    var easy_time  = this._changeEasyTimeStamp(message_time);
     var time_node  = $('<abbr class="time">').attr('title', utc_time);
     var chat_content_node = $('<div class="chat-content">');
 
@@ -233,7 +236,7 @@ var chat = {
       voice_node.prepend($('<div class="name">').text(userName));
       voice_node.append($('<div class="message">').html(userMessage));
       voice_node.append(image_node);
-      voice_node.append(time_node.text(message_time));
+      voice_node.append(time_node.text(easy_time));
 
       chat_content_node.prepend(voice_node);
       chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
@@ -276,14 +279,18 @@ var chat = {
       // 動画ID を抜き出す
       var nico_vid = iframeURL.match(/(sm[0-9]+)/);
       if (nico_vid[1]) {
+        var script_tag = document.createElement('script');
+        script_tag.type = 'text/javascript';
+        script_tag.src  = 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1];
+
         //var iframe_tag = '<script type="text/javascript" src="';
-        var iframe_tag = '<iframe width="500" height="300" src="';
-        iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
-        iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
+        //var iframe_tag = '<iframe width="500" height="300" src="';
+        //iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
+        //iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
 //        iframe_tag += '"></script>';
 //        iframe_tag += '<noscript><a href="http://www.nicovideo.jp/watch/'+nico_vid[1]+'" target="_blank">';
 //        iframe_tag += 'nicovideo で見る</a></noscript>';
-        this.iframeArea.prepend(iframe_tag);
+        this.iframeArea.prepend(script_tag);
       }
 
     // 該当なし。その他
@@ -346,6 +353,15 @@ var chat = {
     //var newdate = d.toUTCString();
     //console.log(month);
     return newdate;
+  },
+
+  _changeEasyTimeStamp: function (time_str) {
+    if (!time_str) {return false;}
+    var d = new Date(time_str);
+    var date_txt = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    date_txt += ' '+d.toLocaleTimeString();
+
+    return date_txt;
   }
 
 };

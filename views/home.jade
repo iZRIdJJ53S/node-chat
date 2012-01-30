@@ -120,6 +120,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                     //
                        member-face 
                     ul
+                      #audienceview.audience
                       #users_view.header-icon
                   //
                      /member-face 
@@ -129,29 +130,22 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                 .content-body
                   //
                      content-body 
-                  .main-view
-                    //
-                       main-view 
-                    .title 全体公開 view
-                    .view
-                      //
-                         view 
-                      #disparea
-                    //
-                       /view 
-                    #audienceview.audience
-                      //
-                         audience 
-                    //
-                       /audience 
-                  //
-                     /main-view 
                   .main-chat
                     //
                        main-chat 
+                    .title voice
+                    #lines1.chat
+                      //
+                         /chat-content 
+                    //
+                       /chat 
+                  //
+                     /main-chat 
+                  .main-view
+                    //
+                       main-view 
                     .inputleft
                       img(src='/img/chatleft.png')
-                    .title voice
                     .input
                       //
                          input 
@@ -173,14 +167,13 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                         form
                     //
                        /input
-
-                    //#dropbox
-                      span#drop_message.message Drop images here to upload.
-                    #lines1.chat
+                    .title 共有VIEW
+                    .view
                       //
-                         chat 
+                         view 
+                      #disparea
                     //
-                       /chat 
+                       /view 
                   //
                      /main-chat 
                 //
