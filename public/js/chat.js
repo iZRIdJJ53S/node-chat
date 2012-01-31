@@ -63,7 +63,7 @@ var chat = {
     
             // 自分自身(クライアント)へ描画
             var message_time = that._getCurrentTime();
-            that._addMessage(that.userName, that.user_image, userMessage, image_src, message_time);
+            that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
             // サーバーへpush して全クライアントへ配信してもらう
             $.publish( 'user:message-sent', {
               'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
@@ -109,7 +109,7 @@ var chat = {
 
         // 自分自身(クライアント)へ描画
         var message_time = that._getCurrentTime();
-        that._addMessage(that.userName, that.user_image, userMessage, image_src, message_time);
+        that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
         // サーバーへpush して全クライアントへ配信してもらう
         $.publish( 'user:message-sent', {
           'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
@@ -127,7 +127,9 @@ var chat = {
     var that = this;
 
     $.subscribe( 'user:message-received', function ( event, data ) {
-      that._addMessage( data.userName, data.user_image, data.userMessage, data.image_src, data.message_time);
+      that._addMessage(data.comment_id, data.userName, data.user_image
+        , data.userMessage, data.image_src, data.message_time
+      );
 
       // もしiframeURL があったら描画する(image_src が優先)
       if (data.image_src) {
@@ -156,54 +158,54 @@ var chat = {
 
   },
 
-  _addTweet: function ( tweet_id, userName, user_image, userMessage, image_src, message_time) {
+  //_addTweet: function ( tweet_id, userName, user_image, userMessage, image_src, message_time) {
+  //  var text_node = $('<div id="text_node"></div>');
+  //  userMessage = text_node.text(userMessage).html();
+  //  // 改行br変換
+  //  userMessage = userMessage.replace(/\n/g, '<br />');
+  //  //console.log('text_node,message: ');console.log(userMessage);
+  //  //console.log('message_time: ');console.log(message_time);
+
+
+  //  // URL 変換
+  //  if (isURL(userMessage)) {
+  //    if (getURL(userMessage)) {
+  //      userMessage = replaceURL(userMessage);
+  //    }
+  //  }
+
+  //  var image_node = '';
+  //  // メッセージ部分
+  //  var voice_node = $('<div class="voice">');
+  //  var icon_node  = $('<div class="icon">');
+  //  var utc_time   = this._changeTimeStamp(message_time);
+  //  var easy_time  = this._changeEasyTimeStamp(message_time);
+  //  var time_node  = $('<abbr class="time">').attr('title', utc_time);
+  //  var chat_content_node = $('<div class="chat-content">');
+
+  //  var star_node = $('<a href="#" id="'+tweet_id+'" class="star">').text('★');
+
+  //  voice_node.prepend($('<div class="name">').text(userName));
+  //  voice_node.append($('<div class="message">').html(userMessage));
+  //  voice_node.append(image_node);
+  //  voice_node.append(time_node.text(easy_time));
+  //  voice_node.append($('<div id="star_'+tweet_id+'">').html(star_node));
+
+  //  chat_content_node.prepend(voice_node);
+  //  chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
+  //  this.messageList.prepend(chat_content_node);
+
+  //  $('#lines1 abbr.time').timeago();
+  //},
+
+
+
+  _addMessage: function (comment_id, userName, user_image, userMessage, image_src, message_time) {
     var text_node = $('<div id="text_node"></div>');
     userMessage = text_node.text(userMessage).html();
     // 改行br変換
     userMessage = userMessage.replace(/\n/g, '<br />');
-    //console.log('text_node,message: ');console.log(userMessage);
-    //console.log('message_time: ');console.log(message_time);
-
-
-    // URL 変換
-    if (isURL(userMessage)) {
-      if (getURL(userMessage)) {
-        userMessage = replaceURL(userMessage);
-      }
-    }
-
-    var image_node = '';
-    // メッセージ部分
-    var voice_node = $('<div class="voice">');
-    var icon_node  = $('<div class="icon">');
-    var utc_time   = this._changeTimeStamp(message_time);
-    var easy_time  = this._changeEasyTimeStamp(message_time);
-    var time_node  = $('<abbr class="time">').attr('title', utc_time);
-    var chat_content_node = $('<div class="chat-content">');
-
-    var star_node = $('<a href="#" id="'+tweet_id+'" class="star">').text('★');
-
-    voice_node.prepend($('<div class="name">').text(userName));
-    voice_node.append($('<div class="message">').html(userMessage));
-    voice_node.append(image_node);
-    voice_node.append(time_node.text(easy_time));
-    voice_node.append($('<div id="star_'+tweet_id+'">').html(star_node));
-
-    chat_content_node.prepend(voice_node);
-    chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
-    this.messageList.prepend(chat_content_node);
-
-    $('#lines1 abbr.time').timeago();
-  },
-
-
-
-  _addMessage: function ( userName, user_image, userMessage, image_src, message_time) {
-    var text_node = $('<div id="text_node"></div>');
-    userMessage = text_node.text(userMessage).html();
-    // 改行br変換
-    userMessage = userMessage.replace(/\n/g, '<br />');
-    //console.log('text_node,message: ');console.log(userMessage);
+    //console.log('user_image: ');console.log(user_image);
     //console.log('message_time: ');console.log(message_time);
 
 
@@ -232,11 +234,14 @@ var chat = {
     var time_node  = $('<abbr class="time">').attr('title', utc_time);
     var chat_content_node = $('<div class="chat-content">');
 
+    var star_node = $('<a href="#" id="'+comment_id+'" class="star">').text('★');
+
 //    if (userName == 'me') {
       voice_node.prepend($('<div class="name">').text(userName));
       voice_node.append($('<div class="message">').html(userMessage));
       voice_node.append(image_node);
       voice_node.append(time_node.text(easy_time));
+      voice_node.append($('<div id="star_'+comment_id+'">').html(star_node));
 
       chat_content_node.prepend(voice_node);
       chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));

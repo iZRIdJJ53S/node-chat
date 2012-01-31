@@ -767,13 +767,18 @@ var house = io
 
 
 
-      // 最新のコメント10件分を取得
+      // 最新のコメント100件分を取得
       client.query(
-        'SELECT cmt.id, cmt.created_at, cmt.body, cmt.image AS cmt_image, usr.name, usr.image AS usr_image'
-        +' FROM '+TABLE_COMMENTS+' AS cmt'
-        +' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
-        +' WHERE cmt.house_id = ?'
-        +' ORDER BY cmt.created_at DESC LIMIT 10',
+        //'SELECT cmt.id, cmt.created_at, cmt.body, cmt.image AS cmt_image, usr.name, usr.image AS usr_image'
+        //+' FROM '+TABLE_COMMENTS+' AS cmt'
+        //+' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
+        //+' WHERE cmt.house_id = ?'
+        //+' ORDER BY cmt.created_at DESC LIMIT 10',
+        'SELECT id, created_at, user_name, body, image, tweet_id_str, profile_image_url'
+        +'    , profile_image_url_https, source, type'
+        +' FROM '+TABLE_COMMENT_STREAM
+        +' WHERE house_id = ?'
+        +' ORDER BY created_at DESC LIMIT 100',
         [house_id],
         function(err, results, fields) {
           if (err) {throw err;}
@@ -787,21 +792,14 @@ var house = io
             //logger.debug('最新のコメント10件-----');logger.debug(results);
             for (var i = 0; i < max_result; i++) {
               var tmp_data = results[i];
-              // 日付を変換する
-              //var date = new Date(tmp_data.created_at)
-              //  , date_txt = ''
-              //  ;
-
-              //date_txt = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
-              //date_txt+= "T"+date.toLocaleTimeString();
-              //logger.debug('date_txt---------');logger.debug(date_txt);
-
+logger.info(tmp_data);
               // データを溜め込んでいく
-              send_data[i] = {'comment_id': tmp_data.id,
+              send_data[i] = {'comment_id': tmp_data.tweet_id_str,
                 'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
                 //'message_time': date_txt, 'userMessage': tmp_data.body,
-                'image_src': tmp_data.cmt_image, 'userName': tmp_data.name,
-                'user_image': tmp_data.usr_image, 'iframeURL': ''
+                'image_src': tmp_data.image, 'userName': tmp_data.user_name,
+                'user_image': tmp_data.profile_image_url, 'iframeURL': '',
+                'source': tmp_data.source, 'type': tmp_data.type
               };
 
             }
@@ -836,7 +834,7 @@ var house = io
         //logger.info('house_id: '+resArray[1]);
         //logger.info('frameURL: '+iframeURL);
         socket.broadcast.to(resArray[0]).emit('chat message', {
-          'userName': userName, 'user_image': user_image,
+          'comment_id': '', 'userName': userName, 'user_image': user_image,
           'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
           'message_time': message_time
         });

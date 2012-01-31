@@ -21,7 +21,7 @@ var house = {
       that.socket.emit( 'join', url_id, house_id, user_id, user_image, that.socket.socket.sessionid);
 
       // tweet-list
-      that.socket.emit('get-twitter-list', url_id, house_id);
+      //that.socket.emit('get-twitter-list', url_id, house_id);
 
       that._bindPublishers();
       that._bindSubscribers();
