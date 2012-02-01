@@ -15,6 +15,8 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , everyauth  = require('everyauth')  // 認証
   , httpProxy  = require('http-proxy') // プロキシサーバー
   , conf       = require('./conf')     // 認証等の設定情報
+  , validator  = require('validator').check // validator
+  , sanitize   = require('validator').sanitize // sanitize
   ;
 
 // ----------------------------------------------
@@ -50,7 +52,7 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_OFFCOMMENTS = 'offcomments'
   , TABLE_STREAM_LOGS = 'stream_logs'
   , TABLE_CLICK_LOGS  = 'click_logs'
-  , TABLE_COMMENT_STREAM  = 'comment_stream'
+  , TABLE_COMMENT_STREAMS = 'comment_streams'
   ;
 
 
@@ -314,74 +316,86 @@ app.get('/', function (req, res) {
 
   if (req.session && req.session.auth) {
     client.query(
-      'SELECT id FROM '+TABLE_USERS+' WHERE name = ? AND oauth_service = ?',
+      'SELECT id, sex, age, mail_addr'+
+      ' FROM '+TABLE_USERS+
+      ' WHERE name = ? AND oauth_service = ?',
       [req.session.auth.name, req.session.auth.service],
       function(err, results, fields) {
         if (err) {throw err;}
         if (results) {
           req.session.auth.user_id = results[0].id;
+          // mail_addr のチェック。無ければ初回設定ページへリダイレクト
+          if (!results[0].mail_addr) {
+            res.redirect('/regist');
+            return;
+          } else {
+            // 最新のhouseリストを取得
+            client.query(
+              'SELECT id, name, url_id, image FROM '+TABLE_HOUSES+' ORDER BY created_at DESC LIMIT 10',
+              function(err, results, fields) {
+                if (err) {throw err;}
+                //logger.debug('app.get/,results: ');logger.debug(results);
+                if (results.length == 0) {
+                  res.send('house error: no result');
+                  return;
+                } else {
+
+                  res.render('index-logedin', { 'layout': false,
+                    'house_list': results, 'user_name': req.session.auth.name,
+                    'user_image': req.session.auth.image,
+                    'user_id': req.session.auth.user_id
+                  });
+                  return;
+
+                }
+              }
+            );
+
+          }
         }
       }
     );
+
   } else {
     res.render('index', { 'layout': false});
     return;
   }
 
-  // 最新のhouseリストを取得
+
+});
+
+
+// --------------------------------------------------------
+// one_time_regist
+// --------------------------------------------------------
+app.get('/regist', function (req, res) {
+
+  if (!req.session || !req.session.auth) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, name, url_id, image FROM '+TABLE_HOUSES+' ORDER BY created_at DESC LIMIT 10',
+    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+    [req.session.auth.user_id],
     function(err, results, fields) {
       if (err) {throw err;}
-      //logger.debug('app.get/,results: ');logger.debug(results);
-      if (results.length == 0) {
-        res.send('house error: no result');
+      if (results.length === 0) {
+        res.send('user_id error: no result');
         return;
       } else {
-        var tmp_house_list = [];
-
-        // house に紐付くコメントの最新画像を取得
-//        for (var i = 0; i < results.length; i++) {
-//          var tmp_house_id = results[i].id
-//            , tmp_house_name = results[i].name
-//            , tmp_house_url_id = results[i].url_id
-//            ;
-//          client.query(
-//            'SELECT image FROM '+TABLE_COMMENTS
-//            +' WHERE house_id = ? AND image != ?'
-//            +' ORDER BY created_at DESC LIMIT 1',
-//            [tmp_house_id, ''],
-//            function(err, tmp_results, tmp_fields) {
-//              if (err) {throw err;}
-//
-//              var tmp_image = '';
-//              if (tmp_results[0]) {
-//                tmp_image = tmp_results[0].image;
-//              }
-//
-//              tmp_house_list[i] = {'id': tmp_house_id,
-//                'name': tmp_house_name, 'url_id': tmp_house_url_id,
-//                'image': tmp_image
-//              };
-//
-//            }
-//          );
-//
-//        }
-
-        res.render('index-logedin', { 'layout': false,
-          'house_list': results, 'user_name': req.session.auth.name,
-          'user_image': req.session.auth.image,
-          'user_id': req.session.auth.user_id
+        res.render('regist', { 'layout': false,
+          'user_data': results
         });
         return;
-
-
       }
     }
   );
-
 });
+
+
 
 
 // --------------------------------------------------------
@@ -490,6 +504,64 @@ app.post('/create-house', function (req, res) {
   }
 });
 
+/**
+ * --------------------------------------------------------
+ * POST: 最初の設定
+ * --------------------------------------------------------
+ */
+app.post('/firstset', function (req, res) {
+  // ログインチェック
+  if (!req.session || !req.session.auth) {
+    res.redirect('/');
+    return;
+  }
+
+  // リクエストチェック
+  logger.debug('----- app.post/firstset: ');logger.info(req.body);
+  var sex = 0;
+  var age = 0;
+  var mail_addr = '';
+
+  //// sex
+  //try {
+  //} catch (e) {
+  //  console.log(e.message); //Invalid
+  //}
+
+  //// age
+  //try {
+  //} catch (e) {
+  //  console.log(e.message); //Invalid
+  //}
+
+  // email
+  try {
+    validator(req.body.sex).is(/^(1|2)$/);
+    validator(req.body.age).is(/^[1-8]$/);
+    validator(req.body.mail_addr).len(6, 64).isEmail();
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.redirect('/regist');
+    return;
+  }
+
+  sex = req.body.sex;
+  age = req.body.age;
+  mail_addr = req.body.mail_addr;
+
+  client.query(
+    'UPDATE '+TABLE_USERS+' SET'+
+    '  sex = ?, age = ?, mail_addr = ?'+
+    ' WHERE id = ?',
+    [sex, age, mail_addr, req.session.auth.user_id],
+    function(err) {
+      if (err) {throw err;}
+      res.redirect('/');
+      return;
+    }
+  );
+
+});
 
 /**
  * --------------------------------------------------------
@@ -776,7 +848,7 @@ var house = io
         //+' ORDER BY cmt.created_at DESC LIMIT 10',
         'SELECT id, created_at, user_name, body, image, tweet_id_str, profile_image_url'
         +'    , profile_image_url_https, source, type'
-        +' FROM '+TABLE_COMMENT_STREAM
+        +' FROM '+TABLE_COMMENT_STREAMS
         +' WHERE house_id = ?'
         +' ORDER BY created_at DESC LIMIT 100',
         [house_id],
@@ -858,7 +930,7 @@ logger.info(tmp_data);
         // comment-streamテーブルにも格納
         // (読みだす時にこのテーブルだけを読みこめばいいように楽する為)
         client.query(
-          'INSERT INTO '+TABLE_COMMENT_STREAM+' (created_at, house_id'+
+          'INSERT INTO '+TABLE_COMMENT_STREAMS+' (created_at, house_id'+
           ', user_id, user_id_str, user_name, body, image, max_id_str'+
           ', profile_image_url, profile_image_url_https'+
           ', source, to_user, to_user_id, to_user_id_str, to_user_name'+
