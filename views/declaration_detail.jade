@@ -1,0 +1,155 @@
+!!! 5
+html(lang='ja')
+  head
+    meta(charset='utf-8')
+    title #{dec_detail.title}
+    meta(name='description', content='#{dec_detail.description}')
+    meta(name='author', content='')
+    //
+       Le HTML5 shim, for IE6-8 support of HTML elements 
+    //if lt IE 9
+      script(src='http://html5shim.googlecode.com/svn/trunk/html5.js')
+    //
+       Le styles 
+    link(href='/css/bootstrap.min.css', rel='stylesheet')
+    style(type='text/css')
+      body {
+      padding-top: 60px;
+      padding-bottom: 40px;
+      }
+    link(href='/css/bootstrap.min.responsive', rel='stylesheet')
+    //
+       Le fav and touch icons 
+    link(rel='shortcut icon', href='images/favicon.ico')
+    link(rel='apple-touch-icon', href='images/apple-touch-icon.png')
+    link(rel='apple-touch-icon', sizes='72x72', href='images/apple-touch-icon-72x72.png')
+    link(rel='apple-touch-icon', sizes='114x114', href='images/apple-touch-icon-114x114.png')
+    script(src='/js/jquery-1.6.1.min.js')
+  body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.brand(href='#') dotOne
+          .nav-collapse
+            ul.nav
+              li.active
+                a(href='#') 宣言一覧
+              li
+                a(href='#about') サクセス一覧
+              li
+                a(href='#contact') dot1について
+          //
+            /.nav-collapse 
+    .container
+      ul.breadcrumb
+        li
+          a(href='#') Home
+          span.divider /
+        li
+          a(href='/dec') 宣言一覧
+          span.divider /
+        li.active
+          | #{dec_detail.title}
+      .row
+        .span8
+          h1 #{dec_detail.title}
+          p #{dec_detail.description}
+          h3
+            | by
+            img(src='#{dec_detail.user_image}', width='25px')
+            a(href='#', target='_blank') #{dec_detail.user_name}
+        .span4
+          .well
+            p
+              a.btn.btn-large.btn-success(href='#') 参加する
+            .progress.progress-info.progress-striped
+              .bar(style='width: #{dec_detail.ratio}%;')
+            h3 #{dec_detail.supporter_num}／#{dec_detail.target_num}人　
+            div(id="deadline_#{dec_detail.id}")
+      .row
+        .span8
+          ul.nav.nav-tabs
+            li.active
+              a(href='#1', data-toggle='tab') 宣言内容
+            li
+              a(href='#2', data-toggle='tab') 近況報告
+            li
+              a(href='#3', data-toggle='tab') 参加者一覧
+          //
+             tab-content tab-pane id=1 
+          .tab-content
+            #1.tab-pane.active
+              iframe(src='http://player.vimeo.com/video/35693267?title=0&byline=0&portrait=0', width='400', height='225', frameborder='0', webkitallowfullscreen='webkitAllowFullScreen', mozallowfullscreen='mozallowfullscreen', allowfullscreen='allowFullScreen')
+              p
+                a(href='http://vimeo.com/35693267') Clear for iPhone (Coming Soon!)
+                | from
+                a(href='http://vimeo.com/realmacsoftware') Realmac Software
+                | on
+                a(href='http://vimeo.com') Vimeo
+                | .
+              p わたしはこれまで多くのiPhoneゲームアプリを作ってきましたが、今回、１０代の若者向けのゲームを作りたいと思っています。
+              p 現在１０代のかたを２０人募集します。
+              p みなさんからの意見を反映させて、面白いアプリを作ってみたいと思いますので、よろしくお願いします。
+              .well
+                p
+                  a.btn.btn-large.btn-success(href='#') 参加する
+                p #{dec_detail.title}
+                .progress.progress-info.progress-striped
+                  .bar(style='width: #{dec_detail.ratio}%;')
+                h3 #{dec_detail.supporter_num}／#{dec_detail.target_num}人　
+                div(id="deadline_foot_#{dec_detail.id}")
+        .span4
+          ul.thumbnails
+            li.span4
+              img(alt='', src='/img/bg-chat-balloon.png')
+            li.span4
+              img(alt='', src='/img/bg-chat-balloon.png')
+            li.span4
+              img(alt='', src='/img/bg-chat-balloon.png')
+      hr
+      footer
+        p © Company 2012
+    //
+       /container 
+    //
+       Placed at the end of the document so the pages load faster 
+    script(src='/socket.io/socket.io.js')
+    style(type="text/css")
+      @import "/js/countdown/jquery.countdown.css";
+    script(src="/js/countdown/jquery.countdown.min.js")
+    script(src="/js/countdown/jquery.countdown-ja.js")
+    //script(src='/js/bootstrap.min.js')
+  //
+    script(src='js/bootstrap-transition.js')
+    script(src='js/bootstrap-alert.js')
+    script(src='js/bootstrap-modal.js')
+    script(src='js/bootstrap-dropdown.js')
+    script(src='js/bootstrap-scrollspy.js')
+    script(src='js/bootstrap-tooltip.js')
+    script(src='js/bootstrap-popover.js')
+    script(src='js/bootstrap-button.js')
+    script(src='js/bootstrap-collapse.js')
+    script(src='js/bootstrap-carousel.js')
+    script(src='js/bootstrap-typeahead.js')
+
+  script(type="text/javascript")
+    $().ready(function(){
+      var d_obj = new Date("#{dec_detail.deadline}");
+      $('#deadline_'+#{dec_detail.id}).countdown({
+        until: d_obj,
+        layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+        format: 'dhms'
+      });
+
+      $('#deadline_foot_'+#{dec_detail.id}).countdown({
+        until: d_obj,
+        layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+        format: 'dhms'
+      });
+
+    });
+

@@ -54,6 +54,7 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_CLICK_LOGS  = 'click_logs'
   , TABLE_COMMENT_STREAMS = 'comment_streams'
   , TABLE_DECLARATIONS    = 'declarations'
+  , TABLE_SUPPORTERS      = 'supporters'
   ;
 
 
@@ -381,7 +382,7 @@ app.get('/dec', function (req, res) {
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
       ' FROM '+TABLE_DECLARATIONS+' AS d'+
-      ' INNER JOIN supporters AS spt ON d.id = spt.declaration_id'+
+      ' INNER JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
       //' WHERE status = ?'+ // 開催中のみ
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
@@ -479,6 +480,45 @@ app.get('/regist', function (req, res) {
   );
 });
 
+
+
+// --------------------------------------------------------
+// dec detail (宣言詳細)
+// --------------------------------------------------------
+app.get('/dec/:id', function (req, res) {
+  // ID が正しいかチェックする
+  // 正しくなければ、一覧へリダイレクトする
+  var dec_id = (req.params.id) ? req.params.id : '';
+
+  // 正しいかDB に確認
+  client.query(
+    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    '  , d.target_num, d.deadline, d.status, d.image'+
+    '  , COUNT( s.declaration_id ) AS supporter_num'+
+    '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
+    '  , u.name AS user_name, u.image AS user_image'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' INNER JOIN '+TABLE_SUPPORTERS+' AS s ON d.id = s.declaration_id'+
+    ' INNER JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.id = ?'+
+    ' GROUP BY d.id'+
+    ' LIMIT 1',
+    [dec_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('dec_id error: no result');
+        return;
+      } else {
+        res.render('declaration_detail', { 'layout': false,
+          'dec_detail': results[0]
+        });
+        return;
+      }
+    }
+  );
+
+});
 
 
 
