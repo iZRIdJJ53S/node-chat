@@ -53,6 +53,7 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_STREAM_LOGS = 'stream_logs'
   , TABLE_CLICK_LOGS  = 'click_logs'
   , TABLE_COMMENT_STREAMS = 'comment_streams'
+  , TABLE_DECLARATIONS    = 'declarations'
   ;
 
 
@@ -362,6 +363,89 @@ app.get('/', function (req, res) {
   }
 
 
+});
+
+// ----------------------------------------------
+// 宣言一覧(declaration)
+// ----------------------------------------------
+app.get('/dec', function (req, res) {
+  logger.info('app.get: /dec');
+  //logger.info('---------- req.session: ----- ');logger.info(req.session);
+  //res.render('home', { layout: false });
+
+  //if (req.session && req.session.auth) {
+    // 最新の宣言リストを取得
+    client.query(
+      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      '  , d.target_num, d.deadline, d.status, d.image'+
+      '  , COUNT( spt.declaration_id ) AS supporter_num'+
+      '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      ' FROM '+TABLE_DECLARATIONS+' AS d'+
+      ' INNER JOIN supporters AS spt ON d.id = spt.declaration_id'+
+      //' WHERE status = ?'+ // 開催中のみ
+      ' GROUP BY d.id'+
+      ' ORDER BY d.created_at DESC'+
+      ' LIMIT 10',
+      //[],
+      function(err, results, fields) {
+        if (err) {throw err;}
+        if (results.length == 0) {
+          res.send('declaration error: no result');
+          return;
+        } else {
+
+          res.render('declaration', { 'layout': false,
+            'declaration_list': results
+           //,'user_name': req.session.auth.name
+           //,'user_image': req.session.auth.image
+           //,'user_id': req.session.auth.user_id
+          });
+          return;
+
+        }
+      }
+    );
+
+
+  //} else {
+  //  res.render('index', { 'layout': false});
+  //  return;
+  //}
+
+
+});
+
+
+
+
+// --------------------------------------------------------
+// regist_declarations(宣言登録)
+// --------------------------------------------------------
+app.get('/regist-declaration', function (req, res) {
+
+  if (!req.session || !req.session.auth) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  // パラメータが正しいかDB に聞いてみる
+  client.query(
+    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+    [req.session.auth.user_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('user_id error: no result');
+        return;
+      } else {
+        res.render('regist', { 'layout': false,
+          'user_data': results
+        });
+        return;
+      }
+    }
+  );
 });
 
 
