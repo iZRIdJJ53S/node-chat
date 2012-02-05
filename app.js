@@ -64,6 +64,7 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_COMMENT_STREAMS = 'comment_streams'
   , TABLE_DECLARATIONS    = 'declarations'
   , TABLE_SUPPORTERS      = 'supporters'
+  , TABLE_DOT1_COMMENTS   = 'dot1_comments'
   ;
 
 
@@ -677,7 +678,7 @@ app.get('/ch/:id', function (req, res) {
           // デフォルトの背景画像
           results[0].image = '/img/shiba.jpg';
         }
-        res.render('home', { 'layout': false,
+        res.render('chat', { 'layout': false,
           'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
           'house_image': results[0].image, 'house_desc': results[0].description,
           'user_name': user_name, 'user_image': user_image,
@@ -857,6 +858,68 @@ app.post('/firstset', function (req, res) {
   );
 
 });
+
+
+/**
+ * --------------------------------------------------------
+ * POST: サポーターになる
+ * --------------------------------------------------------
+ */
+app.post('/join-commit', function (req, res) {
+  // ログインチェック
+  if (!req.session || !req.session.auth) {
+    res.json({ text: 'ログインして下さい' }, 200);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  console.log(req.body.id);
+  try {
+    validator(req.body.id).isInt();
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 200);
+    return;
+  }
+
+  // すでに参加済みかどうかチェック
+  client.query(
+    'SELECT id '+
+    ' FROM '+TABLE_SUPPORTERS+
+    ' WHERE declaration_id = ? AND user_id = ?',
+    [req.body.id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        client.query(
+          'INSERT INTO '+TABLE_SUPPORTERS+'('+
+          '  declaration_id , user_id'+
+          ') VALUES ('+
+          '?, ?'+
+          ')',
+          [req.body.id, req.session.auth.user_id],
+          function(err) {
+            if (err) {throw err;}
+            res.json({text: '参加しました', cnt_up: true}, 200);
+            return;
+          }
+        );
+
+      } else {
+        res.json({text: '既に参加済みです'}, 200);
+        return;
+      }
+    }
+  );
+
+
+});
+
+
+
+
+
 
 /**
  * --------------------------------------------------------
@@ -1134,18 +1197,18 @@ var house = io
 
 
 
-      // 最新のコメント100件分を取得
+      // 最新のコメント50件分を取得
       client.query(
         //'SELECT cmt.id, cmt.created_at, cmt.body, cmt.image AS cmt_image, usr.name, usr.image AS usr_image'
         //+' FROM '+TABLE_COMMENTS+' AS cmt'
         //+' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
         //+' WHERE cmt.house_id = ?'
         //+' ORDER BY cmt.created_at DESC LIMIT 10',
-        'SELECT id, created_at, user_name, body, image, tweet_id_str, profile_image_url'
-        +'    , profile_image_url_https, source, type'
-        +' FROM '+TABLE_COMMENT_STREAMS
-        +' WHERE house_id = ?'
-        +' ORDER BY created_at DESC LIMIT 100',
+        'SELECT id, created_at, user_name, body, image, profile_image_url'
+        +'    , type'
+        +' FROM '+TABLE_DOT1_COMMENTS
+        +' WHERE dec_id = ?'
+        +' ORDER BY created_at DESC LIMIT 50',
         [house_id],
         function(err, results, fields) {
           if (err) {throw err;}
@@ -1159,7 +1222,6 @@ var house = io
             //logger.debug('最新のコメント10件-----');logger.debug(results);
             for (var i = 0; i < max_result; i++) {
               var tmp_data = results[i];
-logger.info(tmp_data);
               // データを溜め込んでいく
               send_data[i] = {'comment_id': tmp_data.tweet_id_str,
                 'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
@@ -1208,24 +1270,24 @@ logger.info(tmp_data);
 
         if (!image_src) {image_src = '';}
         // オリジナルコメントテーブルに格納 
-        client.query(
-          'INSERT INTO '+TABLE_COMMENTS+' (created_at, house_id,'+
-          ' user_id, body, image'+
-          ') VALUES (NOW(), ?, ?, ?, ?)',
-          [resArray[1], user_id, message, image_src],
-          function(err, results) {
-            if (err) {
-              throw err;
-            } else {
-              return;
-            }
-          }
-        );
+        //client.query(
+        //  'INSERT INTO '+TABLE_COMMENTS+' (created_at, house_id,'+
+        //  ' user_id, body, image'+
+        //  ') VALUES (NOW(), ?, ?, ?, ?)',
+        //  [resArray[1], user_id, message, image_src],
+        //  function(err, results) {
+        //    if (err) {
+        //      throw err;
+        //    } else {
+        //      return;
+        //    }
+        //  }
+        //);
 
-        // comment-streamテーブルにも格納
+        // dot1_commentsテーブルにも格納
         // (読みだす時にこのテーブルだけを読みこめばいいように楽する為)
         client.query(
-          'INSERT INTO '+TABLE_COMMENT_STREAMS+' (created_at, house_id'+
+          'INSERT INTO '+TABLE_DOT1_COMMENTS+' (created_at, dec_id'+
           ', user_id, user_id_str, user_name, body, image, max_id_str'+
           ', profile_image_url, profile_image_url_https'+
           ', source, to_user, to_user_id, to_user_id_str, to_user_name'+
@@ -1234,7 +1296,7 @@ logger.info(tmp_data);
           '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
           ')',
           [resArray[1], user_id, '', userName, message, image_src, ''
-            , user_image, '', '', '', '', '', '', 'cmt'
+            , user_image, '', '', '', '', '', '', ''
           ],
           function(err, results) {
             if (err) {

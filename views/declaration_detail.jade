@@ -24,7 +24,7 @@ html(lang='ja')
     link(rel='apple-touch-icon', href='images/apple-touch-icon.png')
     link(rel='apple-touch-icon', sizes='72x72', href='images/apple-touch-icon-72x72.png')
     link(rel='apple-touch-icon', sizes='114x114', href='images/apple-touch-icon-114x114.png')
-    script(src='/js/jquery-1.6.1.min.js')
+    script(src='/js/jquery-1.7.1.min.js')
   body
     .navbar.navbar-fixed-top
       .navbar-inner
@@ -33,11 +33,11 @@ html(lang='ja')
             span.icon-bar
             span.icon-bar
             span.icon-bar
-          a.brand(href='#') dotOne
+          a.brand(href='/') dotOne
           .nav-collapse
             ul.nav
               li.active
-                a(href='#') 宣言一覧
+                a(href='/dec') 宣言一覧
               li
                 a(href='#about') サクセス一覧
               li
@@ -47,7 +47,7 @@ html(lang='ja')
     .container
       ul.breadcrumb
         li
-          a(href='#') Home
+          a(href='/') Home
           span.divider /
         li
           a(href='/dec') 宣言一覧
@@ -65,10 +65,12 @@ html(lang='ja')
         .span4
           .well
             p
-              a.btn.btn-large.btn-success(href='#') 参加する
+              a.btn.btn-large.btn-success(data-toggle="modal", href='#join') 参加する
             .progress.progress-info.progress-striped
               .bar(style='width: #{dec_detail.ratio}%;')
-            h3 #{dec_detail.supporter_num}／#{dec_detail.target_num}人　
+            h3
+              span(id="dec_supporter_num") #{dec_detail.supporter_num}
+              ／#{dec_detail.target_num}人　
             div(id="deadline_#{dec_detail.id}")
       .row
         .span8
@@ -96,11 +98,13 @@ html(lang='ja')
               p みなさんからの意見を反映させて、面白いアプリを作ってみたいと思いますので、よろしくお願いします。
               .well
                 p
-                  a.btn.btn-large.btn-success(href='#') 参加する
+                  a.btn.btn-large.btn-success(data-toggle="modal", href='#join') 参加する
                 p #{dec_detail.title}
                 .progress.progress-info.progress-striped
                   .bar(style='width: #{dec_detail.ratio}%;')
-                h3 #{dec_detail.supporter_num}／#{dec_detail.target_num}人　
+                h3
+                  span(id="dec_supporter_num_foot") #{dec_detail.supporter_num}
+                  ／#{dec_detail.target_num}人　
                 div(id="deadline_foot_#{dec_detail.id}")
         .span4
           ul.thumbnails
@@ -113,6 +117,18 @@ html(lang='ja')
       hr
       footer
         p © Company 2012
+
+
+    #join.modal.hide.fade(style="display:none;")
+      .modal-header
+        a.close(data-dismiss='modal') ×
+        h3 参加確認
+      .modal-body
+        p(id="mdl_pbody") #{dec_detail.title} に参加しますか？
+      #mdl_footer.modal-footer
+        a.btn.btn-primary(id="join_ok", href='#') OK
+        a.btn(data-dismiss='modal', href='#') Cancel
+
     //
        /container 
     //
@@ -122,7 +138,7 @@ html(lang='ja')
       @import "/js/countdown/jquery.countdown.css";
     script(src="/js/countdown/jquery.countdown.min.js")
     script(src="/js/countdown/jquery.countdown-ja.js")
-    //script(src='/js/bootstrap.min.js')
+    script(src='/js/bootstrap.min.js')
   //
     script(src='js/bootstrap-transition.js')
     script(src='js/bootstrap-alert.js')
@@ -151,5 +167,23 @@ html(lang='ja')
         format: 'dhms'
       });
 
+    });
+
+    $('#join_ok').click(function() {
+      $.ajax({
+        type: "POST",
+        url: "/join-commit",
+        data: {id: #{dec_detail.id}},
+        success: function(msg){
+          $('#mdl_pbody').text(msg.text);
+          $('#mdl_footer').hide();
+          if (msg.cnt_up) {
+            var new_dec_supporter_num = $('#dec_supporter_num').text();
+            new_dec_supporter_num++;
+            $('#dec_supporter_num').text(new_dec_supporter_num);
+            $('#dec_supporter_num_foot').text(new_dec_supporter_num);
+          }
+        }
+      });
     });
 
