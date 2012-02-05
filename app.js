@@ -11,6 +11,7 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , log4js  = require('log4js')    // ロギング
   , util    = require('util')      // デバッグ等に便利な
   , fs      = require('fs')        // ファイル操作
+  , exec    = require('child_process').exec // シェルコマンドを叩く為に必要
   , formidable = require('formidable') // ファイルアップロード
   , everyauth  = require('everyauth')  // 認証
   , httpProxy  = require('http-proxy') // プロキシサーバー
@@ -22,9 +23,9 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
 // ----------------------------------------------
 // 定数設定
 // ----------------------------------------------
-var FLG_SUPPORTER_COMP_STAT = 1;
-var FLG_SUPPORTER_WANT_STAT = 2;
-var FLG_SUPPORTER_FAIL_STAT = 3;
+var FLG_SUPPORTER_COMP_STAT = 1; // 完了/サクセスしたもの
+var FLG_SUPPORTER_WANT_STAT = 2; // 現在開催中のもの
+var FLG_SUPPORTER_FAIL_STAT = 3; // 失敗/挫折したもの
 
 
 
@@ -395,11 +396,11 @@ app.get('/dec', function (req, res) {
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
       ' FROM '+TABLE_DECLARATIONS+' AS d'+
       ' INNER JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
-      //' WHERE status = ?'+ // 開催中のみ
+      ' WHERE status = ?'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
       ' LIMIT 10',
-      //[],
+      [FLG_SUPPORTER_WANT_STAT],
       function(err, results, fields) {
         if (err) {throw err;}
         if (results.length == 0) {
@@ -408,6 +409,57 @@ app.get('/dec', function (req, res) {
         } else {
 
           res.render('declaration', { 'layout': false,
+            'declaration_list': results
+           //,'user_name': req.session.auth.name
+           //,'user_image': req.session.auth.image
+           //,'user_id': req.session.auth.user_id
+          });
+          return;
+
+        }
+      }
+    );
+
+
+  //} else {
+  //  res.render('index', { 'layout': false});
+  //  return;
+  //}
+
+
+});
+
+
+// ----------------------------------------------
+// サクセス一覧(success)
+// ----------------------------------------------
+app.get('/suc', function (req, res) {
+  logger.info('app.get: /suc');
+  //logger.info('---------- req.session: ----- ');logger.info(req.session);
+  //res.render('home', { layout: false });
+
+  //if (req.session && req.session.auth) {
+    // 最新の宣言リストを取得
+    client.query(
+      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      '  , d.target_num, d.deadline, d.status, d.image'+
+      '  , COUNT( spt.declaration_id ) AS supporter_num'+
+      '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      ' FROM '+TABLE_DECLARATIONS+' AS d'+
+      ' INNER JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+      ' WHERE status = ?'+
+      ' GROUP BY d.id'+
+      ' ORDER BY d.created_at DESC'+
+      ' LIMIT 10',
+      [FLG_SUPPORTER_COMP_STAT],
+      function(err, results, fields) {
+        if (err) {throw err;}
+        if (results.length == 0) {
+          res.send('declaration error: no result');
+          return;
+        } else {
+
+          res.render('dec_success', { 'layout': false,
             'declaration_list': results
            //,'user_name': req.session.auth.name
            //,'user_image': req.session.auth.image
@@ -652,7 +704,8 @@ app.get('/ch/:id', function (req, res) {
   var user_name = ''
     , user_image = ''
     , user_id = '' 
-    , is_login = true
+    , is_owner = false
+    , is_supporter = false // サポーターかどうか？。チャットをさせるかどうかの判断で使う
     ;
   if (req.session && req.session.auth) {
     user_id = req.session.auth.user_id;
@@ -660,12 +713,13 @@ app.get('/ch/:id', function (req, res) {
     user_image = req.session.auth.image;
   } else {
     // ログインしていない
-    is_login = false
+    res.redirect('/');
+    return;
   }
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, title AS name, image, description'+
+    'SELECT id, title AS name, image, description, user_id AS owner_id'+
     ' FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
     [dec_id],
     function(err, results, fields) {
@@ -678,13 +732,36 @@ app.get('/ch/:id', function (req, res) {
           // デフォルトの背景画像
           results[0].image = '/img/shiba.jpg';
         }
-        res.render('chat', { 'layout': false,
-          'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
-          'house_image': results[0].image, 'house_desc': results[0].description,
-          'user_name': user_name, 'user_image': user_image,
-          'user_id': user_id
-        });
-        return;
+
+        // 宣言者かどうかチェック
+        if (results[0].owner_id == user_id) {
+          is_owner = true;
+        }
+
+        // サポーターかどうかチェック
+        client.query(
+          'SELECT id FROM '+TABLE_SUPPORTERS+
+          ' WHERE declaration_id = ? AND user_id = ?',
+          [dec_id, user_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            if (results2.length === 0) {
+              // サポーターじゃない
+            } else {
+              // サポーターです
+              is_supporter = true;
+            }
+            res.render('chat', { 'layout': false,
+              'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
+              'house_image': results[0].image, 'house_desc': results[0].description,
+              'user_name': user_name, 'user_image': user_image,
+              'user_id': user_id,
+              'is_owner': is_owner, 'is_supporter': is_supporter
+            });
+            return;
+          }
+
+        );
       }
     }
   );
@@ -913,10 +990,44 @@ app.post('/join-commit', function (req, res) {
     }
   );
 
-
 });
 
+/**
+ * --------------------------------------------------------
+ *  メール送信
+ * --------------------------------------------------------
+ */
+app.post('/sendmail', function (req, res) {
+  // ログインチェック
+  if (!req.session || !req.session.auth) {
+    res.json({ text: 'ログインして下さい' }, 200);
+    return;
+  }
 
+  // リクエストチェック
+  // id
+  try {
+    validator(req.body.id).isInt();
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 200);
+    return;
+  }
+
+  // シェルコマンド実行
+  var child = exec('perl /home/hara/hitorigoto_setting/pre_data/getData.pl '+req.body.id,
+    function(err, stdout, stderr) {
+      if (err === null) {
+        res.json({text: '送信成功しました'}, 200);
+        return;
+      } else {
+        res.json({text: 'error!! 送信失敗しました'}, 200);
+        return;
+      }
+
+    }
+  );
+});
 
 
 

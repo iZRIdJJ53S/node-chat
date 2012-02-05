@@ -2,7 +2,7 @@
 html(lang='ja')
   head
     meta(charset='utf-8')
-    title dotOne 宣言一覧
+    title dotOne サクセス一覧
     meta(name='description', content='')
     meta(name='author', content='')
     //
@@ -36,9 +36,9 @@ html(lang='ja')
           a.brand(href='/') dotOne
           .nav-collapse
             ul.nav
-              li.active
-                a(href='/dec') 宣言一覧
               li
+                a(href='/dec') 宣言一覧
+              li.active
                 a(href='/suc') サクセス一覧
               li
                 a(href='#contact') dot1について
@@ -51,7 +51,7 @@ html(lang='ja')
       //
          Main hero unit for a primary marketing message or call to action 
       .hero-unit
-        h1 宣言中の活動
+        h1 サクセスストーリー
       ul.nav.nav-tabs
         li.active
           a(href='#') みんなの宣言
@@ -63,21 +63,10 @@ html(lang='ja')
             h2 #{declaration.title}
             .well
               p #{declaration.description}
-              .progress.progress-info.progress-striped
-                .bar(style='width: #{declaration.ratio}%;')
-              h3 #{declaration.supporter_num}／#{declaration.target_num}人　
-              div(id="deadline_#{declaration.id}") 
+              h3 サクセスおめでとう！！
+ 
               p
                 a.btn(href='/dec/#{declaration.id}') 詳細 »
-              script(type="text/javascript")
-                $().ready(function(){
-                  var d_obj = new Date("#{declaration.deadline}");
-                  $('#deadline_'+#{declaration.id}).countdown({
-                    until: d_obj,
-                    layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
-                    format: 'dhms'
-                  });
-                });
       hr
       footer
         p © Company 2012
