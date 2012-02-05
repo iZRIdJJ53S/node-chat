@@ -1,0 +1,158 @@
+!!! 5
+html(lang='jp')
+  head
+    meta(charset='utf-8')
+    title dotOne #{user_name}
+    meta(name='description', content='')
+    meta(name='author', content='')
+    //
+       Le HTML5 shim, for IE6-8 support of HTML elements 
+    //if lt IE 9
+      script(src='http://html5shim.googlecode.com/svn/trunk/html5.js')
+    //
+       Le styles 
+    link(href='/css/bootstrap.min.css', rel='stylesheet')
+    style(type='text/css')
+      body {
+      padding-top: 60px;
+      padding-bottom: 40px;
+      }
+    link(href='/css/bootstrap.min.responsive', rel='stylesheet')
+    //
+       Le fav and touch icons 
+    link(rel='shortcut icon', href='images/favicon.ico')
+    link(rel='apple-touch-icon', href='images/apple-touch-icon.png')
+    link(rel='apple-touch-icon', sizes='72x72', href='images/apple-touch-icon-72x72.png')
+    link(rel='apple-touch-icon', sizes='114x114', href='images/apple-touch-icon-114x114.png')
+    script(src='/js/jquery-1.6.1.min.js')
+  body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          a.btn.btn-navbar(data-toggle='collapse', data-target='.nav-collapse')
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.brand(href='#') dotOne
+          .nav-collapse
+            ul.nav
+              li
+                a(href='/dec') 宣言一覧
+              li
+                a(href='#about') サクセス一覧
+              li
+                a(href='#contact') dot1について
+            ul.nav.pull-right
+              li.active
+                a(href='#') マイページ
+          //
+            /.nav-collapse 
+    .container
+      ul.breadcrumb
+        li
+          a(href='#') Home
+          span.divider /
+        li
+          | マイページ
+      .row
+        .span2
+          h1
+            img(src='#{user_image}', width='100px')
+            | #{user_name}
+          p メッセージ
+          p 設定
+        .span10
+          .row
+            for dec_data in dec_list
+              .span10
+                h2 #{dec_data.title}
+                .well
+                  p #{dec_data.description}
+                  h3 成立済み
+                  p
+                    a.btn.btn-primary(href='/ch/#{dec_data.id}') スタートする »
+          ul.nav.nav-tabs
+            li.active
+              a(href='#1', data-toggle='tab') 参加リスト
+            li
+              a(href='#2', data-toggle='tab') サクセスリスト
+          //
+             tab-content tab-pane id=1 
+          .tab-content
+            #1.tab-pane.active
+              .row
+                .span10
+                  blockquote
+                    p 成立済みの宣言
+                for comp_data in spt_comp_list
+                  .span5
+                    h2 #{comp_data.title}
+                    .well
+                      p #{comp_data.description}
+                      h3 成立済み
+                      p
+                        a.btn.btn-primary(href='/ch/#{comp_data.declaration_id}') 見に行く »
+            .row
+              .span10
+                blockquote
+                  p 募集中の宣言
+              for want_data in spt_want_list
+                .span5
+                  h2 #{want_data.title}
+                  .well
+                    p #{want_data.description}
+                    //.progress.progress-info.progress-striped
+                    //  .bar(style='width: 20%;')
+                    h3 ／#{want_data.target_num}人　
+                    div(id="deadline_#{want_data.declaration_id}")
+                    p
+                      a.btn(href='/dec/#{want_data.declaration_id}') 詳細 »
+                    script(type="text/javascript")
+                      $().ready(function(){
+                        var d_obj = new Date("#{want_data.deadline}");
+                        $('#deadline_'+#{want_data.declaration_id}).countdown({
+                          until: d_obj,
+                          layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+                          format: 'dhms'
+                        });
+                      });
+
+            .row
+              .span10
+                blockquote
+                  p 挫折した宣言
+              for fail_data in spt_fail_list
+                .span5
+                  h2 #{fail_data.title}
+                  .well
+                    p #{fail_data.description}
+                    h3 この宣言は挫折しました
+                    p
+                      a.btn(href='/dec/#{fail_data.declaration_id}') 詳細 »
+    hr
+    footer
+      p © Company 2012
+    //
+       /container 
+    //
+       Placed at the end of the document so the pages load faster 
+    script(src='/socket.io/socket.io.js')
+    style(type="text/css")
+      @import "/js/countdown/jquery.countdown.css";
+    script(src="/js/countdown/jquery.countdown.min.js")
+    script(src="/js/countdown/jquery.countdown-ja.js")
+
+
+  //
+    script(src='js/bootstrap-transition.js')
+    script(src='js/bootstrap-alert.js')
+    script(src='js/bootstrap-modal.js')
+    script(src='js/bootstrap-dropdown.js')
+    script(src='js/bootstrap-scrollspy.js')
+    script(src='js/bootstrap-tab.js')
+    script(src='js/bootstrap-tooltip.js')
+    script(src='js/bootstrap-popover.js')
+    script(src='js/bootstrap-button.js')
+    script(src='js/bootstrap-collapse.js')
+    script(src='js/bootstrap-carousel.js')
+    script(src='js/bootstrap-typeahead.js')

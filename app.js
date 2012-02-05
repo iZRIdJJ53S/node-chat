@@ -20,6 +20,15 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   ;
 
 // ----------------------------------------------
+// 定数設定
+// ----------------------------------------------
+var FLG_SUPPORTER_COMP_STAT = 1;
+var FLG_SUPPORTER_WANT_STAT = 2;
+var FLG_SUPPORTER_FAIL_STAT = 3;
+
+
+
+// ----------------------------------------------
 // ロギング関連初期設定
 // ----------------------------------------------
 log4js.addAppender(log4js.consoleAppender());
@@ -331,27 +340,29 @@ app.get('/', function (req, res) {
             res.redirect('/regist');
             return;
           } else {
+            res.redirect('/dec');
+            return;
             // 最新のhouseリストを取得
-            client.query(
-              'SELECT id, name, url_id, image FROM '+TABLE_HOUSES+' ORDER BY created_at DESC LIMIT 10',
-              function(err, results, fields) {
-                if (err) {throw err;}
-                //logger.debug('app.get/,results: ');logger.debug(results);
-                if (results.length == 0) {
-                  res.send('house error: no result');
-                  return;
-                } else {
+            //client.query(
+            //  'SELECT id, name, url_id, image FROM '+TABLE_HOUSES+' ORDER BY created_at DESC LIMIT 10',
+            //  function(err, results, fields) {
+            //    if (err) {throw err;}
+            //    //logger.debug('app.get/,results: ');logger.debug(results);
+            //    if (results.length == 0) {
+            //      res.send('house error: no result');
+            //      return;
+            //    } else {
 
-                  res.render('index-logedin', { 'layout': false,
-                    'house_list': results, 'user_name': req.session.auth.name,
-                    'user_image': req.session.auth.image,
-                    'user_id': req.session.auth.user_id
-                  });
-                  return;
+            //      res.render('index-logedin', { 'layout': false,
+            //        'house_list': results, 'user_name': req.session.auth.name,
+            //        'user_image': req.session.auth.image,
+            //        'user_id': req.session.auth.user_id
+            //      });
+            //      return;
 
-                }
-              }
-            );
+            //    }
+            //  }
+            //);
 
           }
         }
@@ -449,6 +460,116 @@ app.get('/regist-declaration', function (req, res) {
   );
 });
 
+// --------------------------------------------------------
+// mypage
+// --------------------------------------------------------
+app.get('/mypage', function (req, res) {
+
+  if (!req.session || !req.session.auth) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  //res.render('mypage', { 'layout': false
+  //  ,'user_name': req.session.auth.name
+  //  ,'user_image': req.session.auth.image
+  //  ,'user_id': req.session.auth.user_id
+  //});
+  //return;
+
+  var dec_list = [];
+  var spt_comp_list = []; // 完了
+  var spt_want_list = []; // 募集中
+  var spt_fail_list = []; // 挫折
+
+  // 自分が宣言しているリストを取得
+  client.query(
+    'SELECT id, created_at, title, description, status, image'+
+    ' FROM '+TABLE_DECLARATIONS+
+    ' WHERE user_id = ?'+
+    ' LIMIT 3',
+    [req.session.auth.user_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        dec_list = [];
+      } else {
+        dec_list = results;
+      }
+
+      // 自分がサポーターになっているリストを取得
+      client.query(
+        'SELECT s.declaration_id, s.user_id AS supporter_id'+
+        '  , d.created_at, d.title, d.description, d.user_id AS owner_id'+
+        '  , d.target_num, d.deadline, d.status AS stat, d.image'+
+        ' FROM '+TABLE_SUPPORTERS+' AS s'+
+        ' INNER JOIN '+TABLE_DECLARATIONS+' AS d ON s.declaration_id = d.id'+
+        ' WHERE s.user_id = ?',
+        [req.session.auth.user_id],
+        function(err2, results2) {
+          if (err2) {throw err2;}
+          if (results2.length === 0) {
+            spt_comp_list = [];
+            spt_want_list = [];
+            spt_fail_list = [];
+
+            res.render('mypage', {'layout': false
+              , 'user_name': req.session.auth.name
+              , 'user_image': req.session.auth.image
+              , 'user_id': req.session.auth.user_id
+              , 'dec_list': dec_list
+              , 'spt_comp_list': spt_comp_list
+              , 'spt_want_list': spt_want_list
+              , 'spt_fail_list': spt_fail_list
+            });
+          } else {
+            var tmp_cnt;
+            var counter = {};
+            var max_length = results2.length;
+            for (var i = 0; i < max_length; i++) {
+              var stat = results2[i].stat;
+              if (counter[stat]) {
+                tmp_cnt = counter[stat];
+                counter[stat]++;
+              } else {
+                tmp_cnt = 0;
+                counter[stat] = 1;
+              }
+
+              switch (stat) {
+                case FLG_SUPPORTER_COMP_STAT:
+                  spt_comp_list[tmp_cnt] = results2[i];
+                  break;
+                case FLG_SUPPORTER_WANT_STAT:
+                  spt_want_list[tmp_cnt] = results2[i];
+                  break;
+                case FLG_SUPPORTER_FAIL_STAT:
+                  spt_fail_list[tmp_cnt] = results2[i];
+                  break;
+                default:
+                  break;
+              }
+            }
+
+            res.render('mypage', {'layout': false
+              , 'user_name': req.session.auth.name
+              , 'user_image': req.session.auth.image
+              , 'user_id': req.session.auth.user_id
+              , 'dec_list': dec_list
+              , 'spt_comp_list': spt_comp_list
+              , 'spt_want_list': spt_want_list
+              , 'spt_fail_list': spt_fail_list
+            });
+
+          }
+
+        }
+      );
+    }
+  );
+});
+
 
 // --------------------------------------------------------
 // one_time_regist
@@ -519,6 +640,56 @@ app.get('/dec/:id', function (req, res) {
   );
 
 });
+
+// --------------------------------------------------------
+// chat_room
+// --------------------------------------------------------
+app.get('/ch/:id', function (req, res) {
+  // ID が正しいかチェックする
+  var dec_id = (req.params.id) ? req.params.id : '';
+
+  var user_name = ''
+    , user_image = ''
+    , user_id = '' 
+    , is_login = true
+    ;
+  if (req.session && req.session.auth) {
+    user_id = req.session.auth.user_id;
+    user_name = req.session.auth.name;
+    user_image = req.session.auth.image;
+  } else {
+    // ログインしていない
+    is_login = false
+  }
+
+  // パラメータが正しいかDB に聞いてみる
+  client.query(
+    'SELECT id, title AS name, image, description'+
+    ' FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
+    [dec_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length == 0) {
+        res.send('id error: no result');
+        return;
+      } else {
+        if (results[0].image == '') {
+          // デフォルトの背景画像
+          results[0].image = '/img/shiba.jpg';
+        }
+        res.render('home', { 'layout': false,
+          'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
+          'house_image': results[0].image, 'house_desc': results[0].description,
+          'user_name': user_name, 'user_image': user_image,
+          'user_id': user_id
+        });
+        return;
+      }
+    }
+  );
+
+});
+
 
 
 
