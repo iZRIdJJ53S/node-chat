@@ -31,7 +31,7 @@ body.chat{
 	-moz-opacity:0.9; /* older Gecko-based browsers */
 	filter:alpha(opacity=90); /* For IE6&7 */
 }
-.container {
+.container-old {
 	position: relative;
 	float: left;
 }

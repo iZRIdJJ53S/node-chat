@@ -2,7 +2,7 @@
 html(lang='ja')
   head
     meta(charset='utf-8')
-    title dotOne 宣言一覧
+    title dotOne
     meta(name='description', content='')
     meta(name='author', content='')
     //
@@ -18,6 +18,9 @@ html(lang='ja')
       padding-bottom: 40px;
       }
     link(href='/css/bootstrap.min.responsive', rel='stylesheet')
+    //
+       dotOneStyle 
+    link(href='/css/dotone_style.css', rel='stylesheet')
     //
        Le fav and touch icons 
     link(rel='shortcut icon', href='images/favicon.ico')
@@ -36,7 +39,7 @@ html(lang='ja')
           a.brand(href='/') dotOne
           .nav-collapse
             ul.nav
-              li.active
+              li
                 a(href='/dec') 宣言一覧
               li
                 a(href='/suc') サクセス一覧
@@ -44,19 +47,49 @@ html(lang='ja')
                 a(href='/what') dot1について
             ul.nav.pull-right
               li
-                a(href="/mypage") マイページ
+                a(href='/auth/twitter') ログイン
           //
             /.nav-collapse 
     .container
       //
-         Main hero unit for a primary marketing message or call to action 
-      .hero-unit
-        h1 宣言中の活動
+         topPickUp 
+      .row
+        .span8
+          .main_declaration
+            .info_box
+            .info_box_txt
+              h2 #{dec_top_data.title}
+              p #{dec_top_data.description}
+              .progress.progress-info.progress-striped(style='width: 50%;')
+                .bar(style='width: #{dec_top_data.ratio}%;')
+              h3 #{dec_top_data.supporter_num}／#{dec_top_data.target_num}人　
+              div(id="deadline_#{dec_top_data.id}")
+              p
+                a.btn(href='/dec/#{dec_top_data.id}') 詳細 »
+              script(type="text/javascript")
+                $().ready(function(){
+                  var d_obj = new Date("#{dec_top_data.deadline}");
+                  $('#deadline_'+#{dec_top_data.id}).countdown({
+                    until: d_obj,
+                    layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+                    format: 'dhms'
+                  });
+                });
+
+
+        .span4
+          .login_box
+            .what
+              a(href='/what')
+                img(src='/img/what.png')
+            .auth
+              .title 新規登録・ログイン
+              .twitter
+                a(href='/auth/twitter')
+                  img(src='/img/sign-in-with-twitter-d.png')
       ul.nav.nav-tabs
         li.active
           a(href='#') みんなの宣言
-      //
-         Example row of columns 
       .row
         for declaration in declaration_list
           .span4
@@ -66,7 +99,7 @@ html(lang='ja')
               .progress.progress-info.progress-striped
                 .bar(style='width: #{declaration.ratio}%;')
               h3 #{declaration.supporter_num}／#{declaration.target_num}人　
-              div(id="deadline_#{declaration.id}") 
+              div(id="deadline_#{declaration.id}")
               p
                 a.btn(href='/dec/#{declaration.id}') 詳細 »
               script(type="text/javascript")
@@ -78,32 +111,18 @@ html(lang='ja')
                     format: 'dhms'
                   });
                 });
+
       hr
       footer
         p © Company 2012
     //
        /container 
-    //
-       Placed at the end of the document so the pages load faster 
+
     script(src='/socket.io/socket.io.js')
     style(type="text/css")
       @import "/js/countdown/jquery.countdown.css";
     script(src="/js/countdown/jquery.countdown.min.js")
     script(src="/js/countdown/jquery.countdown-ja.js")
-  //
-    script(src='js/bootstrap-transition.js')
-    script(src='js/bootstrap-alert.js')
-    script(src='js/bootstrap-modal.js')
-    script(src='js/bootstrap-dropdown.js')
-    script(src='js/bootstrap-scrollspy.js')
-    script(src='js/bootstrap-tab.js')
-    script(src='js/bootstrap-tooltip.js')
-    script(src='js/bootstrap-popover.js')
-    script(src='js/bootstrap-button.js')
-    script(src='js/bootstrap-collapse.js')
-    script(src='js/bootstrap-carousel.js')
-    script(src='js/bootstrap-typeahead.js')
 
 
-    script(type="text/javascript")
 

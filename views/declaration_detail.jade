@@ -39,9 +39,9 @@ html(lang='ja')
               li.active
                 a(href='/dec') 宣言一覧
               li
-                a(href='#about') サクセス一覧
+                a(href='/suc') サクセス一覧
               li
-                a(href='#contact') dot1について
+                a(href='/what') dot1について
             ul.nav.pull-right
               li
                 a(href="/mypage") マイページ
@@ -88,17 +88,7 @@ html(lang='ja')
              tab-content tab-pane id=1 
           .tab-content
             #1.tab-pane.active
-              iframe(src='http://player.vimeo.com/video/35693267?title=0&byline=0&portrait=0', width='400', height='225', frameborder='0', webkitallowfullscreen='webkitAllowFullScreen', mozallowfullscreen='mozallowfullscreen', allowfullscreen='allowFullScreen')
-              p
-                a(href='http://vimeo.com/35693267') Clear for iPhone (Coming Soon!)
-                | from
-                a(href='http://vimeo.com/realmacsoftware') Realmac Software
-                | on
-                a(href='http://vimeo.com') Vimeo
-                | .
-              p わたしはこれまで多くのiPhoneゲームアプリを作ってきましたが、今回、１０代の若者向けのゲームを作りたいと思っています。
-              p 現在１０代のかたを２０人募集します。
-              p みなさんからの意見を反映させて、面白いアプリを作ってみたいと思いますので、よろしくお願いします。
+              p #{dec_detail.detail}
               .well
                 p
                   a.btn.btn-large.btn-success(data-toggle="modal", href='#join') 参加する
@@ -112,11 +102,7 @@ html(lang='ja')
         .span4
           ul.thumbnails
             li.span4
-              img(alt='', src='/img/bg-chat-balloon.png')
-            li.span4
-              img(alt='', src='/img/bg-chat-balloon.png')
-            li.span4
-              img(alt='', src='/img/bg-chat-balloon.png')
+              img(alt='', src='/img/details_img.png')
       hr
       footer
         p © Company 2012

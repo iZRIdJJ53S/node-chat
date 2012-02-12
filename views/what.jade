@@ -2,7 +2,7 @@
 html(lang='ja')
   head
     meta(charset='utf-8')
-    title dotOne 宣言一覧
+    title ドットワンって何？ dot1
     meta(name='description', content='')
     meta(name='author', content='')
     //
@@ -18,6 +18,9 @@ html(lang='ja')
       padding-bottom: 40px;
       }
     link(href='/css/bootstrap.min.responsive', rel='stylesheet')
+    //
+       dotOneStyle 
+    link(href='/css/dotone_style.css', rel='stylesheet')
     //
        Le fav and touch icons 
     link(rel='shortcut icon', href='images/favicon.ico')
@@ -36,27 +39,64 @@ html(lang='ja')
           a.brand(href='/') dotOne
           .nav-collapse
             ul.nav
-              li.active
+              li
                 a(href='/dec') 宣言一覧
               li
                 a(href='/suc') サクセス一覧
               li
-                a(href='/what') dot1について
+                a(href='#contact') dot1について
             ul.nav.pull-right
               li
-                a(href="/mypage") マイページ
+                a(href='/') ログイン
           //
             /.nav-collapse 
     .container
-      //
-         Main hero unit for a primary marketing message or call to action 
-      .hero-unit
-        h1 宣言中の活動
+      .row
+        .span4
+          .login_box
+            .what
+              img(src='/img/what.png')
+            .auth
+              .title 新規登録・ログイン
+              .twitter
+                a(href='/auth/twitter')
+                  img(src='/img/sign-in-with-twitter-d.png')
+        .span8
+          h1 世界に1を立てろ。ドットワン。
+          br
+          h5
+            | 世の中に0だったものを1にする過程は魅力的であり、貴いです。
+            br
+            br
+            | ・アプリが生まれる
+            br
+            | ・カップルが生まれる
+            br
+            | ・絵が生まれる
+            br
+            | ・曲が生まれる など、様々な誕生があります。
+            br
+            br
+            | しかし、0を1に変えるのは相当な苦労が必要です。苦悩することもあれば、
+            br
+            | 人の意見を聞きたい時も、応援して欲しいと思うこともあります。
+            br
+            br
+            | 1が誕生するまでの過程を一緒に過ごし、サポートしてもらえる場所が有れば。。。
+            br
+            | ドットワンはそんな思いに応えた、ソーシャル応援プラットフォームです。
+            br
+            br
+            | まずは宣言して、サポーターを募り、プロジェクトを成功させ、世界に１を立てましょう。
+            br
+            | また、気になる宣言が有れば、ぜひサポーターになってみてください。
+            br
+      .row
+        .span12
+          img(src='/img/manga.jpg')
       ul.nav.nav-tabs
         li.active
           a(href='#') みんなの宣言
-      //
-         Example row of columns 
       .row
         for declaration in declaration_list
           .span4
@@ -66,7 +106,7 @@ html(lang='ja')
               .progress.progress-info.progress-striped
                 .bar(style='width: #{declaration.ratio}%;')
               h3 #{declaration.supporter_num}／#{declaration.target_num}人　
-              div(id="deadline_#{declaration.id}") 
+              div(id="deadline_#{declaration.id}")
               p
                 a.btn(href='/dec/#{declaration.id}') 詳細 »
               script(type="text/javascript")
@@ -78,6 +118,7 @@ html(lang='ja')
                     format: 'dhms'
                   });
                 });
+
       hr
       footer
         p © Company 2012
@@ -90,7 +131,9 @@ html(lang='ja')
       @import "/js/countdown/jquery.countdown.css";
     script(src="/js/countdown/jquery.countdown.min.js")
     script(src="/js/countdown/jquery.countdown-ja.js")
+
   //
+    script(src='js/jquery.js')
     script(src='js/bootstrap-transition.js')
     script(src='js/bootstrap-alert.js')
     script(src='js/bootstrap-modal.js')
@@ -103,7 +146,3 @@ html(lang='ja')
     script(src='js/bootstrap-collapse.js')
     script(src='js/bootstrap-carousel.js')
     script(src='js/bootstrap-typeahead.js')
-
-
-    script(type="text/javascript")
-

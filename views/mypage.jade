@@ -33,7 +33,7 @@ html(lang='jp')
             span.icon-bar
             span.icon-bar
             span.icon-bar
-          a.brand(href='#') dotOne
+          a.brand(href='/') dotOne
           .nav-collapse
             ul.nav
               li
@@ -41,10 +41,10 @@ html(lang='jp')
               li
                 a(href='/suc') サクセス一覧
               li
-                a(href='#contact') dot1について
+                a(href='/what') dot1について
             ul.nav.pull-right
               li.active
-                a(href='#') マイページ
+                a(href='/mypage') マイページ
           //
             /.nav-collapse 
     .container
@@ -62,7 +62,9 @@ html(lang='jp')
           p メッセージ
           p 設定
           p
-            a.btn.btn-large(href="/declare") 宣言する
+            a.btn.btn-large(href="/create_dec")
+              i.icon-pencil
+              宣言する
         .span10
           .row
             for dec_data in dec_list
@@ -70,9 +72,12 @@ html(lang='jp')
                 h2 #{dec_data.title}
                 .well
                   p #{dec_data.description}
-                  h3 成立済み
+                  - if (dec_data.status === 1)
+                    h3 成立済み
+                  - else
+                    h3 募集中
                   p
-                    a.btn.btn-primary(href='/ch/#{dec_data.id}') スタートする »
+                    a.btn.btn-primary(href='/ch/#{dec_data.id}') チャット面へ移動する »
           ul.nav.nav-tabs
             li.active
               a(href='#1', data-toggle='tab') 参加リスト

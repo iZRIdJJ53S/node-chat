@@ -1,0 +1,50 @@
+/* topPickUp */
+
+/*
+/* main_declaration
+*/
+.main_declaration{
+	background: #333 url(/img/nozomi.jpg) top center;
+	width: 100%;
+	height: 340px;
+	margin-bottom: 10px;
+}
+.main_declaration .info_box{
+	background-color:black;
+	opacity:0.2;	/*Firefox, Opera, Chrome, Safari*/
+	filter: alpha(opacity=20);	/*IE8以下*/
+	padding: 10px;
+	height: 320px;
+}
+.main_declaration > .info_box_txt{
+	padding: 10px;
+	height: 320px;
+	position: relative;
+	top: -340px;
+}
+.main_declaration h2, .main_declaration h3, .main_declaration p{
+	color: #fff;
+}
+
+/*
+/* login_box
+*/
+.login_box {
+	background: #FF1851;
+	height: 340px;
+	margin-bottom: 10px;
+}
+.login_box .what{
+}
+.login_box .auth{
+	text-align: center;
+	padding: 20px;
+}
+.login_box .auth .title{
+	color: #fff;
+	font-size: 1.5em;
+	margin-bottom: 10px;
+}
+.login_box .auth .twitter{
+	margin: 40px;
+}

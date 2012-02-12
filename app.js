@@ -344,40 +344,101 @@ app.get('/', function (req, res) {
           } else {
             res.redirect('/dec');
             return;
-            // 最新のhouseリストを取得
-            //client.query(
-            //  'SELECT id, name, url_id, image FROM '+TABLE_HOUSES+' ORDER BY created_at DESC LIMIT 10',
-            //  function(err, results, fields) {
-            //    if (err) {throw err;}
-            //    //logger.debug('app.get/,results: ');logger.debug(results);
-            //    if (results.length == 0) {
-            //      res.send('house error: no result');
-            //      return;
-            //    } else {
-
-            //      res.render('index-logedin', { 'layout': false,
-            //        'house_list': results, 'user_name': req.session.auth.name,
-            //        'user_image': req.session.auth.image,
-            //        'user_id': req.session.auth.user_id
-            //      });
-            //      return;
-
-            //    }
-            //  }
-            //);
-
           }
         }
       }
     );
 
   } else {
-    res.render('index', { 'layout': false});
-    return;
+
+    // 最新の宣言リストを取得
+    client.query(
+      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      '  , d.target_num, d.deadline, d.status, d.image'+
+      '  , COUNT( spt.declaration_id ) AS supporter_num'+
+      '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      ' FROM '+TABLE_DECLARATIONS+' AS d'+
+      ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+      ' WHERE status = ?'+
+      ' GROUP BY d.id'+
+      ' ORDER BY d.created_at DESC'+
+      ' LIMIT 10',
+      [FLG_SUPPORTER_WANT_STAT],
+      function(err, results, fields) {
+        if (err) {throw err;}
+        if (results.length === 0) {
+          res.send('declaration error: no result');
+          return;
+        } else {
+          var dec_top_data = {};
+          var dec_list = [];
+
+          var max_dec_num = results.length;
+          for (var i = 0; i < max_dec_num; i++) {
+            if (i === 0) {
+              dec_top_data = results[0];
+            } else {
+              var tmp_cnt = i - 1;
+              dec_list[tmp_cnt] = results[i];
+            }
+          };
+
+          res.render('top', { 'layout': false,
+            'dec_top_data': dec_top_data
+           ,'declaration_list': dec_list
+           //,'user_name': req.session.auth.name
+           //,'user_image': req.session.auth.image
+           //,'user_id': req.session.auth.user_id
+          });
+          return;
+
+        }
+      }
+    );
   }
 
 
 });
+
+
+// ----------------------------------------------
+// dotoneとは？(what)
+// ----------------------------------------------
+app.get('/what', function (req, res) {
+
+    client.query(
+      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      '  , d.target_num, d.deadline, d.status, d.image'+
+      '  , COUNT( spt.declaration_id ) AS supporter_num'+
+      '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      ' FROM '+TABLE_DECLARATIONS+' AS d'+
+      ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+      ' WHERE status = ?'+
+      ' GROUP BY d.id'+
+      ' ORDER BY d.created_at DESC'+
+      ' LIMIT 10',
+      [FLG_SUPPORTER_WANT_STAT],
+      function(err, results, fields) {
+        if (err) {throw err;}
+        if (results.length == 0) {
+          res.send('declaration error: no result');
+          return;
+        } else {
+
+          res.render('what', { 'layout': false,
+            'declaration_list': results
+           //,'user_name': req.session.auth.name
+           //,'user_image': req.session.auth.image
+           //,'user_id': req.session.auth.user_id
+          });
+          return;
+
+        }
+      }
+    );
+
+});
+
 
 // ----------------------------------------------
 // 宣言一覧(declaration)
@@ -395,7 +456,7 @@ app.get('/dec', function (req, res) {
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
       ' FROM '+TABLE_DECLARATIONS+' AS d'+
-      ' INNER JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+      ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
       ' WHERE status = ?'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
@@ -538,9 +599,10 @@ app.get('/mypage', function (req, res) {
 
   // 自分が宣言しているリストを取得
   client.query(
-    'SELECT id, created_at, title, description, status, image'+
-    ' FROM '+TABLE_DECLARATIONS+
+    'SELECT d.id, d.created_at, d.title, d.description, d.status, d.image'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
     ' WHERE user_id = ?'+
+    ' ORDER BY created_at DESC'+
     ' LIMIT 3',
     [req.session.auth.user_id],
     function(err, results, fields) {
@@ -657,6 +719,40 @@ app.get('/regist', function (req, res) {
 
 
 // --------------------------------------------------------
+// 宣言するのフォーム
+// --------------------------------------------------------
+app.get('/create_dec', function (req, res) {
+
+  if (!req.session || !req.session.auth) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  // パラメータが正しいかDB に聞いてみる
+  client.query(
+    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+    [req.session.auth.user_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('user_id error: no result');
+        return;
+      } else {
+        res.render('create_dec', { 'layout': false,
+          'user_data': results
+        });
+        return;
+      }
+    }
+  );
+});
+
+
+
+
+
+// --------------------------------------------------------
 // dec detail (宣言詳細)
 // --------------------------------------------------------
 app.get('/dec/:id', function (req, res) {
@@ -666,14 +762,14 @@ app.get('/dec/:id', function (req, res) {
 
   // 正しいかDB に確認
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.description, d.detail, d.user_id'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( s.declaration_id ) AS supporter_num'+
     '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
     '  , u.name AS user_name, u.image AS user_image'+
     ' FROM '+TABLE_DECLARATIONS+' AS d'+
-    ' INNER JOIN '+TABLE_SUPPORTERS+' AS s ON d.id = s.declaration_id'+
-    ' INNER JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS s ON d.id = s.declaration_id'+
+    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
     ' WHERE d.id = ?'+
     ' GROUP BY d.id'+
     ' LIMIT 1',
@@ -934,6 +1030,64 @@ app.post('/firstset', function (req, res) {
     }
   );
 
+});
+
+/**
+ * --------------------------------------------------------
+ * POST: 宣言するの設定
+ * --------------------------------------------------------
+ */
+app.post('/regist_dec', function (req, res) {
+  // ログインチェック
+  if (!req.session || !req.session.auth) {
+    res.redirect('/');
+    return;
+  }
+
+  // リクエストチェック
+  logger.debug('----- app.post/regist_dec: ');logger.info(req.body);
+  var title = '';
+  var description = '';
+  var detail = '';
+  var target_num = 0;
+  var deadline = '';
+  var user_id = req.session.auth.user_id;
+
+  // validate
+  try {
+    validator(req.body.title).notEmpty().len(1, 250);
+    validator(req.body.description).notEmpty();
+    validator(req.body.detail).notEmpty();
+    validator(req.body.target_num).isInt();
+    validator(req.body.deadline).isDate();
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.redirect('/create_dec');
+    return;
+  }
+
+  title = req.body.title;
+  description = req.body.description;
+  detail = req.body.detail;
+  target_num = req.body.target_num;
+  deadline = req.body.deadline;
+
+  client.query(
+    'INSERT INTO '+TABLE_DECLARATIONS+' ('+
+    '  created_at, title, description, detail, user_id, target_num, deadline'+
+    '  , status, image'+
+    ') VALUES ('+
+    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?'+
+    ')',
+    [title, description, detail, user_id, target_num, deadline
+      , 2, ''
+    ],
+    function(err) {
+      if (err) {throw err;}
+      res.redirect('/mypage');
+      return;
+    }
+  );
 });
 
 

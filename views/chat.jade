@@ -3,7 +3,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
   //
      head 
   head
-    title syaberi-house
+    title dot1
     //
        meta 
     meta(charset='UTF-8')
@@ -56,8 +56,8 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
         }
 
 
-        // サポーターだったらチャット有効。違ったら無効
-        if (#{is_supporter}) {
+        // サポーターだったらチャット有効
+        if (#{is_supporter} || #{is_owner}) {
           // 特に何も無し
         } else {
           // chat 関連のエリアを無効
@@ -104,7 +104,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
   //
      body 
   body.chat
-    #container
+    #container-old
       //
          container 
 
@@ -144,7 +144,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
           //
              content-wrapper 
           section#content-wrapper
-            .container
+            .container-old
               //
                  container 
               .overlay
@@ -161,6 +161,12 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                        title 
                     h1 #{house_name}
                     p #{house_desc}
+                    
+                    #send_mail
+                                  a(class="btn btn-large btn-success", data-toggle="modal", href="#send_mail_win")
+                                    i(class="icon-envelope icon-white")
+                                    サポーター全員に通知メールを送る
+                    
                   //
                      /title 
                   .member-face
@@ -211,11 +217,6 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                                   //#tmp_message_area
                                   label(for='submit_1')
                                     input#submit_1.submitBtn(type='button', value='投稿')
-                            tr
-                              td
-                                #send_mail
-                                  a(class="btn btn-large btn-success", data-toggle="modal", href="#send_mail_win")
-                                    i(class="icon-envelope icon-white") メールを送る
                         form
                     //
                        /input
