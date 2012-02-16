@@ -260,6 +260,7 @@ var proxy_options = {
     'rank-life.com': '127.0.0.1:8080' // apache
    ,'www.rank-life.com': '127.0.0.1:8080' // apache
    ,'live.rank-life.com': '127.0.0.1:8081' // node.js
+   ,'sh.rank-life.com': '127.0.0.1:8082' // node.js
   }
 };
 var httpProxyServer = httpProxy.createServer(proxy_options);
