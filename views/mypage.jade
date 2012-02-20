@@ -37,7 +37,7 @@ html(lang='jp')
           .nav-collapse
             ul.nav
               li
-                a(href='/dec') 宣言一覧
+                a(href='/dec') イベント一覧
               li
                 a(href='/suc') サクセス一覧
               li
@@ -64,7 +64,7 @@ html(lang='jp')
           p
             a.btn.btn-large(href="/create_dec")
               i.icon-pencil
-              宣言する
+              新しいイベント
         .span10
           .row
             for dec_data in dec_list
@@ -77,7 +77,7 @@ html(lang='jp')
                   - else
                     h3 募集中
                   p
-                    a.btn.btn-primary(href='/ch/#{dec_data.id}') チャット面へ移動する »
+                    a.btn.btn-primary(href='/ch/#{dec_data.id}') 会場へ移動する »
           ul.nav.nav-tabs
             li.active
               a(href='#1', data-toggle='tab') 参加リスト
@@ -90,21 +90,21 @@ html(lang='jp')
               .row
                 .span10
                   blockquote
-                    p 成立済みの宣言
+                    p 進行中のイベント
                 for comp_data in spt_comp_list
-                  .span5
+                  .span10
                     h2 #{comp_data.title}
                     .well
                       p #{comp_data.description}
-                      h3 成立済み
+                      h3 進行中
                       p
-                        a.btn.btn-primary(href='/ch/#{comp_data.declaration_id}') 見に行く »
+                        a.btn.btn-primary(href='/ch/#{comp_data.declaration_id}') 会場へ移動する »
             .row
               .span10
                 blockquote
-                  p 募集中の宣言
+                  p 参加受付中のイベント
               for want_data in spt_want_list
-                .span5
+                .span10
                   h2 #{want_data.title}
                   .well
                     p #{want_data.description}
@@ -114,26 +114,33 @@ html(lang='jp')
                     div(id="deadline_#{want_data.declaration_id}")
                     p
                       a.btn(href='/dec/#{want_data.declaration_id}') 詳細 »
+                    p
+                      a.btn.btn-primary(href='/ch/#{want_data.declaration_id}') 会場へ移動する »
                     script(type="text/javascript")
                       $().ready(function(){
                         var d_obj = new Date("#{want_data.deadline}");
-                        $('#deadline_'+#{want_data.declaration_id}).countdown({
-                          until: d_obj,
-                          layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
-                          format: 'dhms'
-                        });
+                        var now_obj = new Date();
+                        if (now_obj < d_obj) {
+                          $('#deadline_'+#{want_data.declaration_id}).countdown({
+                            until: d_obj,
+                            layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+                            format: 'dhms'
+                          });
+                        } else {
+                          // 終了
+                        }
                       });
 
             .row
               .span10
                 blockquote
-                  p 挫折した宣言
+                  p 終了したイベント
               for fail_data in spt_fail_list
-                .span5
+                .span10
                   h2 #{fail_data.title}
                   .well
                     p #{fail_data.description}
-                    h3 この宣言は挫折しました
+                    h3 このイベントは終了しました
                     p
                       a.btn(href='/dec/#{fail_data.declaration_id}') 詳細 »
     hr

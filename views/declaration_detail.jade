@@ -37,7 +37,7 @@ html(lang='ja')
           .nav-collapse
             ul.nav
               li.active
-                a(href='/dec') 宣言一覧
+                a(href='/dec') イベント一覧
               li
                 a(href='/suc') サクセス一覧
               li
@@ -53,7 +53,7 @@ html(lang='ja')
           a(href='/') Home
           span.divider /
         li
-          a(href='/dec') 宣言一覧
+          a(href='/dec') イベント一覧
           span.divider /
         li.active
           | #{dec_detail.title}
@@ -69,6 +69,8 @@ html(lang='ja')
           .well
             p
               a.btn.btn-large.btn-success(data-toggle="modal", href='#join') 参加する
+            p
+              このイベントに参加しよう
             .progress.progress-info.progress-striped
               .bar(style='width: #{dec_detail.ratio}%;')
             h3
@@ -79,7 +81,7 @@ html(lang='ja')
         .span8
           ul.nav.nav-tabs
             li.active
-              a(href='#1', data-toggle='tab') 宣言内容
+              a(href='#1', data-toggle='tab') イベント内容
             li
               a(href='#2', data-toggle='tab') 近況報告
             li
@@ -88,11 +90,12 @@ html(lang='ja')
              tab-content tab-pane id=1 
           .tab-content
             #1.tab-pane.active
-              p #{dec_detail.detail}
+              p !{dec_detail.detail}
               .well
                 p
                   a.btn.btn-large.btn-success(data-toggle="modal", href='#join') 参加する
-                p #{dec_detail.title}
+                p
+                  このイベントに参加しよう
                 .progress.progress-info.progress-striped
                   .bar(style='width: #{dec_detail.ratio}%;')
                 h3
@@ -111,7 +114,7 @@ html(lang='ja')
     #join.modal.hide.fade(style="display:none;")
       .modal-header
         a.close(data-dismiss='modal') ×
-        h3 参加確認
+        h3 確認
       .modal-body
         p(id="mdl_pbody") #{dec_detail.title} に参加しますか？
       #mdl_footer.modal-footer
@@ -144,17 +147,22 @@ html(lang='ja')
   script(type="text/javascript")
     $().ready(function(){
       var d_obj = new Date("#{dec_detail.deadline}");
-      $('#deadline_'+#{dec_detail.id}).countdown({
-        until: d_obj,
-        layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
-        format: 'dhms'
-      });
+      var now_obj = new Date();
+      if (now_obj < d_obj) {
+        $('#deadline_'+#{dec_detail.id}).countdown({
+          until: d_obj,
+          layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+          format: 'dhms'
+        });
 
-      $('#deadline_foot_'+#{dec_detail.id}).countdown({
-        until: d_obj,
-        layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
-        format: 'dhms'
-      });
+        $('#deadline_foot_'+#{dec_detail.id}).countdown({
+          until: d_obj,
+          layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+          format: 'dhms'
+        });
+      } else {
+        // 終了
+      }
 
     });
 

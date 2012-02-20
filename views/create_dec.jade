@@ -2,7 +2,7 @@
 html(lang='jp')
   head
     meta(charset='utf-8')
-    title dotOne 宣言する
+    title dotOne イベントする
     meta(name='description', content='')
     meta(name='author', content='')
     //
@@ -37,7 +37,7 @@ html(lang='jp')
           .nav-collapse
             ul.nav
               li
-                a(href='/dec') 宣言一覧
+                a(href='/dec') イベント一覧
               li
                 a(href='/suc') サクセス一覧
               li
@@ -56,13 +56,13 @@ html(lang='jp')
           a(href='/mypage') マイページ
           span.divider /
         li
-          宣言する
+          イベント作成
       .row
         .span10
           .row
             form.form-horizontal(id="form-firstset", method="post", action="/regist_dec")
               div.control-group
-                label.control-label(for="title") タイトル
+                label.control-label(for="title") イベント名
                 div.controls
                   div.input-prepend
                     span.add-on
@@ -70,7 +70,7 @@ html(lang='jp')
                     input.input-xlarge(type="text", id="title", name="title")
 
               div.control-group
-                label.control-label(for="description") 概要
+                label.control-label(for="description") 内容
                 div.controls
                   div.input-prepend
                     span.add-on
@@ -78,7 +78,7 @@ html(lang='jp')
                     textarea.input-xlarge(id="description", name="description")
 
               div.control-group
-                label.control-label(for="detail") 詳細な内容
+                label.control-label(for="detail") 詳細な説明
                 div.controls
                   div.input-prepend
                     span.add-on
@@ -86,7 +86,7 @@ html(lang='jp')
                     textarea.input-xlarge(id="detail", name="detail")
 
               div.control-group
-                label.control-label(for="target_num") 目標人数
+                label.control-label(for="target_num") 目標数
                 div.controls
                   div.input-prepend
                     span.add-on
@@ -94,7 +94,7 @@ html(lang='jp')
                     input.input-xlarge(type="text", id="target_num", name="target_num")
 
               div.control-group
-                label.control-label(for="deadline") 人数を集めるまでの期限
+                label.control-label(for="deadline") スタート日
                 div.controls
                   div.input-prepend
                     span.add-on
@@ -102,7 +102,7 @@ html(lang='jp')
                     input.input-xlarge(type="text", id="deadline", name="deadline")
 
               div.form-actions
-                button(type="submit", class="btn btn-primary") 宣言する
+                button(type="submit", class="btn btn-primary") 作成する
                 button(type="reset", class="btn") キャンセル
     hr
     footer

@@ -2,7 +2,7 @@
 html(lang='ja')
   head
     meta(charset='utf-8')
-    title dotOne 宣言一覧
+    title dotOne イベント一覧
     meta(name='description', content='')
     meta(name='author', content='')
     //
@@ -37,7 +37,7 @@ html(lang='ja')
           .nav-collapse
             ul.nav
               li.active
-                a(href='/dec') 宣言一覧
+                a(href='/dec') イベント一覧
               li
                 a(href='/suc') サクセス一覧
               li
@@ -51,33 +51,39 @@ html(lang='ja')
       //
          Main hero unit for a primary marketing message or call to action 
       .hero-unit
-        h1 宣言中の活動
+        h1 参加受付中のイベント
       ul.nav.nav-tabs
         li.active
-          a(href='#') みんなの宣言
+          a(href='#') みんなのイベント
       //
          Example row of columns 
-      .row
-        for declaration in declaration_list
-          .span4
-            h2 #{declaration.title}
-            .well
-              p #{declaration.description}
-              .progress.progress-info.progress-striped
-                .bar(style='width: #{declaration.ratio}%;')
-              h3 #{declaration.supporter_num}／#{declaration.target_num}人　
-              div(id="deadline_#{declaration.id}") 
-              p
-                a.btn(href='/dec/#{declaration.id}') 詳細 »
-              script(type="text/javascript")
-                $().ready(function(){
-                  var d_obj = new Date("#{declaration.deadline}");
+      for declaration in declaration_list
+        .spa12
+          h2 #{declaration.title}
+          .well
+            p #{declaration.description}
+            .progress.progress-info.progress-striped
+              .bar(style='width: #{declaration.ratio}%;')
+            h3 #{declaration.supporter_num}／#{declaration.target_num}人　
+            div(id="deadline_#{declaration.id}") 
+            p
+              a.btn(href='/dec/#{declaration.id}') 詳細 »
+            script(type="text/javascript")
+              $().ready(function(){
+                var d_obj = new Date("#{declaration.deadline}");
+                var now_obj = new Date();
+                if (now_obj < d_obj) {
                   $('#deadline_'+#{declaration.id}).countdown({
                     until: d_obj,
                     layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
-                    format: 'dhms'
+                    format: 'dhms',
+                    expiryText: 'end'
                   });
-                });
+                } else {
+                  //$('#deadline_'+#{declaration.id}).text('終了しています');
+                }
+              });
+
       hr
       footer
         p © Company 2012

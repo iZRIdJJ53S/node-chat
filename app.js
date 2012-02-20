@@ -781,6 +781,9 @@ app.get('/dec/:id', function (req, res) {
         res.send('dec_id error: no result');
         return;
       } else {
+        var detail_txt = results[0].detail;
+        detail_txt = detail_txt.replace(/\n/g, '<br />');
+        results[0].detail = detail_txt;
         res.render('declaration_detail', { 'layout': false,
           'dec_detail': results[0]
         });
@@ -1115,7 +1118,7 @@ app.post('/join-commit', function (req, res) {
     return;
   }
 
-  // すでに参加済みかどうかチェック
+  // すでに投票済みかどうかチェック
   client.query(
     'SELECT id '+
     ' FROM '+TABLE_SUPPORTERS+
@@ -1133,13 +1136,13 @@ app.post('/join-commit', function (req, res) {
           [req.body.id, req.session.auth.user_id],
           function(err) {
             if (err) {throw err;}
-            res.json({text: '参加しました', cnt_up: true}, 200);
+            res.json({text: '投票しました', cnt_up: true}, 200);
             return;
           }
         );
 
       } else {
-        res.json({text: '既に参加済みです'}, 200);
+        res.json({text: '既に投票済みです'}, 200);
         return;
       }
     }
