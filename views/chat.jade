@@ -39,11 +39,15 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
     script(src='/js/audience.js?v=1.0')
     script(src='/js/chat.js?v=1.0')
     script(src='/js/timer.js?v=1.0')
+    script(src='/js/player.js?v=1.0')
     script(src='/js/user.js?v=1.0')
     script(src='/js/users.js?v=1.0')
     script(src='/js/filedrop-script.js?v=1.0')
     script(src='/js/jquery.timeago.js?v=1.0')
+    script(src='//www.google.com/jsapi')
     script
+      google.load("swfobject", "2.1");
+
       $(document).ready(function() {
         $('body.chat').css('background-image', 'url(#{house_image})');
         $('#message1').autosize();
@@ -78,6 +82,10 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
           audience.init({});
           //timer.init();
 
+          player.init({
+            //element: $("#myytplayer").live(get(0));
+          });
+
           users.init({
 
           });
@@ -100,6 +108,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
           console.log( 'house ready: true' );
         });
       }
+
 
   //
      body 
@@ -225,6 +234,17 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                       //
                          view 
                       #disparea
+                      #ytapiplayer You need Flash player 8+ and JavaScript enabled to view this video.
+                      #player-ctrl
+                        a(href="javascript:void(0);", id="video-start") start
+                        |
+                        a(href="javascript:void(0);", id="video-play") Play
+                        |
+                        a(href="javascript:void(0);", id="video-pause") Pause
+                        |
+                        a(href="javascript:void(0);", id="video-stop") Stop
+                        |
+
                     //
                        /view 
                   //
@@ -261,7 +281,15 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
 
     script(src='/js/bootstrap.min.js')
     script
-      onHouseReady();
+      var params = { allowScriptAccess: "always", bgcolor: "#cccccc" };
+      var atts = { id: "myytplayer" };
+      swfobject.embedSWF("http://gdata.youtube.com/apiplayer?key=AI39si7uG-sNXZtXIClnUvP5HArP1LfH60j0EfKc-8pLVRSOauN-NwLbVkxOZ2v3p6v_Cg1_iZf2D2KcM5ih2Gd5VFDH90D7nA&enablejsapi=1&playerapiid=ytplayer", "ytapiplayer", "500", "300", "8", null, null, params, atts);
+
+      console.log('youtube-ok');
+
+      function onYouTubePlayerReady(playerId) {
+        onHouseReady();
+      }
 
       $('#send_mail_ok').click(function() {
         $.ajax({
@@ -275,3 +303,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
         });
 
       });
+
+
+
+

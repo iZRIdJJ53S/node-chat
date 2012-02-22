@@ -61,6 +61,9 @@ html(lang='ja')
         .spa12
           h2 #{declaration.title}
           .well
+            p
+              img(src='#{declaration.user_image}')
+              span by #{declaration.user_name}
             p #{declaration.description}
             .progress.progress-info.progress-striped
               .bar(style='width: #{declaration.ratio}%;')
@@ -75,7 +78,7 @@ html(lang='ja')
                 if (now_obj < d_obj) {
                   $('#deadline_'+#{declaration.id}).countdown({
                     until: d_obj,
-                    layout: '残り {d<}{dn} 日 と {d>}{h<}{hn} 時間 {h>}{m<}{mnn} 分 {m>}{snn} 秒',
+                    layout: '残り {d<}{dn}日と {d>}{h<}{hn}時間 {h>}{m<}{mnn}分 {m>}{snn}秒',
                     format: 'dhms',
                     expiryText: 'end'
                   });
@@ -92,7 +95,7 @@ html(lang='ja')
     //
        Placed at the end of the document so the pages load faster 
     script(src='/socket.io/socket.io.js')
-    style(type="text/css")
+    //style(type="text/css")
       @import "/js/countdown/jquery.countdown.css";
     script(src="/js/countdown/jquery.countdown.min.js")
     script(src="/js/countdown/jquery.countdown-ja.js")

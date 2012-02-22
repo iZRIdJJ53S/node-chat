@@ -117,6 +117,18 @@ var house = {
     this.socket.on('click-star', function(data) {
       $.publish('chat:click-star', data);
     });
+
+    this.socket.on('video-start', function(data) {
+      $.publish('video:forward', data);
+    });
+
+    this.socket.on('video-play', function(data) {
+      $.publish('video:play', data);
+    });
+
+    this.socket.on('video-pause', function(data) {
+      $.publish('video:pause', data);
+    });
   },
 
   _bindSubscribers: function () {
@@ -148,6 +160,20 @@ var house = {
       that.socket.emit('click-star',
         message.userName, message.userId, message.click_id, message.user_id
       );
+    });
+
+    $.subscribe('video:start-c2s', function(event, data) {
+      that.socket.emit('video-start',
+        data.video_id, data.seek_time
+      );
+    });
+
+    $.subscribe('video:play-c2s', function(event, data) {
+      that.socket.emit('video-play');
+    });
+
+    $.subscribe('video:pause-c2s', function(event, data) {
+      that.socket.emit('video-pause');
     });
   }
 };

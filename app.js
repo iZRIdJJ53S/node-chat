@@ -358,9 +358,11 @@ app.get('/', function (req, res) {
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      '  , u.name AS user_name, u.image AS user_image'+
       ' FROM '+TABLE_DECLARATIONS+' AS d'+
       ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
-      ' WHERE status = ?'+
+      ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+      ' WHERE d.status = ?'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
       ' LIMIT 10',
@@ -456,9 +458,12 @@ app.get('/dec', function (req, res) {
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+      '  , u.name AS user_name, u.image AS user_image'+
       ' FROM '+TABLE_DECLARATIONS+' AS d'+
       ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
-      ' WHERE status = ?'+
+      ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+      ' WHERE d.status = ?'+
+      //' WHERE d.status = ? AND d.created_at > NOW()'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
       ' LIMIT 10',
@@ -793,6 +798,8 @@ app.get('/dec/:id', function (req, res) {
   );
 
 });
+
+
 
 // --------------------------------------------------------
 // chat_room
@@ -1601,6 +1608,86 @@ var house = io
         // 自分自身以外の全員へデータ送る
         socket.broadcast.to(resArray[0]).emit('user-typing', {
           'user_id': user_id, 'userName': userName
+        });
+      })
+    });
+
+    /**
+     * ----------------------------------------------------
+     * video-startの場合
+     * ----------------------------------------------------
+     */
+    socket.on('video-start', function (video_id, seek_time) {
+      socket.get('house_data', function(err, house_data) {
+        if (err) {return;}
+        var resArray = [];
+        // house_data を分解
+        if (house_data) {
+          resArray = house_data.split('___');
+        } else {
+          return;
+        }
+
+        // 自分自身だけに送る
+        socket.to(resArray[0]).emit('video-start', {
+          'video_id': video_id, 'seek_time': seek_time
+        });
+
+        // 自分自身以外の全員へデータ送る
+        socket.broadcast.to(resArray[0]).emit('video-start', {
+          'video_id': video_id, 'seek_time': seek_time
+        });
+      })
+    });
+
+    /**
+     * ----------------------------------------------------
+     * video-playの場合
+     * ----------------------------------------------------
+     */
+    socket.on('video-play', function () {
+      socket.get('house_data', function(err, house_data) {
+        if (err) {return;}
+        var resArray = [];
+        // house_data を分解
+        if (house_data) {
+          resArray = house_data.split('___');
+        } else {
+          return;
+        }
+
+        // 自分自身だけに送る
+        socket.to(resArray[0]).emit('video-play', {
+        });
+
+        // 自分自身以外の全員へデータ送る
+        socket.broadcast.to(resArray[0]).emit('video-play', {
+        });
+      })
+    });
+
+    /**
+     * ----------------------------------------------------
+     * video-pauseの場合
+     * ----------------------------------------------------
+     */
+    socket.on('video-pause', function () {
+      socket.get('house_data', function(err, house_data) {
+        if (err) {return;}
+        var resArray = [];
+        // house_data を分解
+        if (house_data) {
+          resArray = house_data.split('___');
+        } else {
+          return;
+        }
+
+        // 自分自身だけに送る
+        socket.to(resArray[0]).emit('video-pause', {
+        });
+
+        // 自分自身以外の全員へデータ送る
+        socket.broadcast.to(resArray[0]).emit('video-pause', {
         });
       })
     });
