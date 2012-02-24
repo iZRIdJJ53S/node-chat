@@ -27,7 +27,7 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
         padding-top: 60px;
         padding-bottom: 40px;
       }
-    link(href="/css/bootstrap.min.responsive", rel="stylesheet")
+    link(href="/css/bootstrap.min.responsive.css", rel="stylesheet")
     script(type='text/javascript', src='/js/iscroll.js')
     script(src='/socket.io/socket.io.js')
     script(src='/js/jquery-1.7.1.min.js')
@@ -81,10 +81,6 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
 
           audience.init({});
           //timer.init();
-
-          player.init({
-            //element: $("#myytplayer").live(get(0));
-          });
 
           users.init({
 
@@ -230,20 +226,10 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
                     //
                        /input
                     .title 共有VIEW
-                    .view
+                    #view_frame(class="view")
                       //
                          view 
                       #disparea
-                      #ytapiplayer You need Flash player 8+ and JavaScript enabled to view this video.
-                      #player-ctrl
-                        a(href="javascript:void(0);", id="video-start") start
-                        |
-                        a(href="javascript:void(0);", id="video-play") Play
-                        |
-                        a(href="javascript:void(0);", id="video-pause") Pause
-                        |
-                        a(href="javascript:void(0);", id="video-stop") Stop
-                        |
 
                     //
                        /view 
@@ -281,15 +267,13 @@ html(lang='ja', xmlns:og='http://ogp.me/ns#', xmlns:fb='http://www.facebook.com/
 
     script(src='/js/bootstrap.min.js')
     script
-      var params = { allowScriptAccess: "always", bgcolor: "#cccccc" };
-      var atts = { id: "myytplayer" };
-      swfobject.embedSWF("http://gdata.youtube.com/apiplayer?key=AI39si7uG-sNXZtXIClnUvP5HArP1LfH60j0EfKc-8pLVRSOauN-NwLbVkxOZ2v3p6v_Cg1_iZf2D2KcM5ih2Gd5VFDH90D7nA&enablejsapi=1&playerapiid=ytplayer", "ytapiplayer", "500", "300", "8", null, null, params, atts);
-
-      console.log('youtube-ok');
+      onHouseReady();
 
       function onYouTubePlayerReady(playerId) {
-        onHouseReady();
+        player.init({
+        });
       }
+
 
       $('#send_mail_ok').click(function() {
         $.ajax({

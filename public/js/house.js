@@ -32,8 +32,6 @@ var house = {
     var that = this;
 
     this.socket.on( 'chat message', function ( message ) {
-      console.log('message-received: ');
-      console.log(message);
       // user_image があったらiframeエリアへ描画する為
       // 必要なパラメータセット
       if (message.image_src) {
@@ -57,7 +55,7 @@ var house = {
 
     // オーディエンス
     this.socket.on('audience join', function(data) {
-      console.log('audience join----');console.log(data);
+      //console.log('audience join----');console.log(data);
       if ( data.session_id == that.socket.socket.sessionid ) {
         data.currentUserId = data.session_id;
         //data.currentUser = true;
@@ -135,8 +133,8 @@ var house = {
     var that = this;
 
     $.subscribe('user:message-sent', function(event, message) {
-      console.log('subscribe-ok: user:message-sent '+ message.userName);
-      console.log('that.socket.socket.sessionid: '+that.socket.socket.sessionid);
+      //console.log('subscribe-ok: user:message-sent '+ message.userName);
+      //console.log('that.socket.socket.sessionid: '+that.socket.socket.sessionid);
       that.socket.emit('chat message',
         message.user_id, message.userName, message.user_image,
         message.userMessage, message.iframeURL, message.image_src,

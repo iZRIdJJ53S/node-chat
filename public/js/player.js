@@ -28,10 +28,14 @@ var player = {
 
     startElm.click(function (event) {
       //player.loadId('hGqaPJulQHA');
+      // video_id を取得する
+      var play_vid = $('#play_video_id').attr('value');
+      if (!play_vid) {return false;}
 
       // サーバーへpush して全クライアントへ配信してもらう
       $.publish('video:start-c2s', {
-        'video_id': 'hGqaPJulQHA', 'seek_time': 0
+        'video_id': play_vid, 'seek_time': 0
+        //'video_id': 'lkHlnWFnA0c', 'seek_time': 0
       });
     });
 

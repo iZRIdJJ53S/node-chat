@@ -32,7 +32,7 @@ var audience = {
       zIndex: -Math.floor(bottom*100)
     });
 
-    console.log(divUser);
+    //console.log(divUser);
     this.audienceSpace.append( divUser );
   },
 
@@ -45,7 +45,7 @@ var audience = {
       var current_flg = false;
       var max_loop = user.audience_members.length;
       for (var i = 0; i < max_loop; i++) {
-console.log('audi-sessionid---'+user.audience_members[i].session_id);
+        //console.log('audi-sessionid---'+user.audience_members[i].session_id);
         if (user.currentUserId == user.audience_members[i].session_id) {
           current_flg = true;
         } else {

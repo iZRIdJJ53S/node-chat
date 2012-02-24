@@ -273,10 +273,44 @@ var chat = {
       // 動画ID を抜き出す
       var youtube_vid = iframeURL.match(/[&\?]v=([\d\w]+)/);
       if (youtube_vid[1]) {
-        var iframe_tag = '<iframe width="500" height="300" src="';
-        iframe_tag += 'http://www.youtube.com/embed/'+youtube_vid[1];
-        iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
-        this.iframeArea.prepend(iframe_tag);
+        // 初期化
+        $('#myytplayer').empty();
+        $('#ytapiplayer').empty();
+        $('#player-ctrl').empty();
+        $('#play_video_id').empty();
+
+        // player-ctrl の部品組立
+        var video_start = $('<a href="javascript:void(0);" id="video-start">Start</a>');
+        var video_play  = $('<a href="javascript:void(0);" id="video-play">Play</a>');
+        var video_pause = $('<a href="javascript:void(0);" id="video-pause">Pause</a>');
+
+        // player-ctrl の親要素
+        var player_ctrl = $('<div id="player-ctrl">');
+        // 部品をappend していく
+        player_ctrl.append(video_start);
+        player_ctrl.append(video_play);
+        player_ctrl.append(video_pause);
+
+        $('#view_frame').append($('<div id="ytapiplayer">'));
+        $('#view_frame').append(player_ctrl);
+
+        var params = { allowScriptAccess: "always", bgcolor: "#cccccc" };
+        var atts = { id: "myytplayer" };
+        var youtube_api = 'http://gdata.youtube.com/apiplayer';
+        //youtube_api += 'key=AI39si7uG-sNXZtXIClnUvP5HArP1LfH60j0EfKc-8pLVRSOauN-NwLbVkxOZ2v3p6v_Cg1_iZf2D2KcM5ih2Gd5VFDH90D7nA';
+        youtube_api += '?enablejsapi=1&playerapiid=ytplayer';
+
+        //var youtube_api = 'http://www.youtube.com/v/'+youtube_vid[1]
+        //youtube_api += '?enablejsapi=1&playerapiid=ytplayer';
+        swfobject.embedSWF(youtube_api, "ytapiplayer", "500", "300", "8", null, null, params, atts);
+
+        // videoid を書きだす
+        $('#view_frame').append($('<input type="hidden" id="play_video_id" value="'+youtube_vid[1]+'">'));
+
+        //var iframe_tag = '<iframe width="500" height="300" src="';
+        //iframe_tag += 'http://www.youtube.com/embed/'+youtube_vid[1];
+        //iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
+        //this.iframeArea.prepend(iframe_tag);
       }
 
     // nicovideo 有り
