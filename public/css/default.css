@@ -1,0 +1,435 @@
+/* 
+	SYABERI-HOUSE Layout Stylesheet
+	v0.1
+	Last Updated: 2012-2-21
+	Author: Kunshiro Murayama
+*/
+
+/*
+	reset css
+*/
+html{
+    color:#000;background:#FFF;
+}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,
+pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{
+    margin:0;padding:0;
+}
+table{
+    border-collapse:collapse;border-spacing:0;
+}
+fieldset,img{ border:0; }
+address,caption,cite,code,den,em,strong,th,var{
+    font-style:normal;font-weight:normal;
+}
+li { list-style:none; } caption,th{ text-align:left; }
+h1,h2,h3,h4,h5,h6{
+    font-size:100%;font-weight:normal;
+}
+q:before,q:after{ content:''; }
+abbr,acronym{ border:0;font-variant:normal; }
+sup{ vertical-align:text-top; }
+sub{ vertical-align:text-bottom; }
+input,text area,select{ font-family:inherit;font-size:inherit;font-weight:inherit; }
+input,text area,select{ *font-size:100%; }
+legend{ color:#000; }
+a:link,visited,hover,active{
+	text-decoration: none;
+}
+a:link{color: #222;}
+a:visited{color: #222;}
+a:hover{color: #00a0c6;}
+a:active{color: #00a0c6;}
+
+/*
+	style
+*/
+.clear{clear:both}
+
+.header{
+	width: 100%;
+	border-bottom: 3px #222 solid;
+}
+	.header-content{
+		padding: 10px;
+	}
+		.header .logo{
+			float: left;
+			background: url('../img/logo.png') left top no-repeat;
+			width: 185px;
+			height: 30px;
+		}
+		.header .menu{
+			float: left;
+		}
+			.header .menu ul{
+				margin: 3px 10px 0 10px;
+			}
+				.menu ul li{
+					float: left;
+					margin-left: 15px;
+					font-size: 22px;
+					font-weight: bold;
+				}
+		.header .menu-right{
+			float: right;
+		}
+			.header .menu-right ul{
+				margin: 3px 10px 0 10px;
+			}
+				.menu-right ul li{
+					float: left;
+					margin-right: 15px;
+					font-size: 22px;
+					font-weight: bold;
+				}
+				.menu-right ul li.icon img{
+					width: 24px;
+					margin: 3px;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					position: relative;
+					top: -5px;
+				}
+		.header .on{
+			color: #00a0c6
+		}
+		
+
+.main{
+	text-align: center;
+}
+	.main .main-content{
+		width: 950px;
+	    margin: 0 auto;
+    	text-align: left;
+	}
+		.main-content .main-img{
+			padding-top: 15px;
+		    margin-bottom: 15px;
+		}
+		.main .main-content .left-content{
+			float: left;
+			width: 580px;
+			margin-bottom: 10px;
+			padding-right: 20px;
+		}
+			.left-content .details{
+				border: 1px #DEDEDE solid;
+				background: #FFFFFF;
+				margin-bottom: 16px;
+				padding: 20px;
+			}
+			.left-content .details .details-title{
+				font-size: 24px;
+				border-bottom: 1px #DFDFDF solid;
+				padding-bottom: 3px;
+				margin-bottom: 10px;
+			}
+			.left-content .details .details-body{
+				margin-bottom: 25px;
+			}
+		.main .main-content h2.title{
+			font-size: 24px;
+			margin-bottom: 10px;
+			text-shadow: 0 -2px 1px #FFF,-2px 0 1px #FFF,2px 0 1px #FFF,0 2px 1px #FFF;
+			font-weight: bold;
+		}
+		.main .main-content h2.title-sub{
+			font-size: 22px;
+			margin-bottom: 10px;
+			color: #666;
+			text-align: right;
+			text-shadow: 0 -2px 1px #FFF,-2px 0 1px #FFF,2px 0 1px #FFF,0 2px 1px #FFF;
+			font-weight: bold;
+		}
+		.main .main-content ul li{
+		}
+		.main .main-content .ticket-wrapper{
+			border: 1px #DEDEDE solid;
+			background: #FFFFFF;
+			margin-bottom: 16px;
+		}
+			.ticket-wrapper .left{
+				float: left;
+				width: 445px;
+				min-height: 100px;
+				padding: 10px;
+			}
+				.ticket-wrapper .left .icon{
+					float: left;
+					width: 48px;
+				}
+					.ticket-wrapper .left .icon img{
+						border-radius: 8px;
+						-webkit-border-radius: 8px;
+						-moz-border-radius: 8px;
+					}
+				.ticket-wrapper .left .tag{
+					color: #222;
+					font-size: 12px;
+					padding: 2px;
+					border: 1px #AAA solid;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.ticket-wrapper .left .status-a{
+					background-color: red;
+					color: #fff;
+					font-size: 12px;
+					padding: 2px;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.ticket-wrapper .left .status-b{
+					background-color: #00a0c6;
+					color: #fff;
+					font-size: 12px;
+					padding: 2px;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.ticket-wrapper .left .title{
+					font-size: 26px;
+					padding-left: 55px;
+				}
+				.ticket-wrapper .left .time{
+					font-size: 18px;
+					padding-top: 20px;
+					padding-left: 5px;
+				}
+				.ticket-wrapper .left .counter{
+					background: #222222;
+					color: #FFFFFF;
+					padding: 2px;
+					margin: 0 10px;
+					/*box-shadow: 1px 1px 10px 1px #DFDFDF;*/
+				}
+				.ticket-wrapper .left .member{
+					font-size: 18px;
+					padding-top: 10px;
+					padding-left: 5px;
+				}
+			.ticket-wrapper .right{
+				float: right;
+				width: 92px;
+				min-height: 100px;
+				padding: 10px 10px 0 10px;
+			}
+				.ticket-wrapper .right .button{
+					padding: 20px;
+					background-color: #99CC00;
+					text-align: center;
+					font-size: 22px;
+					color: #fff;
+					margin-bottom: 10px;
+				}
+				.ticket-wrapper .right .button:hover{
+					padding: 20px;
+					background-color: #FF6600;
+					text-align: center;
+					font-size: 22px;
+					color: #fff;
+					margin-bottom: 10px;
+				}
+				.ticket-wrapper .right .member{
+					text-align: center;
+					font-size: 12px;
+				}
+					.ticket-wrapper .right .member .bold{
+						text-align: left;
+						font-size: 24px;
+						margin-bottom: 5px;
+					}
+			.ticket-wrapper .participant{
+				clear: both;
+				text-align: right;
+				padding: 1px 5px;
+				/*background-color: #DEDEDE;*/
+				border-top: 2px #DFDFDF dotted;
+			}
+				.ticket-wrapper .participant img{
+					width: 26px;
+					margin: 1px;
+					/*border-radius: 6px;
+					-webkit-border-radius: 6px;
+					-moz-border-radius: 6px;*/
+				}
+		.main .main-content .ticket-wrapper-button{
+			width: 542px;
+			margin-bottom: 16px;
+			background-color: #99CC00;
+			text-align: center;
+			font-size: 22px;
+			color: #fff;
+			padding: 20px;
+			margin-bottom: 10px;
+		}
+		.main .main-content .ticket-wrapper-button:hover{
+			width: 542px;
+			margin-bottom: 16px;
+			background-color: #FF6600;
+			text-align: center;
+			font-size: 22px;
+			color: #fff;
+			padding: 20px;
+			margin-bottom: 10px;
+		}
+		.main .main-content .right-content{
+			float: right;
+			width: 350px;
+			/*padding-top: 15px;*/
+			margin-bottom: 10px;
+		}
+			.right-content .AD{
+				width: 350px;
+				margin-bottom: 10px;
+			}
+			.right-content ul{
+				margin-bottom: 10px;
+			}
+		
+		
+		.btn{
+			padding: 20px;
+			background-color: #99CC00;
+			text-align: center;
+			font-size: 22px;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btn:hover{
+			padding: 20px;
+			background-color: #FF6600;
+			text-align: center;
+			font-size: 22px;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btn-sub{
+			padding: 10px;
+			background-color: #DFDFDF;
+			text-align: left;
+			font-size: 22px;
+			color: #999999;
+			margin-bottom: 10px;
+		}
+		.btn-sub:hover{
+			padding: 10px;
+			background-color: #FF6600;
+			text-align: left;
+			font-size: 22px;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+
+
+.footer{
+	text-align: center;
+	margin-bottom: 10px;
+	border-top: 3px #222 solid;
+}
+	.footer .footer-content{
+		width: 950px;
+	    margin: 0 auto;
+	    padding-top: 10px;
+    	text-align: left;
+	}
+		.footer-content ul li{
+			float: left;
+		}
+		.footer-content .ticket-wrapper{
+				width: 285px;
+				padding: 10px;
+				margin: 0 4px 4px 0;
+				border: 1px #DFDFDF solid;
+			}
+				.footer-content .ticket-wrapper .bgimage{
+					width: 285px;
+					height: 100px;
+					margin-bottom: 5px;
+					overflow: hidden;
+				}
+					.footer-content .ticket-wrapper .bgimage img{
+						width: 285px;
+					}
+				.footer-content .ticket-wrapper .icon{
+					float: left;
+					width: 24px;
+				}
+					.footer-content .ticket-wrapper .icon img{
+						border-radius: 8px;
+						-webkit-border-radius: 8px;
+						-moz-border-radius: 8px;
+					}
+				.footer-content .ticket-wrapper .tag{
+					color: #222;
+					font-size: 12px;
+					padding: 2px;
+					border: 1px #AAA solid;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.footer-content .ticket-wrapper .status-a{
+					background-color: red;
+					color: #fff;
+					font-size: 12px;
+					padding: 2px;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.footer-content .ticket-wrapper .status-b{
+					background-color: #00a0c6;
+					color: #fff;
+					font-size: 12px;
+					padding: 2px;
+					border-radius: 4px;
+					-webkit-border-radius: 4px;
+					-moz-border-radius: 4px;
+					margin-right: 4px;
+				}
+				.footer-content .ticket-wrapper .title{
+					font-size: 18px;
+					padding-left: 55px;
+				}
+				.footer-content .ticket-wrapper .time{
+					font-size: 12px;
+					padding-top: 20px;
+					padding-left: 5px;
+				}
+				.footer-content .ticket-wrapper .counter{
+					background: #222222;
+					color: #FFFFFF;
+					padding: 2px;
+					margin: 0 10px;
+					/*box-shadow: 1px 1px 10px 1px #DFDFDF;*/
+				}
+				.footer-content .ticket-wrapper .member{
+					font-size: 12px;
+					padding-top: 10px;
+					padding-left: 5px;
+				}
+				.footer-content .ticket-wrapper .btn-area{
+					clear: both;
+					margin-top: 10px;
+				}
+.footerbottom{
+	clear: both;
+	width: 100%;
+	height: auto;
+	text-align: center;
+	color: #00a0c6;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}

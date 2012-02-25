@@ -6,6 +6,7 @@
 
 var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , stylus  = require('stylus')  // CSSフレームワーク
+  , ejs     = require('ejs')     // テンプレートエンジン
   , nib     = require('nib')     // coffeescript ライブラリ？よく分からん
   , sio     = require('socket.io') // WebSockets realtime
   , log4js  = require('log4js')    // ロギング
@@ -16,7 +17,7 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , everyauth  = require('everyauth')  // 認証
   , httpProxy  = require('http-proxy') // プロキシサーバー
   , conf       = require('./conf')     // 認証等の設定情報
-  , validator  = require('validator').check // validator
+  , check  = require('validator').check // validator
   , sanitize   = require('validator').sanitize // sanitize
   ;
 
@@ -257,9 +258,9 @@ everyauth
  */
 var proxy_options = {
   router: {
-    'rank-life.com': '127.0.0.1:8080' // apache
-   ,'www.rank-life.com': '127.0.0.1:8080' // apache
-   ,'live.rank-life.com': '127.0.0.1:8081' // node.js
+    'http.rank-life.com': '127.0.0.1:8080' // apache
+   ,'www.rank-life.com': '127.0.0.1:8081' // node.js
+   ,'rank-life.com': '127.0.0.1:8081' // node.js
    ,'sh.rank-life.com': '127.0.0.1:8082' // node.js
   }
 };
@@ -281,8 +282,6 @@ var app = express.createServer();
  */
 
 app.configure(function () {
-  // CSSテンプレート
-  app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }));
   app.use(express.static(__dirname + '/public')); // 静的ファイルパス
 
   app.use(express.cookieParser()); // クッキー操作
@@ -291,13 +290,8 @@ app.configure(function () {
 //  app.use(app.router); // app.get の優先順位を決めれる
   app.use(everyauth.middleware()); // 認証ミドルウェア
   app.set('views', __dirname+'/views'); // テンプレートパス
-  app.set('view engine', 'jade'); // テンプレートエンジンの指定
+  app.set('view engine', 'ejs'); // テンプレートエンジンの指定
 
-  function compile (str, path) {
-    return stylus(str)
-      .set('filename', path)
-      .use(nib());
-  };
 });
 
 // develop only.
@@ -319,6 +313,30 @@ app.configure('production', function(){
  * App routes.
  * --------------------------------------------------------
  */
+
+// ----------------------------------------------
+// auth 認証が完了したら来る処理
+// ----------------------------------------------
+app.get('/auth/complete', function(req, res) {
+
+  if (req.session && req.session.auth) {
+    // OK
+  } else {
+    // NG
+    res.redirect('/');
+    return;
+  }
+
+  if (req.headers.referer) {
+    res.redirect(req.headers.referer);
+  } else {
+    res.redirect('/');
+  }
+
+  return;
+});
+
+
 
 // ----------------------------------------------
 // トップページ
@@ -352,7 +370,7 @@ app.get('/', function (req, res) {
 
   } else {
 
-    // 最新の宣言リストを取得
+    // 最新のリストを取得
     client.query(
       'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
       '  , d.target_num, d.deadline, d.status, d.image'+
@@ -373,22 +391,17 @@ app.get('/', function (req, res) {
           res.send('declaration error: no result');
           return;
         } else {
-          var dec_top_data = {};
           var dec_list = [];
 
           var max_dec_num = results.length;
           for (var i = 0; i < max_dec_num; i++) {
-            if (i === 0) {
-              dec_top_data = results[0];
-            } else {
-              var tmp_cnt = i - 1;
-              dec_list[tmp_cnt] = results[i];
-            }
+            dec_list[i] = results[i];
           };
 
-          res.render('top', { 'layout': false,
-            'dec_top_data': dec_top_data
-           ,'declaration_list': dec_list
+          res.render('index', {'locals':
+              {'title': 'SHABERI-HOUSE index'
+                ,'dec_list': dec_list
+              }
            //,'user_name': req.session.auth.name
            //,'user_image': req.session.auth.image
            //,'user_id': req.session.auth.user_id
@@ -444,7 +457,7 @@ app.get('/what', function (req, res) {
 
 
 // ----------------------------------------------
-// 宣言一覧(declaration)
+// 一覧(declaration)
 // ----------------------------------------------
 app.get('/dec', function (req, res) {
   logger.info('app.get: /dec');
@@ -755,6 +768,113 @@ app.get('/create_dec', function (req, res) {
 });
 
 
+/**
+ * --------------------------------------------------------
+ * サポーターリストを取得するAPI
+ * --------------------------------------------------------
+ */
+app.get('/get-supporters', function (req, res) {
+
+  // リクエストチェック
+  // id
+  //console.log(req.query.limit);
+  try {
+    req.query.id = parseInt(req.query.id);
+    req.query.limit = parseInt(req.query.limit);
+
+    if (req.query.limit > 100) {
+      req.query.limit = 20;
+    }
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.json({text: '不正なリクエストです'}, 400);// Bad Request
+    return;
+  }
+
+
+  // データ取得
+  client.query(
+    'SELECT u.id, u.name, u.image'+
+    ' FROM '+TABLE_SUPPORTERS+' AS s'+
+    ' INNER JOIN '+TABLE_USERS+' AS u ON s.user_id = u.id'+
+    ' WHERE s.declaration_id = ?'+
+    ' LIMIT ?',
+    [req.query.id, req.query.limit],
+    function(err, results) {
+      if (err) {throw err;}
+      res.json({supporter_data: results}, 200);
+      return;
+    }
+  );
+
+});
+
+
+/**
+ * --------------------------------------------------------
+ * イベントリストを取得するAPI
+ * --------------------------------------------------------
+ */
+app.get('/get-events', function (req, res) {
+
+  // リクエストチェック
+  // id
+  //console.log(req.query.limit);
+  //
+  var last_id
+    , limit
+    , dec_status
+    ;
+  try {
+    last_id = parseInt(req.query.last_id);
+    limit = parseInt(req.query.limit);
+    dec_status = parseInt(req.query.dec_status);
+
+    if (req.query.limit > 30) {
+      req.query.limit = 10;
+    }
+  } catch (e) {
+    console.log(e.message); //Invalid
+    res.json({text: '不正なリクエストです'}, 400);// Bad Request
+    return;
+  }
+
+
+  // 条件に合うリストを取得
+  client.query(
+    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    '  , d.target_num, d.deadline, d.status, d.image'+
+    '  , COUNT( spt.declaration_id ) AS supporter_num'+
+    '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+    '  , u.name AS user_name, u.image AS user_image'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.status = ? AND d.id < ?'+
+    ' GROUP BY d.id'+
+    ' ORDER BY d.id DESC'+
+    ' LIMIT ?',
+    [dec_status, last_id, limit],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: 'no result'}, 200);
+        return;
+      } else {
+        var dec_list = [];
+
+        var max_dec_num = results.length;
+        for (var i = 0; i < max_dec_num; i++) {
+          dec_list[i] = results[i];
+        };
+        res.json({event_data: dec_list}, 200);
+        return;
+
+      }
+    }
+  );
+
+});
 
 
 

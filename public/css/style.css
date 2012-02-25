@@ -1,48 +1,10 @@
 @charset "utf-8";
-/* CSS Document */
-
-/* import*/
 
 @import "html5reset.css";
-@import "layout.css";
-@import "file-upload.css";
+@import "default.css";
+@import "layout.css";	/* HOUSE CSS */
 
-/*
- * public
- *
- *
- */
-.center{text-align:center};
-.right{text-align:right};
-
-/*
-.audience {
-    position:absolute;
-    text-align:center;
-}
-*/
-
-.audience-balloon {
-position: absolute;
-display: none;
-margin-left: -90px;
-margin-bottom: -10px;
-padding: 20px 10px;
-bottom: 100%;
-left: 50%;
-width: 160px;
-height: 90px;
-color: white;
-background: url(/img/bg-chat-balloon.png) transparent repeat-x 0 0;
-}
-
-.audience-balloon strong {
-    display:block;
-    margin-bottom:3px;
-    color:#6fb515;
-}
-
-.audience-balloon img {
-display:block;
-n-bottom:3px;
-}
+/* public */
+.center{text-align:center}
+.right{text-align:right}
+.left{text-align:left}

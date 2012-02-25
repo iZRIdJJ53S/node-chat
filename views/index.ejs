@@ -1,0 +1,96 @@
+	<div class="main-img"><img src="/img/main01.png" alt="イベントを作成＞人集め＞ネットでしゃべりあう。"></div>
+	<div class="left-content">
+		<h2 class="title">HOT EVENTS<h2>
+			<ul id="ul-events">
+			<% for (var i in dec_list) { %>
+				<li>
+					<div class="ticket-wrapper">
+					<div class="left">
+						<div class="icon"><img src="<%= dec_list[i].user_image %>"></div>
+						<h3 class="title">
+						<%= dec_list[i].title %><br><span class="tag">一緒に楽しむメンバ</span>
+						<% if (dec_list[i].status === 2) { %>
+							<span class="status-a">参加者募集中</span>
+						<% } else { %>
+							<span class="status-b">オーディエンス募集中</span>
+						<% } %>
+						</h3>
+						<div class="time" id="deadline_time_<%= dec_list[i].id %>">
+							スタートまで:<span class="counter" id="deadline_<%= dec_list[i].id %>"></span>
+						</div>
+						<script type="text/javascript">
+						<!--
+						makeCountDownParts(<%= dec_list[i].deadline %>,("#deadline_<%= dec_list[i].id %>"));
+						-->
+						</script>
+						
+						<div class="member">参加者:
+						<% if (dec_list[i].target_num === dec_list[i].supporter_num) { %>
+							<span class="counter"><%= dec_list[i].supporter_num %>人</span>/<%= dec_list[i].target_num %>人</div>
+						<% } else { %>
+							<span class="counter">残り<%= (dec_list[i].target_num - dec_list[i].supporter_num) %>人</span>/<%= dec_list[i].target_num %>人</div>
+						<% } %>
+					</div>
+					<div class="right">
+						<a href=""><div class="button">参加</div></a>
+						<a href="/dec/<%= dec_list[i].id %>"><div class="button">詳細</div></a>
+
+					</div>
+					<div class="participant" id="dec-supporters_<%= dec_list[i].id %>">
+					</div>
+				</li>
+				<script type="text/javascript">
+				<!--
+				$().ready(function(){
+				  $.ajax({
+				    type: "GET",
+				    url: "/get-supporters",
+				    data: {id: <%= dec_list[i].id %>, limit: 20},
+				    success: function(data){
+				      var img_tag = '';
+				      for (var j = 0; j < data.supporter_data.length; j++){
+				        // imgタグを作成
+				        img_tag += '<img src="'+data.supporter_data[j].image+'">';
+				      }
+				      $('#dec-supporters_<%= dec_list[i].id %>').append(img_tag);
+				    },
+				    error: function(data){
+				      // error
+				    }
+				  });
+				});
+				
+				//-->
+				</script>
+
+			<% } %>
+			</ul>
+			<ul>
+				<li>
+					<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
+					<a id="view-more-events"><div class="ticket-wrapper-button">もっと見る</div></a>
+				</li>
+			</ul>
+		</div>
+
+	<div class="right-content">
+		<h2 class="title-sub">NEWS</h2>
+		<ul>
+			<li class="btn-sub">2/27 社内β公開</li>
+			<li class="btn-sub">2/27 社内β公開</li>
+			<li class="btn-sub">2/27 社内β公開</li>
+			<li class="btn-sub">2/27 社内β公開</li>
+			<li class="btn-sub">2/27 社内β公開</li>
+		</ul>
+		<h2 class="title-sub"><a href="/auth/twitter">TWITTER</a></h2>
+		<ul>
+			<li></li>
+		</ul>
+		<h2 class="title-sub">FACEBOOK</h2>
+		<ul>
+			<li></li>
+		</ul>
+		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
+	</div>
+
+	<div class="clear"></div>

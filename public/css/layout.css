@@ -1,15 +1,15 @@
 /* 
-syaberi-house.net Layout Stylesheet
-v0.0.2
-Last Updated: 2011-12-04
-Author: Kunshiro Murayama
+	SYABERI-HOUSE Layout Stylesheet
+	v0.1
+	Last Updated: 2012-2-21
+	Author: Kunshiro Murayama
 */
 
 body.chat{
 	/*background-image: url("http://0117893.lolipop.jp/wallpaper/2011/akb/AKB48_30.jpg");
 	background-repeat: no-repeat;*/
-	/*background-image: url("/img/shiba.jpg");
-	background-repeat: no-repeat;*/
+	background-image: url("http://img4.blogs.yahoo.co.jp/ybi/1/bb/5a/love_dream_peace_snp/folder/277530/img_277530_4203912_0?1317999387");
+	background-repeat: no-repeat;
 	/*background-image: url("../img/pattern_01.jpg");
 	background-repeat: repeat;*/
 
@@ -31,7 +31,7 @@ body.chat{
 	-moz-opacity:0.9; /* older Gecko-based browsers */
 	filter:alpha(opacity=90); /* For IE6&7 */
 }
-.container-old {
+.container {
 	position: relative;
 	float: left;
 }
@@ -148,14 +148,14 @@ body.chat{
 }
 #content-wrapper .content-body .main-view .view{
 	height: 460px;
-	/*background-color: #fff;*/
+	background-color: #fff;
 	opacity:0.85;
 	-moz-opacity:0.85; /* older Gecko-based browsers */
 	filter:alpha(opacity=85); /* For IE6&7 */
 }
 #content-wrapper .content-body .main-view .audience{
 	height: 500px;
-	/*background-color: #fafafa;*/
+	background-color: #fafafa;
 }
 #content-wrapper .content-body .main-chat{
 	float: left;

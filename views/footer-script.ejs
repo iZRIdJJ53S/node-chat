@@ -1,0 +1,109 @@
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/js/countdown/jquery.countdown.min.js"></script>
+<script type="text/javascript" src="/js/countdown/jquery.countdown-ja.js"></script>
+
+<script type="text/javascript">
+<!--
+/**
+ * 「もっと見る」で出すイベントを１０件生成します。
+ * 
+ * @class イベントリストの生成クラスです。<br>
+ * clickイベントにより、イベントリストを１０件生成。
+ * 
+ */
+$('#view-more-events').click(function() {
+
+  console.log("click");
+  
+  var obj = $(this);
+  $('#view-more-events').hide();
+  $('#view-more-loader').show();
+
+  $.ajax({
+    type: "GET",
+    url: "/get-events",
+    data: {last_id: 10, limit: 10, dec_status: 2},
+    success: function(data){
+      var write_data = '';
+      for (var j = 0; j < data.event_data.length; j++){
+        var event_data = data.event_data[j];
+        write_data += makeEventListParts(event_data);
+      }
+      $('#ul-events').append(write_data);
+      $('#view-more-loader').hide();
+      $('#view-more-events').show();
+    },
+    error: function(data){
+      // error
+    }
+  });
+});
+
+/**
+ * 「もっと見る」で出すイベントを１件生成します。
+ * 
+ * @class イベントリストの生成クラスです。<br>
+ * event_dataの内容に合わせてリストを生成します。
+ * 
+ * @param {object} event_data	イベントデータ
+ */
+function makeEventListParts(event_data) {
+    var write_data = '';
+    write_data += '<li>';
+    write_data += '<div class="ticket-wrapper">';
+    write_data += '<div class="left">';
+    write_data += '<div class="icon"><img src="'+event_data.user_image+'"></div>';
+    write_data += '<h3 class="title">';
+    write_data += event_data.title+'<br><span class="tag">一緒に楽しむメンバ</span>';
+    if (event_data.status === 2) {
+      write_data += '<span class="status-a">参加者募集中</span>';
+    } else {
+      write_data += '<span class="status-b">オーディエンス募集中</span>';
+    }
+    write_data += '</h3>';
+    write_data += '<div class="time" id="deadline_time_'+event_data.id+'">';
+    write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
+    write_data += '</div>';
+    write_data += '<script type="text/javascript">';
+    write_data += '';
+    write_data += '</scr'+'ipt>';
+    write_data += '</div>';
+    write_data += '<div class="right"></div>';
+    write_data += '<div class="participant"></div>';
+    write_data += '</li>';
+    /**
+     * イベントリスト
+     * @return {String}
+     */
+    return write_data;
+}
+
+/**
+ * 残り時間を生成します。
+ * 
+ * @class 残り時間の生成クラスです。<br>
+ * デッドラインを受け取り、現在時刻からのカウントダウンをします。
+ * 
+ * @param {int} dead_line_date	デッドラインタイム
+ * @param {string} dead_line_id	デッドラインID
+ */
+function makeCountDownParts(dead_line_date,dead_line_id){
+	var d_obj = new Date(dead_line_date);
+	var now_obj = new Date();
+	if (now_obj < d_obj) {
+		$(dead_line_id).countdown({
+			until: d_obj,
+			layout: '残り{d<}{dn}日と{d>}{h<}{hn}時間{h>}{m<}{mnn}分{m>}{snn}秒',
+			format: 'dhms'
+		});
+	} else {
+		// 終了している
+		$(dead_line_id).html('このイベントは終了しました。');
+	}
+}
+//-->
+</script>
+
+
+
+
