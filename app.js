@@ -83,6 +83,15 @@ function changeText2Array(text_data) {
   return res_array;
 }
 
+function __isAuthLogin(req) {
+  if (!req.session || !req.session.auth) {
+    // ログインしていない
+    return false;
+  } else {
+    return true;
+  }
+}
+
 
 // ----------------------------------------------
 // 認証関連初期設定
@@ -249,7 +258,7 @@ everyauth
       return usersByTwitId[twitUser.id] ||
         (usersByTwitId[twitUser.id] = oauthAddUser('twitter', accessToken, accessSecret, twitUser));
     })
-    .redirectPath('/');
+    .redirectPath('/auth/complete');
 
 /**
  * --------------------------------------------------------
@@ -327,6 +336,7 @@ app.get('/auth/complete', function(req, res) {
     return;
   }
 
+  logger.info(req.headers.referer);
   if (req.headers.referer) {
     res.redirect(req.headers.referer);
   } else {
@@ -346,29 +356,29 @@ app.get('/', function (req, res) {
   //logger.info('---------- req.session: ----- ');logger.info(req.session);
   //res.render('home', { layout: false });
 
-  if (req.session && req.session.auth) {
-    client.query(
-      'SELECT id, sex, age, mail_addr'+
-      ' FROM '+TABLE_USERS+
-      ' WHERE name = ? AND oauth_service = ?',
-      [req.session.auth.name, req.session.auth.service],
-      function(err, results, fields) {
-        if (err) {throw err;}
-        if (results) {
-          req.session.auth.user_id = results[0].id;
-          // mail_addr のチェック。無ければ初回設定ページへリダイレクト
-          if (!results[0].mail_addr) {
-            res.redirect('/regist');
-            return;
-          } else {
-            res.redirect('/dec');
-            return;
-          }
-        }
-      }
-    );
+  //if (__isAuthLogin(req)) {
+  //  client.query(
+  //    'SELECT id, sex, age, mail_addr'+
+  //    ' FROM '+TABLE_USERS+
+  //    ' WHERE name = ? AND oauth_service = ?',
+  //    [req.session.auth.name, req.session.auth.service],
+  //    function(err, results, fields) {
+  //      if (err) {throw err;}
+  //      if (results) {
+  //        req.session.auth.user_id = results[0].id;
+  //        // mail_addr のチェック。無ければ初回設定ページへリダイレクト
+  //        if (!results[0].mail_addr) {
+  //          res.redirect('/regist');
+  //          return;
+  //        } else {
+  //          res.redirect('/dec');
+  //          return;
+  //        }
+  //      }
+  //    }
+  //  );
 
-  } else {
+  //} else {
 
     // 最新のリストを取得
     client.query(
@@ -383,7 +393,7 @@ app.get('/', function (req, res) {
       ' WHERE d.status = ?'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
-      ' LIMIT 10',
+      ' LIMIT 2',
       [FLG_SUPPORTER_WANT_STAT],
       function(err, results, fields) {
         if (err) {throw err;}
@@ -411,16 +421,16 @@ app.get('/', function (req, res) {
         }
       }
     );
-  }
+  //}
 
 
 });
 
 
 // ----------------------------------------------
-// dotoneとは？(what)
+// (about)
 // ----------------------------------------------
-app.get('/what', function (req, res) {
+app.get('/about', function (req, res) {
 
     client.query(
       'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
@@ -441,7 +451,7 @@ app.get('/what', function (req, res) {
           return;
         } else {
 
-          res.render('what', { 'layout': false,
+          res.render('about', {
             'declaration_list': results
            //,'user_name': req.session.auth.name
            //,'user_image': req.session.auth.image
@@ -488,8 +498,8 @@ app.get('/dec', function (req, res) {
           return;
         } else {
 
-          res.render('declaration', { 'layout': false,
-            'declaration_list': results
+          res.render('dec-list', {
+            'dec_list': results
            //,'user_name': req.session.auth.name
            //,'user_image': req.session.auth.image
            //,'user_id': req.session.auth.user_id
@@ -539,7 +549,7 @@ app.get('/suc', function (req, res) {
           return;
         } else {
 
-          res.render('dec_success', { 'layout': false,
+          res.render('suc-list', {
             'declaration_list': results
            //,'user_name': req.session.auth.name
            //,'user_image': req.session.auth.image
@@ -560,15 +570,25 @@ app.get('/suc', function (req, res) {
 
 });
 
+// ----------------------------------------------
+// ログ詳細
+// ----------------------------------------------
+app.get('/suc/:id', function (req, res) {
+  var dec_id = (req.params.id) ? req.params.id : '';
 
+  res.render('suc-detail', {
+    
+  });
+  return;
 
+});
 
 // --------------------------------------------------------
-// regist_declarations(宣言登録)
+// regist_dec(登録)
 // --------------------------------------------------------
-app.get('/regist-declaration', function (req, res) {
+app.get('/regist-dec', function (req, res) {
 
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
     res.redirect('/');
     return;
@@ -584,7 +604,7 @@ app.get('/regist-declaration', function (req, res) {
         res.send('user_id error: no result');
         return;
       } else {
-        res.render('regist', { 'layout': false,
+        res.render('regist-dec', {
           'user_data': results
         });
         return;
@@ -598,9 +618,9 @@ app.get('/regist-declaration', function (req, res) {
 // --------------------------------------------------------
 app.get('/mypage', function (req, res) {
 
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
-    res.redirect('/');
+    res.redirect('/auth/twitter');
     return;
   }
 
@@ -648,8 +668,8 @@ app.get('/mypage', function (req, res) {
             spt_want_list = [];
             spt_fail_list = [];
 
-            res.render('mypage', {'layout': false
-              , 'user_name': req.session.auth.name
+            res.render('mypage', {
+              'user_name': req.session.auth.name
               , 'user_image': req.session.auth.image
               , 'user_id': req.session.auth.user_id
               , 'dec_list': dec_list
@@ -686,8 +706,8 @@ app.get('/mypage', function (req, res) {
               }
             }
 
-            res.render('mypage', {'layout': false
-              , 'user_name': req.session.auth.name
+            res.render('mypage', {
+              'user_name': req.session.auth.name
               , 'user_image': req.session.auth.image
               , 'user_id': req.session.auth.user_id
               , 'dec_list': dec_list
@@ -705,12 +725,13 @@ app.get('/mypage', function (req, res) {
 });
 
 
-// --------------------------------------------------------
-// one_time_regist
-// --------------------------------------------------------
-app.get('/regist', function (req, res) {
 
-  if (!req.session || !req.session.auth) {
+// --------------------------------------------------------
+// イベント作成のフォーム
+// --------------------------------------------------------
+app.get('/create-dec', function (req, res) {
+
+  if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
     res.redirect('/');
     return;
@@ -726,7 +747,7 @@ app.get('/regist', function (req, res) {
         res.send('user_id error: no result');
         return;
       } else {
-        res.render('regist', { 'layout': false,
+        res.render('create-dec', {
           'user_data': results
         });
         return;
@@ -735,14 +756,12 @@ app.get('/regist', function (req, res) {
   );
 });
 
-
-
 // --------------------------------------------------------
-// 宣言するのフォーム
+// mypage settingのフォーム
 // --------------------------------------------------------
-app.get('/create_dec', function (req, res) {
+app.get('/my-setting', function (req, res) {
 
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
     res.redirect('/');
     return;
@@ -758,7 +777,7 @@ app.get('/create_dec', function (req, res) {
         res.send('user_id error: no result');
         return;
       } else {
-        res.render('create_dec', { 'layout': false,
+        res.render('my-setting', {
           'user_data': results
         });
         return;
@@ -777,7 +796,6 @@ app.get('/get-supporters', function (req, res) {
 
   // リクエストチェック
   // id
-  //console.log(req.query.limit);
   try {
     req.query.id = parseInt(req.query.id);
     req.query.limit = parseInt(req.query.limit);
@@ -786,7 +804,7 @@ app.get('/get-supporters', function (req, res) {
       req.query.limit = 20;
     }
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.json({text: '不正なリクエストです'}, 400);// Bad Request
     return;
   }
@@ -809,6 +827,45 @@ app.get('/get-supporters', function (req, res) {
 
 });
 
+/**
+ * --------------------------------------------------------
+ * サポーターかどうか判断するAPI
+ * --------------------------------------------------------
+ */
+app.get('/get-is-supporters', function (req, res) {
+
+  // リクエストチェック
+  try {
+    req.query.dec_id = parseInt(req.query.dec_id);
+    req.query.user_id = parseInt(req.query.user_id);
+
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なリクエストです'}, 400);// Bad Request
+    return;
+  }
+
+
+  // データ取得
+  client.query(
+    'SELECT id'+
+    ' FROM '+TABLE_SUPPORTERS+
+    ' WHERE declaration_id = ? AND user_id = ?'+
+    ' LIMIT 1',
+    [req.query.dec_id, req.query.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({res_flg: false}, 200);
+      } else {
+        res.json({res_flg: true}, 200);
+      }
+      return;
+    }
+  );
+
+});
+
 
 /**
  * --------------------------------------------------------
@@ -819,8 +876,6 @@ app.get('/get-events', function (req, res) {
 
   // リクエストチェック
   // id
-  //console.log(req.query.limit);
-  //
   var last_id
     , limit
     , dec_status
@@ -834,7 +889,7 @@ app.get('/get-events', function (req, res) {
       req.query.limit = 10;
     }
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.json({text: '不正なリクエストです'}, 400);// Bad Request
     return;
   }
@@ -857,11 +912,11 @@ app.get('/get-events', function (req, res) {
     [dec_status, last_id, limit],
     function(err, results, fields) {
       if (err) {throw err;}
+      var dec_list = [];
       if (results.length === 0) {
-        res.json({text: 'no result'}, 200);
+        res.json({event_data: dec_list, text: 'no result'}, 200);
         return;
       } else {
-        var dec_list = [];
 
         var max_dec_num = results.length;
         for (var i = 0; i < max_dec_num; i++) {
@@ -909,7 +964,7 @@ app.get('/dec/:id', function (req, res) {
         var detail_txt = results[0].detail;
         detail_txt = detail_txt.replace(/\n/g, '<br />');
         results[0].detail = detail_txt;
-        res.render('declaration_detail', { 'layout': false,
+        res.render('dec-detail', {
           'dec_detail': results[0]
         });
         return;
@@ -934,13 +989,13 @@ app.get('/ch/:id', function (req, res) {
     , is_owner = false
     , is_supporter = false // サポーターかどうか？。チャットをさせるかどうかの判断で使う
     ;
-  if (req.session && req.session.auth) {
+  if (__isAuthLogin(req)) {
     user_id = req.session.auth.user_id;
     user_name = req.session.auth.name;
     user_image = req.session.auth.image;
   } else {
     // ログインしていない
-    res.redirect('/');
+    res.redirect('/auth/twitter');
     return;
   }
 
@@ -978,7 +1033,7 @@ app.get('/ch/:id', function (req, res) {
               // サポーターです
               is_supporter = true;
             }
-            res.render('chat', { 'layout': false,
+            res.render('chat', {
               'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
               'house_image': results[0].image, 'house_desc': results[0].description,
               'user_name': user_name, 'user_image': user_image,
@@ -1008,7 +1063,7 @@ app.get('/h/:id', function (req, res) {
   //logger.debug('----- app.get/h/:id,url_id_typeof: ');logger.debug(typeof url_id);
   //logger.debug('----- app.get/h/:id,url_id: ');logger.debug(url_id);
 
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
     res.redirect('/');
     return;
@@ -1060,7 +1115,7 @@ app.get('/h/:id', function (req, res) {
  */
 app.post('/create-house', function (req, res) {
   // ログインチェック
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     res.redirect('/');
     return;
   }
@@ -1111,7 +1166,7 @@ app.post('/create-house', function (req, res) {
  */
 app.post('/firstset', function (req, res) {
   // ログインチェック
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     res.redirect('/');
     return;
   }
@@ -1122,25 +1177,13 @@ app.post('/firstset', function (req, res) {
   var age = 0;
   var mail_addr = '';
 
-  //// sex
-  //try {
-  //} catch (e) {
-  //  console.log(e.message); //Invalid
-  //}
-
-  //// age
-  //try {
-  //} catch (e) {
-  //  console.log(e.message); //Invalid
-  //}
-
   // email
   try {
     validator(req.body.sex).is(/^(1|2)$/);
     validator(req.body.age).is(/^[1-8]$/);
     validator(req.body.mail_addr).len(6, 64).isEmail();
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.redirect('/regist');
     return;
   }
@@ -1170,7 +1213,7 @@ app.post('/firstset', function (req, res) {
  */
 app.post('/regist_dec', function (req, res) {
   // ログインチェック
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     res.redirect('/');
     return;
   }
@@ -1192,7 +1235,7 @@ app.post('/regist_dec', function (req, res) {
     validator(req.body.target_num).isInt();
     validator(req.body.deadline).isDate();
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.redirect('/create_dec');
     return;
   }
@@ -1229,18 +1272,17 @@ app.post('/regist_dec', function (req, res) {
  */
 app.post('/join-commit', function (req, res) {
   // ログインチェック
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     res.json({ text: 'ログインして下さい' }, 200);
     return;
   }
 
   // リクエストチェック
   // id
-  console.log(req.body.id);
   try {
     validator(req.body.id).isInt();
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 200);
     return;
   }
@@ -1284,7 +1326,7 @@ app.post('/join-commit', function (req, res) {
  */
 app.post('/sendmail', function (req, res) {
   // ログインチェック
-  if (!req.session || !req.session.auth) {
+  if (!__isAuthLogin(req)) {
     res.json({ text: 'ログインして下さい' }, 200);
     return;
   }
@@ -1294,7 +1336,7 @@ app.post('/sendmail', function (req, res) {
   try {
     validator(req.body.id).isInt();
   } catch (e) {
-    console.log(e.message); //Invalid
+    logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 200);
     return;
   }

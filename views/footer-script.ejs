@@ -18,20 +18,32 @@ $('#view-more-events').click(function() {
   var obj = $(this);
   $('#view-more-events').hide();
   $('#view-more-loader').show();
-
+  
+  var last_id = $('#last_id').text();
+  
   $.ajax({
     type: "GET",
     url: "/get-events",
-    data: {last_id: 10, limit: 10, dec_status: 2},
+    data: {last_id: last_id, limit: 2, dec_status: 2},
     success: function(data){
-      var write_data = '';
-      for (var j = 0; j < data.event_data.length; j++){
-        var event_data = data.event_data[j];
-        write_data += makeEventListParts(event_data);
-      }
-      $('#ul-events').append(write_data);
-      $('#view-more-loader').hide();
-      $('#view-more-events').show();
+    	console.log(data);
+	  if(data.text=="no result"){
+	  	  $('#view-more-loader').hide();
+	      $('#view-more-events').hide();
+	      $('#last_id').html(last_id);
+	      $('#view-more-events').hide();
+	  }else{
+	      var write_data = '';
+	      for (var j = 0; j < data.event_data.length; j++){
+	        var event_data = data.event_data[j];
+	        write_data += makeEventListParts(event_data);
+	        last_id = data.event_data[j].id;
+	      }
+	      $('#ul-events').append(write_data);
+	      $('#view-more-loader').hide();
+	      $('#view-more-events').show();
+	      $('#last_id').html(last_id);
+	  }
     },
     error: function(data){
       // error
@@ -64,12 +76,17 @@ function makeEventListParts(event_data) {
     write_data += '<div class="time" id="deadline_time_'+event_data.id+'">';
     write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
     write_data += '</div>';
-    write_data += '<script type="text/javascript">';
-    write_data += '';
-    write_data += '</scr'+'ipt>';
-    write_data += '</div>';
-    write_data += '<div class="right"></div>';
-    write_data += '<div class="participant"></div>';
+	write_data += makeCountDownParts(event_data.deadline,event_data.id);	//deadline script
+	write_data += '<div class="member">参加者:';
+	write_data += makeMemberParts(event_data.target_num,event_data.supporter_num);
+	write_data += '</div>';
+	write_data += '</div>';
+	write_data += '<div class="right">';
+	write_data += '	<a href=""><div class="button">参加</div></a>';
+	write_data += ' <a href="/dec/18"><div class="button">詳細</div></a>';
+	write_data += '</div>';
+    write_data += '<div class="participant" id="dec-supporters_'+event_data.id+'"></div>';
+    write_data += makeParticipantParts(event_data.id);	//participant script
     write_data += '</li>';
     /**
      * イベントリスト
@@ -84,22 +101,65 @@ function makeEventListParts(event_data) {
  * @class 残り時間の生成クラスです。<br>
  * デッドラインを受け取り、現在時刻からのカウントダウンをします。
  * 
- * @param {int} dead_line_date	デッドラインタイム
- * @param {string} dead_line_id	デッドラインID
+ * @param {string} deadline	デッドラインタイム
+ * @param {int} id	デッドラインID
  */
-function makeCountDownParts(dead_line_date,dead_line_id){
-	var d_obj = new Date(dead_line_date);
-	var now_obj = new Date();
-	if (now_obj < d_obj) {
-		$(dead_line_id).countdown({
-			until: d_obj,
-			layout: '残り{d<}{dn}日と{d>}{h<}{hn}時間{h>}{m<}{mnn}分{m>}{snn}秒',
-			format: 'dhms'
-		});
+function makeCountDownParts(deadline,id){
+	var write_data = '';
+    write_data += '				    <script type="text/javascript">';
+    write_data += '						var obj = $(function(){';
+    write_data += '							var d_obj = new Date("'+deadline+'");';
+	write_data += '							var now_obj = new Date();';
+	write_data += '							console.log(now_obj < d_obj);';
+	write_data += '							if( now_obj < d_obj ){';
+    write_data += '								$("#deadline_'+id+'").countdown({';
+	write_data += '									until: d_obj,';
+	write_data += '									layout: "残り{d<}{dn}日と{d>}{h<}{hn}時間{h>}{m<}{mnn}分{m>}{snn}秒",';
+	write_data += '									format: "dhms"';
+	write_data += '								});';
+	write_data += '							} else {';
+	write_data += '								$("#deadline_time_'+id+'").html("");';
+    write_data += '							}';
+    write_data += '						});';
+    write_data += '					</scr'+'ipt>';
+	/**
+     * イベントリスト
+     * @return {String}
+     */
+    return write_data;
+}
+
+function makeMemberParts(target_num,supporter_num){
+	var write_data = '';
+	if (target_num === supporter_num) {
+		write_data += '<span class="counter">'+supporter_num+'人</span>/'+target_num+'人';
 	} else {
-		// 終了している
-		$(dead_line_id).html('このイベントは終了しました。');
+		write_data += '<span class="counter">残り'+(target_num-supporter_num)+'人</span>/'+target_num+'人';
 	}
+	return write_data;
+}
+
+function makeParticipantParts(id){
+	var write_data = '';
+	write_data += '<script type="text/javascript">';
+	write_data += '$().ready(function(){';
+	write_data += '$.ajax({';
+	write_data += 'type: "GET",';
+	write_data += 'url: "/get-supporters",';
+	write_data += 'data: {id: '+id+', limit: 20},';
+	write_data += 'success: function(data){';
+	write_data += 'var img_tag = "";';
+	write_data += 'for (var j = 0; j < data.supporter_data.length; j++){';
+	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
+	write_data += '}';
+	write_data += '$("#dec-supporters_'+id+'").append(img_tag);';
+	write_data += '},';
+	write_data += 'error: function(data){';
+	write_data += '}';
+	write_data += '});';
+	write_data += '});';
+	write_data += '</script>';
+	return write_data;
 }
 //-->
 </script>
