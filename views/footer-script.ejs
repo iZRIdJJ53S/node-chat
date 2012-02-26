@@ -77,13 +77,13 @@ function makeEventListParts(event_data) {
     write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
     write_data += '</div>';
 	write_data += makeCountDownParts(event_data.deadline,event_data.id);	//deadline script
-	write_data += '<div class="member">参加者:';
+	write_data += '<div class="member" id="member-parts-area">';
 	write_data += makeMemberParts(event_data.target_num,event_data.supporter_num);
 	write_data += '</div>';
 	write_data += '</div>';
 	write_data += '<div class="right">';
 	write_data += '	<a href=""><div class="button">参加</div></a>';
-	write_data += ' <a href="/dec/18"><div class="button">詳細</div></a>';
+	write_data += ' <a href="/dec/'+event_data.id+'"><div class="button">詳細</div></a>';
 	write_data += '</div>';
     write_data += '<div class="participant" id="dec-supporters_'+event_data.id+'"></div>';
     write_data += makeParticipantParts(event_data.id);	//participant script
@@ -130,11 +130,11 @@ function makeCountDownParts(deadline,id){
 }
 
 function makeMemberParts(target_num,supporter_num){
-	var write_data = '';
+	var write_data = '参加者:';
 	if (target_num === supporter_num) {
-		write_data += '<span class="counter">'+supporter_num+'人</span>/'+target_num+'人';
+		write_data += '<span class="counter" id="member-counter">'+supporter_num+'人</span>/'+target_num+'人';
 	} else {
-		write_data += '<span class="counter">残り'+(target_num-supporter_num)+'人</span>/'+target_num+'人';
+		write_data += '<span class="counter" id="member-counter">残り'+(target_num-supporter_num)+'人</span>/'+target_num+'人';
 	}
 	return write_data;
 }
@@ -158,12 +158,54 @@ function makeParticipantParts(id){
 	write_data += '}';
 	write_data += '});';
 	write_data += '});';
-	write_data += '</script>';
+	write_data += '</scr'+'ipt>';
 	return write_data;
 }
+
+
+
+function __isLogin() {
+
+  $.ajax({
+    type: 'GET',
+    url: '/get-is-login',
+    data: {},
+    success: function(data){
+      if (data.login_flg) {
+        $('#auth-login-twitter').hide();
+        $('#auth-logout').show();
+        $('#mypage-href').show();
+        $('#auth-icon-img img').attr('src', data.user_image);
+        $('#auth-icon-img').show();
+      }
+    },
+    error: function(data){
+      // error
+    }
+  });
+}
+
+// DOMがロードされて操作・解析が可能になったタイミングで関数を実行
+$().ready(function(){
+  // ログインチェック実行
+  __isLogin();
+});
 //-->
 </script>
 
 
 
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29477382-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
 

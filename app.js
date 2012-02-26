@@ -12,6 +12,7 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , log4js  = require('log4js')    // ロギング
   , util    = require('util')      // デバッグ等に便利な
   , fs      = require('fs')        // ファイル操作
+  , emailjs = require('emailjs/email') // メール操作
   , exec    = require('child_process').exec // シェルコマンドを叩く為に必要
   , formidable = require('formidable') // ファイルアップロード
   , everyauth  = require('everyauth')  // 認証
@@ -28,6 +29,34 @@ var FLG_SUPPORTER_COMP_STAT = 1; // 完了/サクセスしたもの
 var FLG_SUPPORTER_WANT_STAT = 2; // 現在開催中のもの
 var FLG_SUPPORTER_FAIL_STAT = 3; // 失敗/挫折したもの
 
+
+// ----------------------------------------------
+// emailjs関連初期設定
+// ----------------------------------------------
+var email_server  = emailjs.server.connect({
+   user: conf.gmail.user
+ , password: conf.gmail.password
+ , host:    'smtp.gmail.com'
+ , ssl:     true
+});
+
+function __sendEmail(text_msg, conf, mailto, subject) {
+  email_server.send(
+    {  text: text_msg
+     , from: conf.gmail.from
+     , to:   mailto
+     , subject: subject
+    },
+    function(err, message) {
+      if (err) {
+        logger.error(err);
+      }
+      if (message) {
+        logger.info(message)
+      }
+    }
+  );
+}
 
 
 // ----------------------------------------------
@@ -105,13 +134,13 @@ var usersById = {}
   ;
 
 // 認証時にDB やsession にユーザーを追加する処理
-function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
+function oauthAddUser (service, accessToken, accessSecret, sourceUser) {
   var user
     , tmp_user_id;
 
   // non-password-based
   user = usersById[++nextUserId] = {id: nextUserId};
-  user[source] = sourceUser;
+  user[service] = sourceUser;
 
   // パラメータチェック
   var name = sourceUser.screen_name
@@ -121,6 +150,7 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
     , image   = sourceUser.profile_image_url
     , description = sourceUser.description
     , url         = sourceUser.url
+    , oauth_service_id = sourceUser.id
     ;
   name = (name) ? name : '';
   sex  = (sex)  ? sex  : 1;
@@ -129,11 +159,13 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
   image   = (image)   ? image   : '';
   description = (description) ? description : '';
   url         = (url)         ? url         : '';
+  oauth_service_id = (oauth_service_id) ? oauth_service_id : '';
 
   // DB に値があるかチェック
   client.query(
-    'SELECT id FROM '+TABLE_USERS+' WHERE name = ? AND oauth_service = ?',
-    [name, source],
+    'SELECT id FROM '+TABLE_USERS+
+    ' WHERE oauth_service_id = ? AND oauth_service = ?',
+    [oauth_service_id, service],
     function(err, results, fields) {
       if (err) {throw err;}
       //logger.debug('----- oauth-sql:results ');logger.debug(results);
@@ -143,10 +175,11 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
         client.query(
           'INSERT INTO '+TABLE_USERS+
           ' SET created_at = NOW(), name = ?, oauth_id = ?,'+
-          ' oauth_secret_id = ?, oauth_service = ?, sex = ?, age = ?, visible = ?,'+
+          ' oauth_secret_id = ?, oauth_service = ?, oauth_service_id = ?,'+
+          ' sex = ?, age = ?, visible = ?,'+
           ' image = ?, description = ?, url = ?',
-          [name, accessToken, accessSecret, source, sex, age, visible, image,
-           description, url
+          [name, accessToken, accessSecret, service, oauth_service_id,
+           sex, age, visible, image, description, url
           ],
           function(err) {
             if (err) {throw err;}
@@ -157,9 +190,9 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
         // DB に有り。UPDATE
         client.query(
           'UPDATE '+TABLE_USERS+
-          ' SET sex = ?, age = ?, image = ?, description = ?, url = ?'+
-          ' WHERE name = ? AND oauth_service = ?',
-          [sex, age, image, description, url, name, source],
+          ' SET name = ?, image = ?, description = ?, url = ?'+
+          ' WHERE oauth_service_id = ? AND oauth_service = ?',
+          [name, image, description, url, oauth_service_id, service],
           function(err) {
             if (err) {throw err;}
           }
@@ -173,7 +206,7 @@ function oauthAddUser (source, accessToken, accessSecret, sourceUser) {
   // session にuser_id を保存。他ページでも使用する為
   //client.query(
   //  'SELECT id FROM '+TABLE_USERS+' WHERE name = ? AND oauth_service = ?',
-  //  [name, source],
+  //  [name, service],
   //  function(err, results) {
   //    if (err) {throw err;}
   //    if (results[0]) {
@@ -246,8 +279,9 @@ everyauth
       //logger.debug('---------- twitterUserData: ------------ ');logger.debug(twitUser);
 
       // セッションにログイン状態を格納
-      sess.auth.name = twitUser.screen_name;
-      sess.auth.image = twitUser.profile_image_url;
+      sess.auth.oauth_service_id = twitUser.id; // twitter が管理しているユニークなID
+      sess.auth.user_name = twitUser.screen_name;
+      sess.auth.user_image = twitUser.profile_image_url;
       sess.auth.service = 'twitter';
 
       //if (!usersByTwitId[twitUser.id]) {
@@ -267,10 +301,11 @@ everyauth
  */
 var proxy_options = {
   router: {
-    'http.rank-life.com': '127.0.0.1:8080' // apache
-   ,'www.rank-life.com': '127.0.0.1:8081' // node.js
-   ,'rank-life.com': '127.0.0.1:8081' // node.js
-   ,'sh.rank-life.com': '127.0.0.1:8082' // node.js
+    'http.syaberi-house.com': '127.0.0.1:8080' // apache
+   ,'www.syaberi-house.com': '127.0.0.1:8081' // node.js
+   ,'syaberi-house.com': '127.0.0.1:8081' // node.js
+   //,'rank-life.com': '127.0.0.1:8081' // node.js
+   ,'sh.syaberi-house.com': '127.0.0.1:8082' // node.js
   }
 };
 var httpProxyServer = httpProxy.createServer(proxy_options);
@@ -328,6 +363,7 @@ app.configure('production', function(){
 // ----------------------------------------------
 app.get('/auth/complete', function(req, res) {
 
+
   if (req.session && req.session.auth) {
     // OK
   } else {
@@ -336,14 +372,33 @@ app.get('/auth/complete', function(req, res) {
     return;
   }
 
-  logger.info(req.headers.referer);
-  if (req.headers.referer) {
-    res.redirect(req.headers.referer);
-  } else {
-    res.redirect('/');
-  }
+  // user_id, メルアド情報を取得(あれば)
+  client.query(
+    'SELECT id, mail_addr'+
+    ' FROM '+TABLE_USERS+
+    ' WHERE oauth_service_id = ? AND oauth_service = ?',
+    [req.session.auth.oauth_service_id, req.session.auth.service],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results[0]) {
+        req.session.auth.user_id = results[0].id;
+        req.session.auth.mail_addr = results[0].mail_addr;
+      } else {
+        // メルアドを登録するフォームへ
+        // res.redirect();
+        // return;
+      }
 
-  return;
+      if (req.headers.referer) {
+        res.redirect(req.headers.referer);
+      } else {
+        res.redirect('/');
+      }
+      return;
+
+    }
+  );
+
 });
 
 
@@ -361,7 +416,7 @@ app.get('/', function (req, res) {
   //    'SELECT id, sex, age, mail_addr'+
   //    ' FROM '+TABLE_USERS+
   //    ' WHERE name = ? AND oauth_service = ?',
-  //    [req.session.auth.name, req.session.auth.service],
+  //    [req.session.auth.user_name, req.session.auth.service],
   //    function(err, results, fields) {
   //      if (err) {throw err;}
   //      if (results) {
@@ -412,8 +467,8 @@ app.get('/', function (req, res) {
               {'title': 'SHABERI-HOUSE index'
                 ,'dec_list': dec_list
               }
-           //,'user_name': req.session.auth.name
-           //,'user_image': req.session.auth.image
+           //,'user_name': req.session.auth.user_name
+           //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
           });
           return;
@@ -453,8 +508,8 @@ app.get('/about', function (req, res) {
 
           res.render('about', {
             'declaration_list': results
-           //,'user_name': req.session.auth.name
-           //,'user_image': req.session.auth.image
+           //,'user_name': req.session.auth.user_name
+           //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
           });
           return;
@@ -500,8 +555,8 @@ app.get('/dec', function (req, res) {
 
           res.render('dec-list', {
             'dec_list': results
-           //,'user_name': req.session.auth.name
-           //,'user_image': req.session.auth.image
+           //,'user_name': req.session.auth.user_name
+           //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
           });
           return;
@@ -551,8 +606,8 @@ app.get('/suc', function (req, res) {
 
           res.render('suc-list', {
             'declaration_list': results
-           //,'user_name': req.session.auth.name
-           //,'user_image': req.session.auth.image
+           //,'user_name': req.session.auth.user_name
+           //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
           });
           return;
@@ -625,8 +680,8 @@ app.get('/mypage', function (req, res) {
   }
 
   //res.render('mypage', { 'layout': false
-  //  ,'user_name': req.session.auth.name
-  //  ,'user_image': req.session.auth.image
+  //  ,'user_name': req.session.auth.user_name
+  //  ,'user_image': req.session.auth.user_image
   //  ,'user_id': req.session.auth.user_id
   //});
   //return;
@@ -669,8 +724,8 @@ app.get('/mypage', function (req, res) {
             spt_fail_list = [];
 
             res.render('mypage', {
-              'user_name': req.session.auth.name
-              , 'user_image': req.session.auth.image
+              'user_name': req.session.auth.user_name
+              , 'user_image': req.session.auth.user_image
               , 'user_id': req.session.auth.user_id
               , 'dec_list': dec_list
               , 'spt_comp_list': spt_comp_list
@@ -707,8 +762,8 @@ app.get('/mypage', function (req, res) {
             }
 
             res.render('mypage', {
-              'user_name': req.session.auth.name
-              , 'user_image': req.session.auth.image
+              'user_name': req.session.auth.user_name
+              , 'user_image': req.session.auth.user_image
               , 'user_id': req.session.auth.user_id
               , 'dec_list': dec_list
               , 'spt_comp_list': spt_comp_list
@@ -829,15 +884,47 @@ app.get('/get-supporters', function (req, res) {
 
 /**
  * --------------------------------------------------------
+ * ログインしてるかどうか判断するAPI
+ * --------------------------------------------------------
+ */
+app.get('/get-is-login', function (req, res) {
+
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+    res.json({login_flg: false}, 200);
+  } else {
+    res.json(
+      {  login_flg: true
+       , user_id: req.session.auth.user_id
+       , user_image: req.session.auth.user_image
+       , user_name: req.session.auth.user_name
+      }, 200
+    );
+  }
+  return;
+});
+
+
+
+/**
+ * --------------------------------------------------------
  * サポーターかどうか判断するAPI
  * --------------------------------------------------------
  */
 app.get('/get-is-supporters', function (req, res) {
 
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+    res.json({text: 'ログインが必要です'}, 401);
+    return;
+  }
+
+
   // リクエストチェック
   try {
     req.query.dec_id = parseInt(req.query.dec_id);
-    req.query.user_id = parseInt(req.query.user_id);
 
   } catch (e) {
     logger.error(e.message); //Invalid
@@ -852,7 +939,7 @@ app.get('/get-is-supporters', function (req, res) {
     ' FROM '+TABLE_SUPPORTERS+
     ' WHERE declaration_id = ? AND user_id = ?'+
     ' LIMIT 1',
-    [req.query.dec_id, req.query.user_id],
+    [req.query.dec_id, req.session.auth.user_id],
     function(err, results) {
       if (err) {throw err;}
       if (results.length === 0) {
@@ -991,8 +1078,8 @@ app.get('/ch/:id', function (req, res) {
     ;
   if (__isAuthLogin(req)) {
     user_id = req.session.auth.user_id;
-    user_name = req.session.auth.name;
-    user_image = req.session.auth.image;
+    user_name = req.session.auth.user_name;
+    user_image = req.session.auth.user_image;
   } else {
     // ログインしていない
     res.redirect('/auth/twitter');
@@ -1096,7 +1183,7 @@ app.get('/h/:id', function (req, res) {
           res.render('home', { 'layout': false,
             'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
             'house_image': results[0].image, 'house_desc': results[0].description,
-            'user_name': req.session.auth.name, 'user_image': req.session.auth.image,
+            'user_name': req.session.auth.user_name, 'user_image': req.session.auth.user_image,
             'user_id': req.session.auth.user_id
           });
           return;
@@ -1179,9 +1266,9 @@ app.post('/firstset', function (req, res) {
 
   // email
   try {
-    validator(req.body.sex).is(/^(1|2)$/);
-    validator(req.body.age).is(/^[1-8]$/);
-    validator(req.body.mail_addr).len(6, 64).isEmail();
+    check(req.body.sex).is(/^(1|2)$/);
+    check(req.body.age).is(/^[1-8]$/);
+    check(req.body.mail_addr).len(6, 64).isEmail();
   } catch (e) {
     logger.error(e.message); //Invalid
     res.redirect('/regist');
@@ -1199,6 +1286,21 @@ app.post('/firstset', function (req, res) {
     [sex, age, mail_addr, req.session.auth.user_id],
     function(err) {
       if (err) {throw err;}
+
+      // session にメルアドを保持しておく
+      req.session.auth.mail_addr = mail_addr;
+
+      // 新規の場合、ようこそメール送信
+      var text_msg = ''
+       , email_tmpl = fs.readFileSync(__dirname + '/views/email/welcome.ejs', 'utf8')
+       , mailto     = mail_addr
+       , subject    = 'SYABERI-HOUSEへようこそ！'
+       ;
+      text_msg = ejs.render(email_tmpl, {
+        user_name: req.session.auth.user_name
+      });
+      __sendEmail(text_msg, conf, mailto, subject)
+
       res.redirect('/');
       return;
     }
@@ -1229,11 +1331,11 @@ app.post('/regist_dec', function (req, res) {
 
   // validate
   try {
-    validator(req.body.title).notEmpty().len(1, 250);
-    validator(req.body.description).notEmpty();
-    validator(req.body.detail).notEmpty();
-    validator(req.body.target_num).isInt();
-    validator(req.body.deadline).isDate();
+    check(req.body.title).notEmpty().len(1, 250);
+    check(req.body.description).notEmpty();
+    check(req.body.detail).notEmpty();
+    check(req.body.target_num).isInt();
+    check(req.body.deadline).isDate();
   } catch (e) {
     logger.error(e.message); //Invalid
     res.redirect('/create_dec');
@@ -1273,21 +1375,42 @@ app.post('/regist_dec', function (req, res) {
 app.post('/join-commit', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
-    res.json({ text: 'ログインして下さい' }, 200);
+    res.json({ text: 'ログインして下さい' }, 401);
     return;
   }
 
   // リクエストチェック
   // id
   try {
-    validator(req.body.id).isInt();
+    req.body.id = parseInt(req.body.id);
   } catch (e) {
     logger.error(e.message); //Invalid
-    res.json({text: '不正なIDです'}, 200);
+    res.json({text: '不正なIDです'}, 400);
     return;
   }
 
-  // すでに投票済みかどうかチェック
+  // 無駄な処理だけど、、、事前に情報を取得しておく
+  var event_data = {};
+  client.query(
+    'SELECT d.title, d.description, d.detail,'+
+    '  u.id AS user_id, u.name AS user_name'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' INNER JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.id = ?',
+    [req.body.id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        // nothing
+        res.json({text: 'データがありませんでした'}, 400);
+        return;
+      } else {
+        event_data = results[0];
+      }
+    }
+  );
+
+  // すでに参加済みかどうかチェック
   client.query(
     'SELECT id '+
     ' FROM '+TABLE_SUPPORTERS+
@@ -1300,18 +1423,34 @@ app.post('/join-commit', function (req, res) {
           'INSERT INTO '+TABLE_SUPPORTERS+'('+
           '  declaration_id , user_id'+
           ') VALUES ('+
-          '?, ?'+
+          '  ?, ?'+
           ')',
           [req.body.id, req.session.auth.user_id],
           function(err) {
             if (err) {throw err;}
-            res.json({text: '投票しました', cnt_up: true}, 200);
+            res.json({join_flg: 'ok'}, 200);
+
+
+            // イベント参加メール送信
+            var text_msg = ''
+             , email_tmpl = fs.readFileSync(__dirname + '/views/email/join-event.ejs', 'utf8')
+             , mailto     = req.session.auth.mail_addr
+             , subject    = event_data.title+' に参加しました。｜SYABERI-HOUSE'
+             ;
+            text_msg = ejs.render(email_tmpl, {
+               user_name: req.session.auth.user_name
+             , event_id: req.body.id
+             , event_owner_name: event_data.user_name
+             , event_title: event_data.title
+            });
+            __sendEmail(text_msg, conf, mailto, subject);
+
             return;
           }
         );
 
       } else {
-        res.json({text: '既に投票済みです'}, 200);
+        res.json({join_flg: 'already_joined'}, 200);
         return;
       }
     }
@@ -1334,7 +1473,7 @@ app.post('/sendmail', function (req, res) {
   // リクエストチェック
   // id
   try {
-    validator(req.body.id).isInt();
+    check(req.body.id).isInt();
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 200);

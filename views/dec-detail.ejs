@@ -3,15 +3,14 @@
 		<div class="left">
 			<div class="icon"><img src="<%= dec_detail.user_image %>"></div>
 			<h3 class="title"><%= dec_detail.title %><br><span class="username">by <%= dec_detail.user_name %></span><br><span class="tag">一緒に楽しむメンバ</span><span class="status-a">参加者募集中</span></h3>
-			<div class="time">スタートまで:<span class="counter">残り23時間17分22秒</span></div>
-			<div class="member">参加者:<span class="counter">残り982人</span>/1,000人</div>
+			<div class="time" id="deadline_time_<%= dec_detail.id %>">
+			スタートまで:<span class="counter" id="deadline_<%= dec_detail.id %>"></span></div>
+			<div class="member" id="member-parts-area"></div>
 		</div>
 		<div class="right">
-			<a href="javascript:void(0);" id="join-button-right"><div class="button">参加</div></a>
+			<a href="#" id="join-button-right"><div class="button" id="join-button-right-text">参加</div></a>
 		</div>
-		<div class="participant">
-			<img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg"><img src="https://si0.twimg.com/profile_images/1724676347/kunmura_normal.jpg">
-			</div>
+		<div class="participant" id="dec-supporters_<%= dec_detail.id %>">
 		</div>
 	</div>
 <div class="left-content">
@@ -19,7 +18,7 @@
 		<div class="details">
 			<%- dec_detail.detail %>
 		</div>
-		<a href="#" id="join-button-bottom"><div class="btn">参加する</div></a>
+		<a href="#" id="join-button-bottom"><div class="btn" id="join-button-bottom-text">参加する</div></a>
 	</div>
 <div class="right-content">
 		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
@@ -52,49 +51,87 @@
 		</ul>
 	</h2></div>
 <div class="clear"></div>
+<div id="write-script-area"></div>
 
 <script type="text/javascript">
 
   $().ready(function () {
-    $.ajax({
-      type: "GET",
-      url: "/get-is-supporters",
-      data: {dec_id: <%= dec_detail.id %>, user_id: 1},
-      success: function(data){
 
-      },
-      error: function(data){
+    // カウントダウンパーツの書き出し
+    var countdown_parts = makeCountDownParts("<%= dec_detail.deadline %>", <%= dec_detail.id %>);
+    $('#write-script-area').append(countdown_parts);
 
-      }
-    });
+    // 参加者数の書き出し
+    var target_num = <%= dec_detail.target_num %>;
+    var supporter_num = <%= dec_detail.supporter_num %>;
+    var member_parts = makeMemberParts(target_num, supporter_num);
+    $('#member-parts-area').append(member_parts);
+
+    // サポーターリストパーツの書き出し
+    var participant_parts = makeParticipantParts(<%= dec_detail.id %>);
+    $('#write-script-area').append(participant_parts);
+
+
+
+    // 参加状態のチェック
+    if (target_num === supporter_num) {
+      $('#join-button-right').text('満員御礼');
+      $('#join-button-bottom').text('満員御礼');
+    } else {
+      $.ajax({
+        type: 'GET',
+        url: '/get-is-supporters',
+        data: {dec_id: <%= dec_detail.id %>},
+        success: function(data){
+          if (data.res_flg) {
+            $('#join-button-right').text('参加済み');
+            $('#join-button-bottom').text('参加済み');
+          }
+        },
+        error: function(data){
+          if (data.status === 401) {
+            $('#join-button-right').text('ログインが必要です');
+            $('#join-button-bottom').text('ログインが必要です');
+          }
+        }
+      });
+
+    }
   });
 
 
 
-    $('#join-button-right, #join-button-bottom').click(function() {
-      var obj = $(this);
-      obj.hide();
-      $('#view-more-loader').show();
+  $('#join-button-right-text, #join-button-bottom-text').click(function() {
+    var obj = $(this);
 
-      $.ajax({
-        type: "POST",
-        url: "/join-commit",
-        data: {id: <%= dec_detail.id %>},
-        success: function(msg){
-          //$('#mdl_pbody').text(msg.text);
-          //$('#mdl_footer').hide();
-          //if (msg.cnt_up) {
-          //  var new_dec_supporter_num = $('#dec_supporter_num').text();
-          //  new_dec_supporter_num++;
-          //  $('#dec_supporter_num').text(new_dec_supporter_num);
-          //  $('#dec_supporter_num_foot').text(new_dec_supporter_num);
-          //}
-        },
-        error: function(data){
-          // error
+    var loader_img = $('<img src="/img/loader.gif">');
+    obj.html(loader_img);
+
+    $.ajax({
+      type: 'POST',
+      url: '/join-commit',
+      data: {id: <%= dec_detail.id %>},
+      success: function(data){
+        if (data.join_flg === 'ok') {
+          // 参加した
+          $('#join-button-right').text('参加済み');
+          $('#join-button-bottom').text('参加済み');
+          // 人数も変更
+          var sup_cnt = $('#member-counter').text();
+          sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) - 1;
+          if (sup_cnt > 0) {
+            $('#member-counter').text('残り'+sup_cnt+'人');
+          } else {
+            $('#member-counter').text('満員御礼');
+          }
         }
-      });
+
+      },
+      error: function(data){
+        // error
+      }
     });
+  });
 
 
 </script>
