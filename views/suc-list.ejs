@@ -1,2 +1,60 @@
-<p>suc-list</p>
-<p><a href="/suc/10">detail</a></p>
+<script type="text/javascript">
+<!--
+$().ready(function(){
+	var last_id = 0;
+	var write_data = '';
+	<% for (var i in suc_list) { %>
+		var event_list = Object;
+		event_list.id = <%= suc_list[i].id %>;
+		event_list.title = "<%= suc_list[i].title %>";
+		event_list.user_name = "<%= suc_list[i].user_name %>";
+		event_list.user_image = "<%= suc_list[i].user_image %>";
+		event_list.deadline = "<%= suc_list[i].deadline %>";
+		event_list.target_num = <%= suc_list[i].target_num %>;
+		event_list.supporter_num = <%= suc_list[i].supporter_num %>;
+		write_data += makeSuccessListParts(event_list);
+		last_id = <%= suc_list[i].id %>;
+	<% } %>
+	$('#ul-events').append(write_data);
+	$('#last_id').html(last_id);
+});
+-->
+</script>
+
+<div class="main-img"></div>
+	<div class="left-content">
+		<ul id="ul-events">
+			<!-- $()ready() -->
+		</ul>
+	</div>
+	<div class="right-content">
+		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
+		<h2 class="title-sub">HOT HOUSE LOG<h2>
+		<ul>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+		</ul>
+		<h2 class="title-sub">おすすめ HOUSE LOG<h2>
+		<ul>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+		</ul>
+		<h2 class="title-sub">VIEW ランキング<h2>
+		<ul>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
+		</ul>
+	</div>
+	<div class="clear"></div>

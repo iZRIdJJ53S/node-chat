@@ -13,9 +13,8 @@
  */
 $('#view-more-events').click(function() {
 
-  console.log("click");
-  
   var obj = $(this);
+  
   $('#view-more-events').hide();
   $('#view-more-loader').show();
   
@@ -24,7 +23,7 @@ $('#view-more-events').click(function() {
   $.ajax({
     type: "GET",
     url: "/get-events",
-    data: {last_id: last_id, limit: 2, dec_status: 2},
+    data: {last_id: last_id, limit: 5, dec_status: 2},
     success: function(data){
     	console.log(data);
 	  if(data.text=="no result"){
@@ -52,7 +51,7 @@ $('#view-more-events').click(function() {
 });
 
 /**
- * 「もっと見る」で出すイベントを１件生成します。
+ * EVENTを１件リスト用に生成します。
  * 
  * @class イベントリストの生成クラスです。<br>
  * event_dataの内容に合わせてリストを生成します。
@@ -66,7 +65,7 @@ function makeEventListParts(event_data) {
     write_data += '<div class="left">';
     write_data += '<div class="icon"><img src="'+event_data.user_image+'"></div>';
     write_data += '<h3 class="title">';
-    write_data += event_data.title+'<br><span class="tag">一緒に楽しむメンバ</span>';
+    write_data += event_data.title+'<br><span class="username">by '+event_data.user_name+'</span><br><span class="tag">一緒に楽しむメンバ</span>';
     if (event_data.status === 2) {
       write_data += '<span class="status-a">参加者募集中</span>';
     } else {
@@ -77,15 +76,54 @@ function makeEventListParts(event_data) {
     write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
     write_data += '</div>';
 	write_data += makeCountDownParts(event_data.deadline,event_data.id);	//deadline script
-	write_data += '<div class="member" id="member-parts-area">';
-	write_data += makeMemberParts(event_data.target_num,event_data.supporter_num);
+	write_data += '<div class="member" id="member-parts-area-'+event_data.id+'">';
+	write_data += makeMemberParts(event_data.id, event_data.target_num, event_data.supporter_num);
 	write_data += '</div>';
 	write_data += '</div>';
 	write_data += '<div class="right">';
-	write_data += '	<a href=""><div class="button">参加</div></a>';
+	write_data += ' <a href="#" name="join-button-right">';
+	write_data += ' <div class="button" id="join-button-right-'+event_data.id+'">参加</div></a>';
 	write_data += ' <a href="/dec/'+event_data.id+'"><div class="button">詳細</div></a>';
 	write_data += '</div>';
-    write_data += '<div class="participant" id="dec-supporters_'+event_data.id+'"></div>';
+    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'"></div>';
+    write_data += makeParticipantParts(event_data.id);	//participant script
+    write_data += makeCheckStatusJoinParts(event_data.id, event_data.target_num, event_data.supporter_num);	//checkStatusJoin script
+    write_data += '</li>';
+    /**
+     * イベントリスト
+     * @return {String}
+     */
+    return write_data;
+}
+
+/**
+ * HouseLogを１件リスト用に生成します。
+ * 
+ * @class イベントリストの生成クラスです。<br>
+ * event_dataの内容に合わせてリストを生成します。
+ * 
+ * @param {object} event_data	イベントデータ
+ */
+function makeSuccessListParts(event_data) {
+    var write_data = '';
+    write_data += '<li>';
+    write_data += '<div class="ticket-wrapper">';
+    write_data += '<div class="left">';
+    write_data += '<div class="icon"><img src="'+event_data.user_image+'"></div>';
+    write_data += '<h3 class="title">';
+    write_data += event_data.title+'<br><span class="username">by '+event_data.user_name+'</span><br><span class="tag">一緒に楽しむメンバ</span>';
+    write_data += '</h3>';
+    write_data += '<div class="view" id="view_'+event_data.id+'">';
+    write_data += 'view:';
+    write_data += '</div>';
+	write_data += '<div class="member" id="member-parts-area'+event_data.id+'">';
+	write_data += makeSuccessMemberParts(event_data.target_num,event_data.supporter_num);
+	write_data += '</div>';
+	write_data += '</div>';
+	write_data += '<div class="right">';
+	write_data += '	<a href="/suc/'+event_data.id+'"><div class="button">見る</div></a>';
+	write_data += '</div>';
+    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'"></div>';
     write_data += makeParticipantParts(event_data.id);	//participant script
     write_data += '</li>';
     /**
@@ -129,13 +167,21 @@ function makeCountDownParts(deadline,id){
     return write_data;
 }
 
-function makeMemberParts(target_num,supporter_num){
+function makeMemberParts(event_id, target_num, supporter_num){
 	var write_data = '参加者:';
 	if (target_num === supporter_num) {
-		write_data += '<span class="counter" id="member-counter">'+supporter_num+'人</span>/'+target_num+'人';
+		write_data += '<span class="counter" id="member-counter-'+event_id+'">'
+		write_data += supporter_num+'人</span>/'+target_num+'人';
 	} else {
-		write_data += '<span class="counter" id="member-counter">残り'+(target_num-supporter_num)+'人</span>/'+target_num+'人';
+		write_data += '<span class="counter" id="member-counter-'+event_id+'">'
+		write_data += '残り'+(target_num-supporter_num)+'人</span>/'+target_num+'人';
 	}
+	return write_data;
+}
+
+function makeSuccessMemberParts(target_num,supporter_num){
+	var write_data = '参加者: ';
+	write_data += supporter_num+'人/'+target_num+'人';
 	return write_data;
 }
 
@@ -152,7 +198,7 @@ function makeParticipantParts(id){
 	write_data += 'for (var j = 0; j < data.supporter_data.length; j++){';
 	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
 	write_data += '}';
-	write_data += '$("#dec-supporters_'+id+'").append(img_tag);';
+	write_data += '$("#dec-supporters-'+id+'").append(img_tag);';
 	write_data += '},';
 	write_data += 'error: function(data){';
 	write_data += '}';
@@ -161,6 +207,79 @@ function makeParticipantParts(id){
 	write_data += '</scr'+'ipt>';
 	return write_data;
 }
+
+
+function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
+  var write_data = '';
+  write_data += '<script type="text/javascript">';
+  write_data += '  if ('+target_num+' === '+supporter_num+') {';
+  write_data += '    $("#join-button-right-'+event_id+'").parent().parent().text("満員御礼");';
+  write_data += '  } else {';
+  write_data += '    $.ajax({';
+  write_data += "      type: 'GET',";
+  write_data += "      url: '/get-is-supporters',";
+  write_data += '      data: {dec_id: '+event_id+'},';
+  write_data += '      success: function(data){';
+  write_data += '        if (data.res_flg) {';
+  write_data += '          $("#join-button-right-'+event_id+'").parent().parent().text("参加済み");';
+  write_data += '        }';
+  write_data += '      },';
+  write_data += '      error: function(data){';
+  write_data += '        if (data.status === 401) {';
+  write_data += '          $("#join-button-right-'+event_id+'").parent().parent().text("ログインが必要で");';
+  write_data += '        }';
+  write_data += '      }';
+  write_data += '    });';
+  write_data += '  }';
+  write_data += '</scr'+'ipt>';
+  return write_data;
+}
+
+
+
+
+$('a[name="join-button-right"], a[name="join-button-bottom"]').click(function() {
+  var obj = $(this);
+console.log(obj);
+  var event_obj = obj.find('div');
+  var event_id  = event_obj.attr('id');
+  event_id = parseInt(event_id.match(/[0-9]+/));
+
+  var loader_img = $('<img src="/img/loader.gif">');
+  event_obj.html(loader_img);
+
+  $.ajax({
+    type: 'POST',
+    url: '/join-commit',
+    data: {id: event_id},
+    success: function(data){
+      if (data.join_flg === 'ok') {
+        // 参加した
+        $('#join-button-right-'+event_id).parent().parent().text('参加済み');
+        $('#join-button-bottom-'+event_id).parent().parent().text('参加済み');
+        // 人数も変更
+        var sup_cnt = $('#member-counter-'+event_id).text();
+        sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) - 1;
+        if (sup_cnt > 0) {
+          $('#member-counter-'+event_id).text('残り'+sup_cnt+'人');
+        } else {
+          $('#member-counter-'+event_id).text('満員御礼');
+        }
+
+        // アイコンも追加
+        var user_icon = $('<img>').attr('src', data.user_image);
+        $('#dec-supporters-'+event_id).append(user_icon);
+      }
+
+    },
+    error: function(data){
+      // error
+    }
+  });
+
+  return false;
+});
+
 
 
 

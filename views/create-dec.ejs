@@ -1,2 +1,128 @@
-<p>create-dec</p>
-<p>登録フォームやね。うんそやね。</p>
+<div class="main-img"></div>
+<h2 class="title">CREATE EVENT</h2>
+<div class="full-form">
+<form id="full-form" method="post" action="/create-event" enctype="multipart/form-data">
+		<h3>EVENT</h3>
+		<div class="form-container">
+			<div class="title">イベント名</div>
+			<div class="content"><input type="text" size="30" id="title" name="title"></div>
+			<div class="side"></div>
+		</div>
+		<div class="form-container">
+			<div class="title">背景画像</div>
+			<div class="content">
+				<input type="file" size="30" id="dec-image">
+				<div class="uploadimage"></div>
+			</div>
+			<div class="side"></div>
+		</div>
+		<div class="form-container">
+			<div class="title">概要</div>
+			<div class="content"><textarea cols="40" rows="2" id="description" name="description"></textarea></div>
+			<div class="side"></div>
+		</div>
+		<div class="form-container">
+			<div class="title">詳細</div>
+			<div class="content"><textarea cols="40" rows="10" id="detail" name="detail"></textarea></div>
+			<div class="side">タイトルは&lt;h3&gt;で囲んでください。<br>例）&lt;h3&gt;タイトル&lt;/h3&gt;<br><br>文章は&lt;p&gt;で囲んでください。<br>例）&lt;p&gt;文章&lt;/p&gt;</div>
+		</div>
+		<div class="form-container">
+			<div class="title">開始日</div>
+			<div class="content"><input type="text" id="deadline" name="deadline"></div>
+			<div class="side"></div>
+		</div>
+		<div class="form-container">
+			<div class="title">目標人数</div>
+			<div class="content"><input type="text" size="10" id="target_num" name="target_num"></div>
+			<div class="side"></div>
+		</div>
+		<h3>HOUSE</h3>
+		<div class="form-container">
+			<div class="title">レンタル期間</div>
+			<div class="content">
+				<input type="radio" name="rental-time" value="1h" checked="">1時間
+				<input type="radio" name="rental-time" value="1d">1日
+				<input type="radio" name="rental-time" value="1w" disabled="disabled">1週間
+				<input type="radio" name="rental-time" value="1m" disabled="disabled">1ヶ月
+			</div>
+			<div class="side">1週間と1ヶ月のご利用はプレミア会員のみ可能です。</div>
+		</div>
+		<div class="form-container">
+			<div class="button">
+				<input type="submit" value="tukuru">
+				<span class="btn" id="submit-event">EVENTを作る</span>  <span class="btn">キャンセル</span>
+			</div>
+		</div>
+</form>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet">
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/localization/messages_ja.js"></script>
+<script src="/js/jquery.autosize.min.js?v=1.0"></script>
+
+<script type="text/javascript">
+<!--
+  $().ready(function(){
+    $('#deadline').datepicker();
+    $('#description').autosize();
+    $('#detail').autosize();
+
+
+    $("#full-form").validate({
+      rules: {
+        title: {
+          required: true
+        },
+        //description: {
+        //  required: true
+        //},
+        //detail: {
+        //  required: true
+        //},
+        //target_num: {
+        //  required: true,
+        //  number: true
+        //},
+        deadline: {
+          required: true,
+          date: true
+        }
+      },
+      messages: {
+        title: "タイトルを入力してください。",
+        description: "概要を入力して下さい",
+        detail: "詳細な内容を入力して下さい",
+        target_num: "有効な数字を入力して下さい",
+        deadline: "有効な日付を入力して下さい"
+      },
+      //errorClass: "alert-error",
+      errorElement: "span"
+    });
+
+  });
+
+  $('#submit-event').click(function() {
+    $.ajax({
+      type: 'POST',
+      url: '/create-event',
+      data: {title: $('#title').text()},
+      success: function(data){
+console.log(data);
+
+      },
+      error: function(data){
+        // error
+console.log(data);
+      }
+    });
+
+
+    //$('#full-form').submit();
+    //return false;
+  });
+
+//-->
+</script>

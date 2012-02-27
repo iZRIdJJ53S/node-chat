@@ -7,7 +7,9 @@ $().ready(function(){
 		var event_list = Object;
 		event_list.id = <%= dec_list[i].id %>;
 		event_list.title = "<%= dec_list[i].title %>";
+		event_list.user_name = "<%= dec_list[i].user_name %>";
 		event_list.user_image = "<%= dec_list[i].user_image %>";
+		event_list.deadline = "<%= dec_list[i].deadline %>";
 		event_list.target_num = <%= dec_list[i].target_num %>;
 		event_list.supporter_num = <%= dec_list[i].supporter_num %>;
 		write_data += makeEventListParts(event_list);
@@ -38,18 +40,45 @@ $().ready(function(){
 		<h2 class="title-sub">NEWS</h2>
 		<ul>
 			<li class="btn-sub">2/27 社内β公開</li>
-			<li class="btn-sub">2/27 社内β公開</li>
-			<li class="btn-sub">2/27 社内β公開</li>
-			<li class="btn-sub">2/27 社内β公開</li>
-			<li class="btn-sub">2/27 社内β公開</li>
 		</ul>
-		<h2 class="title-sub"><a href="/auth/twitter">TWITTER</a></h2>
+		<h2 class="title-sub">TWITTER</h2>
 		<ul>
-			<li></li>
+			<li>
+<script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: 4,
+  interval: 30000,
+  width: 350,
+  height: 300,
+  theme: {
+    shell: {
+      background: '#ffffff',
+      color: '#000333'
+    },
+    tweets: {
+      background: '#EEEEEE',
+      color: '#00b1d4',
+      links: '#ff6600'
+    }
+  },
+  features: {
+    scrollbar: false,
+    loop: false,
+    live: false,
+    behavior: 'all'
+  }
+}).render().setUser('syaberihouse').start();
+</script>
+			</li>
 		</ul>
 		<h2 class="title-sub">FACEBOOK</h2>
 		<ul>
-			<li></li>
+			<li>
+<iframe src="//www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FSyaberi-House%2F374958809181094&amp;width=350&amp;height=590&amp;colorscheme=light&amp;show_faces=true&amp;border_color&amp;stream=true&amp;header=true&amp;pageId=374958809181094" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:350px; height:590px;" allowTransparency="true"></iframe>
+			</li>
 		</ul>
 		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
 	</div>

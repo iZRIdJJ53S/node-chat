@@ -448,7 +448,7 @@ app.get('/', function (req, res) {
       ' WHERE d.status = ?'+
       ' GROUP BY d.id'+
       ' ORDER BY d.created_at DESC'+
-      ' LIMIT 2',
+      ' LIMIT 5',
       [FLG_SUPPORTER_WANT_STAT],
       function(err, results, fields) {
         if (err) {throw err;}
@@ -605,7 +605,7 @@ app.get('/suc', function (req, res) {
         } else {
 
           res.render('suc-list', {
-            'declaration_list': results
+            'suc_list': results
            //,'user_name': req.session.auth.user_name
            //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
@@ -629,12 +629,40 @@ app.get('/suc', function (req, res) {
 // ログ詳細
 // ----------------------------------------------
 app.get('/suc/:id', function (req, res) {
-  var dec_id = (req.params.id) ? req.params.id : '';
 
-  res.render('suc-detail', {
-    
-  });
-  return;
+  // ID が正しいかチェックする
+  var suc_id = (req.params.id) ? req.params.id : '';
+
+  // 正しいかDB に確認
+  client.query(
+    'SELECT d.id, d.created_at, d.title, d.description, d.detail, d.user_id'+
+    '  , d.target_num, d.deadline, d.status, d.image'+
+    '  , COUNT( s.declaration_id ) AS supporter_num'+
+    '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
+    '  , u.name AS user_name, u.image AS user_image'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS s ON d.id = s.declaration_id'+
+    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.id = ?'+
+    ' GROUP BY d.id'+
+    ' LIMIT 1',
+    [suc_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('suc_id error: no result');
+        return;
+      } else {
+        var detail_txt = results[0].detail;
+        detail_txt = detail_txt.replace(/\n/g, '<br />');
+        results[0].detail = detail_txt;
+        res.render('suc-detail', {
+          'suc_detail': results[0]
+        });
+        return;
+      }
+    }
+  );
 
 });
 
@@ -1428,7 +1456,14 @@ app.post('/join-commit', function (req, res) {
           [req.body.id, req.session.auth.user_id],
           function(err) {
             if (err) {throw err;}
-            res.json({join_flg: 'ok'}, 200);
+            res.json(
+              {join_flg: 'ok'
+               , user_id: req.session.auth.user_id
+               , user_name: req.session.auth.user_name
+               , user_image: req.session.auth.user_image
+              }
+              , 200
+            );
 
 
             // イベント参加メール送信

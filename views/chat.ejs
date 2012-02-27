@@ -1,2 +1,108 @@
-<p>chat desuyo</p>
-<p></p>
+<style type="text/css">
+.house_bg { background: url('<%= house_image %>'); }
+</style>
+
+<script type="text/javascript">
+<!--
+// house_bg
+$().ready(function(){
+	$('#main').addClass('house_bg');
+	
+	// participant script
+	var write_data ='';
+	write_data += makeParticipantParts(<%= house_id %>);
+	$('#dec-supporters-<%= house_id %>').append(write_data);
+});
+-->
+</script>
+
+<div class="main-img">
+	<div class="ticket-wrapper">
+		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
+		<!--div class="left">
+			<div class="icon"><img src="<%= user_image %>"></div>
+				<h3 class="title"><%= house_name %><br><span class="username">by <%= user_name %></span><br><span class="tag">一緒に楽しむメンバ</span></h3>
+				<div class="member" id="member-parts-area-<%= house_id %>"></div>
+			</div>
+		<div class="right">
+		</div-->
+	<div class="participant" id="dec-supporters-<%= house_id %>">
+	</div>
+</div>
+
+<!-- OLD STYLE -->
+
+<div id="content-wrapper">
+
+<div class="container"><!-- container -->
+<div class="content"><!-- content -->
+
+<div class="content-header"><!-- content-header -->
+	</div><!-- /content-header -->
+	<div style="clear:both;"></div>
+	
+	<div class="content-body"><!-- content-body -->
+		<div class="main-chat"><!-- main-chat -->
+			<div class="title">voice</div>
+			<div class="chat"><!-- chat -->
+				<div class="chat-content"><!-- chat-content -->
+					<div class="icon"><img src="http://a0.twimg.com/profile_images/1602088631/aina0_normal.jpg"></div>
+					<div class="voice"><div class="name">ユナ</div>わたしコーヒー苦手<div class="time">12/4/2011 11:25:32</div></div>
+				</div><!-- /chat-content -->
+				<div class="chat-content"><!-- chat-content -->
+					<div class="icon"><img src="http://a2.twimg.com/profile_images/1662356984/454143842_-_____normal.jpg"></div>
+					<div class="voice"><div class="name">キョンピ</div>わかるー！！私も好き！<br><img class="img" src="http://storage.kanshin.com/free/img_55/551447/k1378943398.jpg"><div class="time">12/4/2011 11:24:50</div></div>
+				</div><!-- /chat-content -->
+				<div class="chat-content"><!-- chat-content -->
+					<div class="icon"><img src="http://a0.twimg.com/profile_images/1321226077/_______normal.jpg"></div>
+					<div class="voice"><div class="name">セヨン</div>オーソドックスなカフェラテ♪<div class="time">12/4/2011 11:24:12</div></div>
+				</div><!-- /chat-content -->
+				<div class="chat-content"><!-- chat-content -->
+					<div class="icon"><img src="http://a2.twimg.com/profile_images/1662356984/454143842_-_____normal.jpg"></div>
+					<div class="voice"><div class="name">キョンピ</div>あにょはせよ！<br>一番好きなコーヒーは何ですか？<div class="time">12/4/2011 11:23:12</div></div>
+				</div><!-- /chat-content -->
+			</div><!-- /chat -->			
+		</div><!-- /main-chat -->
+		<div class="main-view"><!-- main-view -->
+			<div class="inputleft"><img src="/img/chatleft.png"></div>
+			<div class="input"><!-- input -->
+				<form>
+					<table class="" cellspacing="0" cellpadding="0">
+					<tbody>
+						<tr>
+						<td>
+							<div class="inputContainer">
+								<textarea>あにょはせよー！</textarea>
+							</div>
+						</td>
+						</tr>
+						<tr>
+						<td>
+							<div class="buttonContainer">
+							<label for="submit_1">
+							<input class="submitBtn" id="submit_1" type="submit" value="投稿">
+							</label>
+							</div>
+						</td>
+						</tr>
+					</tbody>
+					</table>
+				<form>
+			</div><!-- /input -->
+			<div class="title">共有VIEW</div>
+			<div class="view"><!-- view -->
+				<iframe width="500px" height="460px" src="http://img4.blogs.yahoo.co.jp/ybi/1/bb/5a/love_dream_peace_snp/folder/277530/img_277530_4203912_0?1317999387"></iframe>
+			</div><!-- /view -->
+			<div class="audience"><!-- audience -->
+				
+			</div><!-- /audience -->
+		</div><!-- /main-chat -->
+	</div><!-- /content-body -->
+	<div style="clear:both;"></div>
+
+</div>
+</div>
+
+</div>
+
+<!-- /OLD STYLE -->

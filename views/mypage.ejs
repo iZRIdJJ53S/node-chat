@@ -1,3 +1,40 @@
-<p>mypage</p>
-<p><a href="/create-dec">イベント作るよーーー</a></p>
-<p><a href="/my-setting">setting GO!</a></p>
+<script type="text/javascript">
+<!--
+$().ready(function(){
+	var last_id = 0;
+	var write_data = '';
+	// ul-my-events
+	<% for (var i in dec_list) { %>
+		var event_list = Object;
+		event_list.id = <%= dec_list[i].id %>;
+		event_list.title = "<%= dec_list[i].title %>";
+		event_list.user_name = "<%= dec_list[i].user_name %>";
+		event_list.user_image = "<%= dec_list[i].user_image %>";
+		event_list.deadline = "<%= dec_list[i].deadline %>";
+		event_list.target_num = <%= dec_list[i].target_num %>;
+		event_list.supporter_num = <%= dec_list[i].supporter_num %>;
+		write_data += makeEventListParts(event_list);
+		last_id = <%= dec_list[i].id %>;
+	<% } %>
+	$('#ul-my-events').append(write_data);
+});
+-->
+</script>
+
+	<div class="main-img"></div>
+
+	<div class="left-content">
+		<h2 class="title">MY EVENT LIST</h2>
+		<ul id="ul-my-events">
+			<!-- $()ready() -->
+		</ul>
+	</div>
+
+	<div class="right-content">
+		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
+		<ul>
+			<a href="/create-dec"><li class="btn">新しいEVENTを作る</li></a>
+			<a href="/my-setting"><li class="btn">プロフィール設定</li></a>
+		</ul>
+	</h2></div>
+<div class="clear"></div>

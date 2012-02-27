@@ -1,7 +1,7 @@
 /* 
 	SYABERI-HOUSE Layout Stylesheet
-	v0.1
-	Last Updated: 2012-2-21
+	v0.3
+	Last Updated: 2012-2-26
 	Author: Kunshiro Murayama
 */
 
@@ -51,7 +51,7 @@ a:active{color: #00a0c6;}
 	border-bottom: 3px #222 solid;
 }
 	.header-content{
-		padding: 10px;
+		padding: 10px 10px 2px 10px;
 	}
 		.header .logo{
 			float: left;
@@ -75,11 +75,17 @@ a:active{color: #00a0c6;}
 			float: right;
 		}
 			.header .menu-right ul{
-				margin: 3px 10px 0 10px;
+				margin: 3px 0 10px 10px;
 			}
 				.menu-right ul li{
 					float: left;
 					margin-right: 15px;
+					font-size: 22px;
+					font-weight: bold;
+				}
+				.menu-right ul li:last-child{
+					float: left;
+					margin-right: 0;
 					font-size: 22px;
 					font-weight: bold;
 				}
@@ -103,37 +109,66 @@ a:active{color: #00a0c6;}
 	.main .main-content{
 		width: 950px;
 	    margin: 0 auto;
+	    padding-bottom: 10px;
     	text-align: left;
 	}
 		.main-content .main-img{
 			padding-top: 15px;
 		    margin-bottom: 15px;
 		}
+		.main-content .details{
+			border: 1px #DEDEDE solid;
+			background: #FFFFFF;
+			margin-bottom: 16px;
+			padding: 20px;
+		}
+			.main-content .details .details-title{
+				font-size: 24px;
+				border-bottom: 1px #DFDFDF solid;
+				padding-bottom: 3px;
+				margin-bottom: 10px;
+			}
+			.main-content .details .details-body{
+				margin-bottom: 25px;
+			}
+			.main-content .details .details-left{
+				float: left;
+				width: 620px;
+			}
+			.main-content .details .details-right{
+				float: right;
+				width: 270px;
+			}
+				.main-content .details .details-right .view-counter{
+					text-align: center;
+					font-size: 24px;
+					font-weight: bold;
+					border: 10px #DFDFDF solid;
+					padding: 10px;
+					margin-bottom: 10px;
+				}
+				.main-content .details .details-right .view-counter p{
+					color: #999999;
+					font-size: 20px;
+					padding: 4px;
+				}
+				.main-content .details .details-right .content{
+					font-size: 12px;
+					border-left: 1px #DFDFDF solid;
+					padding: 10px;
+					margin-bottom: 10px;
+				}
 		.main .main-content .left-content{
 			float: left;
 			width: 580px;
 			margin-bottom: 10px;
 			padding-right: 20px;
 		}
-			.left-content .details{
-				border: 1px #DEDEDE solid;
-				background: #FFFFFF;
-				margin-bottom: 16px;
-				padding: 20px;
-			}
-			.left-content .details .details-title{
-				font-size: 24px;
-				border-bottom: 1px #DFDFDF solid;
-				padding-bottom: 3px;
-				margin-bottom: 10px;
-			}
-			.left-content .details .details-body{
-				margin-bottom: 25px;
-			}
 		.main .main-content h2.title{
 			font-size: 24px;
 			margin-bottom: 10px;
-			text-shadow: 0 -2px 1px #FFF,-2px 0 1px #FFF,2px 0 1px #FFF,0 2px 1px #FFF;
+			color: #333;
+			text-shadow: 0 -1px 0 #FFF,1px 0 0 #FFF, 0 1px 0 #FFF, -1px 0 0 #FFF;
 			font-weight: bold;
 		}
 		.main .main-content h2.title-sub{
@@ -141,7 +176,7 @@ a:active{color: #00a0c6;}
 			margin-bottom: 10px;
 			color: #666;
 			text-align: right;
-			text-shadow: 0 -2px 1px #FFF,-2px 0 1px #FFF,2px 0 1px #FFF,0 2px 1px #FFF;
+			text-shadow: 0 -1px 0 #FFF,1px 0 0 #FFF, 0 1px 0 #FFF, -1px 0 0 #FFF;
 			font-weight: bold;
 		}
 		.main .main-content ul li{
@@ -166,6 +201,11 @@ a:active{color: #00a0c6;}
 						-webkit-border-radius: 8px;
 						-moz-border-radius: 8px;
 					}
+				.ticket-wrapper .left .username{
+					color: #666;
+					font-size: 20px;
+					padding: 2px;
+				}
 				.ticket-wrapper .left .tag{
 					color: #222;
 					font-size: 12px;
@@ -205,17 +245,21 @@ a:active{color: #00a0c6;}
 					padding-top: 20px;
 					padding-left: 5px;
 				}
-				.ticket-wrapper .left .counter{
-					background: #222222;
-					color: #FFFFFF;
-					padding: 2px;
-					margin: 0 10px;
-					/*box-shadow: 1px 1px 10px 1px #DFDFDF;*/
+				.ticket-wrapper .left .view{
+					font-size: 18px;
+					padding-top: 20px;
+					padding-left: 5px;
 				}
 				.ticket-wrapper .left .member{
 					font-size: 18px;
 					padding-top: 10px;
 					padding-left: 5px;
+				}
+				.ticket-wrapper .left .counter{
+					background: #222222;
+					color: #FFFFFF;
+					padding: 2px;
+					margin: 0 10px;
 				}
 			.ticket-wrapper .right{
 				float: right;
@@ -250,13 +294,13 @@ a:active{color: #00a0c6;}
 					}
 			.ticket-wrapper .participant{
 				clear: both;
-				text-align: right;
-				padding: 1px 5px;
-				/*background-color: #DEDEDE;*/
-				border-top: 2px #DFDFDF dotted;
+				text-align: left;
+				padding: 4px 0px 2px 6px;
+				background-color: #DEDEDE;
+				/*border-top: 2px #DFDFDF dashed;*/
 			}
 				.ticket-wrapper .participant img{
-					width: 26px;
+					width: 24px;
 					margin: 1px;
 					/*border-radius: 6px;
 					-webkit-border-radius: 6px;
@@ -295,7 +339,58 @@ a:active{color: #00a0c6;}
 			.right-content ul{
 				margin-bottom: 10px;
 			}
-		
+		.main-content .full-form{
+			border: 1px #DEDEDE solid;
+			background: #FFFFFF;
+			margin-bottom: 16px;
+			padding: 20px;
+		}
+			.full-form h3{
+				color: #DFDFDF;
+				border-left: 3px #DFDFDF solid;
+				padding: 10px 0 10px 10px;
+				margin: 10px 0;
+			}
+			.full-form .form-container{
+				width: 100%;
+				clear: both;
+				background: #FFFFFF;
+				display: table;
+			}
+				.full-form .form-container .title{
+					width: 150px;
+					padding: 10px;
+					display: table-cell;
+					vertical-align: top;
+				}
+				.full-form .form-container .content{
+					padding: 10px;
+					display: table-cell;
+					vertical-align: top;
+				}
+				.full-form .form-container .side{
+					width: 250px;
+					font-size: 12px;
+					color: #666666;
+					border-left: 1px #DFDFDF solid;
+					padding: 10px;
+					display: table-cell;
+					vertical-align: top;
+				}
+				.full-form .form-container .uploadimage{
+					width: 250px;
+					padding: 10px;
+				}
+					.full-form .form-container .uploadimage img{
+						width: 250px;
+					}
+				.full-form .form-container .button{
+					text-align: left;
+					background: #EEEEEE;
+					border-top: 1px #DFDFDF solid;
+					padding: 40px;
+					margin-top: 30px;
+				}
 		
 		.btn{
 			padding: 20px;
@@ -346,7 +441,7 @@ a:active{color: #00a0c6;}
 			float: left;
 		}
 		.footer-content .ticket-wrapper{
-				width: 285px;
+				width: 290px;
 				padding: 10px;
 				margin: 0 4px 4px 0;
 				border: 1px #DFDFDF solid;
@@ -369,6 +464,11 @@ a:active{color: #00a0c6;}
 						-webkit-border-radius: 8px;
 						-moz-border-radius: 8px;
 					}
+				.ticket-wrapper .username{
+					color: #666;
+					font-size: 16px;
+					padding: 2px;
+				}
 				.footer-content .ticket-wrapper .tag{
 					color: #222;
 					font-size: 12px;

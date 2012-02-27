@@ -1,2 +1,49 @@
-<p>suc-detail</p>
-<p><a href="/ch/10">chat chat</a></p>
+<style type="text/css">
+
+.house_bg { background: url('http://files.hangame.co.jp/blog/2011/65/49193ff9/07/13/35709618/49193ff9_1310504154888.jpg'); }
+</style>
+
+<script type="text/javascript">
+<!--
+// house_bg
+$().ready(function(){
+	$('#main').addClass('house_bg');
+});
+-->
+</script>
+
+
+<div class="main-img">
+		<div class="ticket-wrapper">
+			<div class="left">
+				<div class="icon"><img src="<%= suc_detail.image %>"></div>
+				<h3 class="title"><%= suc_detail.title %><br><span class="tag">一緒に楽しむメンバ</span></h3>
+				<div class="time">期間: <%= suc_detail.deadline %> - ???</div>
+				<div class="member">参加者: <%= suc_detail.supporter_num %>人/<%= suc_detail.target_num %>人</div>
+			</div>
+			<div class="participant"></div>
+		</div>
+	</div>
+	<h2 class="title">LOGS</h2>
+	<div class="details">
+		<div class="details-left">
+			<h3 class="details-title">はじめに</h3>
+			<p class="details-body">照英のコラ画像好きに贈る大イベント。「参加」から気軽に入ってくださいー！</p>
+			<h3 class="details-title">概要</h3>
+			<p class="details-body">照英の画像で作って欲しいこら画像を注文すると、主がどんどん画像をつくるHOUSEです。</p>
+			<h3 class="details-title">管理人プロフィール</h3>
+			<p class="details-body">kunmura<br>twitterID:xxx<br>mixi:xxx</p>
+		</div>
+		<div class="details-right">
+			<div class="view-counter">100,000<p>view</p></div>
+			<div class="content">
+				<h3 class="details-title">はじめに</h3>
+				<p class="details-body">照英のコラ画像好きに贈る大イベント。「参加」から気軽に入ってくださいー！</p>
+				<h3 class="details-title">概要</h3>
+				<p class="details-body">照英の画像で作って欲しいこら画像を注文すると、主がどんどん画像をつくるHOUSEです。</p>
+				<h3 class="details-title">管理人プロフィール</h3>
+				<p class="details-body">kunmura<br>twitterID:xxx<br>mixi:xxx</p>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>

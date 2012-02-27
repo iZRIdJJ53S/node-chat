@@ -7,7 +7,9 @@ $().ready(function(){
 		var event_list = Object;
 		event_list.id = <%= dec_list[i].id %>;
 		event_list.title = "<%= dec_list[i].title %>";
+		event_list.user_name = "<%= dec_list[i].user_name %>";
 		event_list.user_image = "<%= dec_list[i].user_image %>";
+		event_list.deadline = "<%= dec_list[i].deadline %>";
 		event_list.target_num = <%= dec_list[i].target_num %>;
 		event_list.supporter_num = <%= dec_list[i].supporter_num %>;
 		write_data += makeEventListParts(event_list);
@@ -23,7 +25,15 @@ $().ready(function(){
 
 	<div class="left-content">
 			<ul id="ul-events">
-				<li><a href="013.html"><div class="create btn">新しいEVENTを作る</div></a></li>
+				<li><a href="/create-dec"><div class="create btn">新しいEVENTを作る</div></a></li>
+				<!-- $()ready() -->
+			</ul>
+			<ul>
+				<li>
+					<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
+					<a id="view-more-events"><div class="ticket-wrapper-button">もっと見る</div></a>
+					<div id="last_id" style="display:none;"><!-- $()ready() --></div>
+				</li>
 			</ul>
 		</div>
 
