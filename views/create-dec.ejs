@@ -1,21 +1,21 @@
 <div class="main-img"></div>
 <h2 class="title">CREATE EVENT</h2>
 <div class="full-form">
-<form id="full-form" method="post" action="/create-event" enctype="multipart/form-data">
+<form id="full-form-tag" name="full-form-tag" method="post" action="/create-event" enctype="multipart/form-data">
 		<h3>EVENT</h3>
 		<div class="form-container">
 			<div class="title">イベント名</div>
-			<div class="content"><input type="text" size="30" id="title" name="title"></div>
+			<div class="content"><input type="text" size="30" id="title" name="title" value=""></div>
 			<div class="side"></div>
 		</div>
-		<div class="form-container">
+		<!--div class="form-container">
 			<div class="title">背景画像</div>
 			<div class="content">
 				<input type="file" size="30" id="dec-image">
 				<div class="uploadimage"></div>
 			</div>
 			<div class="side"></div>
-		</div>
+		</div-->
 		<div class="form-container">
 			<div class="title">概要</div>
 			<div class="content"><textarea cols="40" rows="2" id="description" name="description"></textarea></div>
@@ -33,7 +33,7 @@
 		</div>
 		<div class="form-container">
 			<div class="title">目標人数</div>
-			<div class="content"><input type="text" size="10" id="target_num" name="target_num"></div>
+			<div class="content"><input type="text" size="10" id="target_num" name="target_num" value=""></div>
 			<div class="side"></div>
 		</div>
 		<h3>HOUSE</h3>
@@ -49,7 +49,6 @@
 		</div>
 		<div class="form-container">
 			<div class="button">
-				<input type="submit" value="tukuru">
 				<span class="btn" id="submit-event">EVENTを作る</span>  <span class="btn">キャンセル</span>
 			</div>
 		</div>
@@ -62,6 +61,7 @@
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/localization/messages_ja.js"></script>
 <script src="/js/jquery.autosize.min.js?v=1.0"></script>
+<script src="/js/jquery.exdate.js"></script>
 
 <script type="text/javascript">
 <!--
@@ -71,21 +71,21 @@
     $('#detail').autosize();
 
 
-    $("#full-form").validate({
+    $("#full-form-tag").validate({
       rules: {
         title: {
           required: true
         },
-        //description: {
-        //  required: true
-        //},
-        //detail: {
-        //  required: true
-        //},
-        //target_num: {
-        //  required: true,
-        //  number: true
-        //},
+        description: {
+          required: true
+        },
+        detail: {
+          required: true
+        },
+        target_num: {
+          required: true,
+          number: true
+        },
         deadline: {
           required: true,
           date: true
@@ -105,23 +105,59 @@
   });
 
   $('#submit-event').click(function() {
+    var title = $('#title').val()
+      , description = $('#description').val()
+      , detail      = $('#detail').val()
+      , target_num  = $('#target_num').val()
+      , deadline    = $('#deadline').val()
+      , rental_time = $('input[name=rental-time]:checked').val()
+      ;
+
+    // rental_time の計算
+    var date_obj = $.exDate(deadline);
+    var date_rental;
+    switch(rental_time) {
+      // 1000 == (ミリ秒=1秒)
+      case '1d':
+        date_obj.setTime(date_obj.getTime() + 1000*86400);
+        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi:ss');
+        break;
+      case '1w':
+        break;
+      case '1m':
+        break;
+      default:
+        // 1h
+        date_obj.setTime(date_obj.getTime() + 1000*3600);
+        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi:ss');
+        break;
+    };
+
+    var post_data = {
+        title: title
+      , description: description
+      , detail:      detail
+      , target_num:  target_num
+      , deadline:    deadline
+      , rental_time: date_rental
+    };
+
     $.ajax({
       type: 'POST',
       url: '/create-event',
-      data: {title: $('#title').text()},
+      data: post_data,
       success: function(data){
-console.log(data);
-
+        if (data.flg_create) {
+          // post成功
+          location.href='/mypage';
+        }
       },
       error: function(data){
         // error
-console.log(data);
       }
     });
 
-
-    //$('#full-form').submit();
-    //return false;
+    return false;
   });
 
 //-->

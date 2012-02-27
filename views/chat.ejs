@@ -2,20 +2,6 @@
 .house_bg { background: url('<%= house_image %>'); }
 </style>
 
-<script type="text/javascript">
-<!--
-// house_bg
-$().ready(function(){
-	$('#main').addClass('house_bg');
-	
-	// participant script
-	var write_data ='';
-	write_data += makeParticipantParts(<%= house_id %>);
-	$('#dec-supporters-<%= house_id %>').append(write_data);
-});
--->
-</script>
-
 <div class="main-img">
 	<div class="ticket-wrapper">
 		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
@@ -26,8 +12,8 @@ $().ready(function(){
 			</div>
 		<div class="right">
 		</div-->
-	<div class="participant" id="dec-supporters-<%= house_id %>">
-	</div>
+	<div class="participant" id="audienceview"></div>
+    <div class="header-icon" id="users_view"></div>
 </div>
 
 <!-- OLD STYLE -->
@@ -44,35 +30,19 @@ $().ready(function(){
 	<div class="content-body"><!-- content-body -->
 		<div class="main-chat"><!-- main-chat -->
 			<div class="title">voice</div>
-			<div class="chat"><!-- chat -->
-				<div class="chat-content"><!-- chat-content -->
-					<div class="icon"><img src="http://a0.twimg.com/profile_images/1602088631/aina0_normal.jpg"></div>
-					<div class="voice"><div class="name">ユナ</div>わたしコーヒー苦手<div class="time">12/4/2011 11:25:32</div></div>
-				</div><!-- /chat-content -->
-				<div class="chat-content"><!-- chat-content -->
-					<div class="icon"><img src="http://a2.twimg.com/profile_images/1662356984/454143842_-_____normal.jpg"></div>
-					<div class="voice"><div class="name">キョンピ</div>わかるー！！私も好き！<br><img class="img" src="http://storage.kanshin.com/free/img_55/551447/k1378943398.jpg"><div class="time">12/4/2011 11:24:50</div></div>
-				</div><!-- /chat-content -->
-				<div class="chat-content"><!-- chat-content -->
-					<div class="icon"><img src="http://a0.twimg.com/profile_images/1321226077/_______normal.jpg"></div>
-					<div class="voice"><div class="name">セヨン</div>オーソドックスなカフェラテ♪<div class="time">12/4/2011 11:24:12</div></div>
-				</div><!-- /chat-content -->
-				<div class="chat-content"><!-- chat-content -->
-					<div class="icon"><img src="http://a2.twimg.com/profile_images/1662356984/454143842_-_____normal.jpg"></div>
-					<div class="voice"><div class="name">キョンピ</div>あにょはせよ！<br>一番好きなコーヒーは何ですか？<div class="time">12/4/2011 11:23:12</div></div>
-				</div><!-- /chat-content -->
+			<div id="lines1" class="chat"><!-- chat -->
 			</div><!-- /chat -->			
 		</div><!-- /main-chat -->
 		<div class="main-view"><!-- main-view -->
 			<div class="inputleft"><img src="/img/chatleft.png"></div>
 			<div class="input"><!-- input -->
-				<form>
+				<form id="send-message1">
 					<table class="" cellspacing="0" cellpadding="0">
 					<tbody>
 						<tr>
 						<td>
 							<div class="inputContainer">
-								<textarea>あにょはせよー！</textarea>
+								<textarea id="message1"></textarea>
 							</div>
 						</td>
 						</tr>
@@ -90,10 +60,10 @@ $().ready(function(){
 				<form>
 			</div><!-- /input -->
 			<div class="title">共有VIEW</div>
-			<div class="view"><!-- view -->
-				<iframe width="500px" height="460px" src="http://img4.blogs.yahoo.co.jp/ybi/1/bb/5a/love_dream_peace_snp/folder/277530/img_277530_4203912_0?1317999387"></iframe>
+			<div id="view_frame" class="view"><!-- view -->
+				
 			</div><!-- /view -->
-			<div class="audience"><!-- audience -->
+			<div id="disparea"><!-- audience -->
 				
 			</div><!-- /audience -->
 		</div><!-- /main-chat -->
@@ -106,3 +76,96 @@ $().ready(function(){
 </div>
 
 <!-- /OLD STYLE -->
+
+
+<script src='/js/jquery-simple-pubsub-0.2.1.js'></script>
+<script src='/js/jquery.filedrop.js?v=1.0'></script>
+<script src='/js/jquery.autosize.min.js?v=1.0'></script>
+<script src='/js/function.js?v=1.0'></script>
+<script src='/js/house.js?v=1.0'></script>
+<script src='/js/audience.js?v=1.0'></script>
+<script src='/js/chat.js?v=1.0'></script>
+<script src='/js/timer.js?v=1.0'></script>
+<script src='/js/player.js?v=1.0'></script>
+<script src='/js/user.js?v=1.0'></script>
+<script src='/js/users.js?v=1.0'></script>
+<script src='/js/filedrop-script.js?v=1.0'></script>
+<script src='/js/jquery.timeago.js?v=1.0'></script>
+<script src='//www.google.com/jsapi'></script>
+<script type="text/javascript">
+<!--
+
+  google.load("swfobject", "2.1");
+
+  $(document).ready(function() {
+	$('#main').addClass('house_bg');
+    $('#message1').autosize();
+
+	// participant script
+	//var write_data ='';
+	//write_data += makeParticipantParts(<%= house_id %>);
+	//$('#dec-supporters-<%= house_id %>').append(write_data);
+
+    // オーナーだったらsendmail 有効
+    if (<%= is_owner %>) {
+      // 何もしない
+    } else {
+      $('#send_mail').empty();
+    }
+
+
+    // サポーターだったらチャット有効
+    if (<%= is_supporter %> || <%= is_owner %>) {
+      // 特に何も無し
+    } else {
+      // chat 関連のエリアを無効
+      $('#message1').attr("disabled", "disabled");
+      $('#dropbox').empty().text('サポーターだけが投稿出来ます');
+      $('#submit_1').attr("disabled", "disabled");
+    }
+
+  });
+
+
+  function onHouseReady() {
+    // Ensure the DOM has been fully loaded.
+    $( function () {
+
+      console.log('user joining house.');
+
+      audience.init({});
+      //timer.init();
+
+      users.init({
+
+      });
+      chat.init({
+        user_id: '<%= user_id %>',
+        userName: '<%= user_name %>',
+        user_image: '<%= user_image %>'
+      });
+      house.init({
+        // server 側のres.render() から値が渡されてくる
+        // server 側でチェック済み
+        url_id: '<%= url_id %>',
+        house_id: '<%= house_id %>',
+        house_image: '<%= house_image %>',
+        user_id: '<%= user_id %>',
+        user_image: '<%= user_image %>'
+      });
+
+      console.log( 'house ready: true' );
+    });
+  }
+
+
+  // chat
+  onHouseReady();
+  // youtube
+  function onYouTubePlayerReady(playerId) {
+    player.init({
+    });
+  }
+
+//-->
+</script>

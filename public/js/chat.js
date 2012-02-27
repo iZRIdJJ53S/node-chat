@@ -1,6 +1,6 @@
 var chat = {
   init: function ( options ) {
-    this.section = $( 'section#content-wrapper' );
+    this.section = $( 'section' );
     this.messageList = this.section.find( '#lines1' );
     this.messageList2 = this.section.find( '#lines2' );
     this.userMessage = this.section.find( '#message1' );

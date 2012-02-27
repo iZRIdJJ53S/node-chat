@@ -1338,24 +1338,26 @@ app.post('/firstset', function (req, res) {
 
 /**
  * --------------------------------------------------------
- * POST: 宣言するの設定
+ * POST: イベント作成の設定
  * --------------------------------------------------------
  */
-app.post('/regist_dec', function (req, res) {
+app.post('/create-event', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
-    res.redirect('/');
+    res.json({ text: 'ログインして下さい' }, 401);
     return;
   }
 
   // リクエストチェック
-  logger.debug('----- app.post/regist_dec: ');logger.info(req.body);
-  var title = '';
-  var description = '';
-  var detail = '';
-  var target_num = 0;
-  var deadline = '';
-  var user_id = req.session.auth.user_id;
+  logger.debug('----- app.post/create-event: ');logger.info(req.body);
+  var title = ''
+    , description = ''
+    , detail      = ''
+    , target_num  = 0
+    , deadline    = ''
+    , rental_time = ''
+    , user_id     = req.session.auth.user_id
+    ;
 
   // validate
   try {
@@ -1364,31 +1366,33 @@ app.post('/regist_dec', function (req, res) {
     check(req.body.detail).notEmpty();
     check(req.body.target_num).isInt();
     check(req.body.deadline).isDate();
+    check(req.body.rental_time).isDate();
   } catch (e) {
     logger.error(e.message); //Invalid
-    res.redirect('/create_dec');
+    res.json({text: '不正なリクエストです'}, 400);
     return;
   }
 
   title = req.body.title;
   description = req.body.description;
-  detail = req.body.detail;
-  target_num = req.body.target_num;
-  deadline = req.body.deadline;
+  detail      = req.body.detail;
+  target_num  = req.body.target_num;
+  deadline    = req.body.deadline;
+  rental_time = req.body.rental_time;
 
   client.query(
     'INSERT INTO '+TABLE_DECLARATIONS+' ('+
     '  created_at, title, description, detail, user_id, target_num, deadline'+
-    '  , status, image'+
+    '  , rental_time, status, image'+
     ') VALUES ('+
-    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?'+
+    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?'+
     ')',
     [title, description, detail, user_id, target_num, deadline
-      , 2, ''
+      , rental_time, FLG_SUPPORTER_WANT_STAT, ''
     ],
     function(err) {
       if (err) {throw err;}
-      res.redirect('/mypage');
+      res.json({flg_create: true}, 200);
       return;
     }
   );
@@ -1449,9 +1453,9 @@ app.post('/join-commit', function (req, res) {
       if (results.length === 0) {
         client.query(
           'INSERT INTO '+TABLE_SUPPORTERS+'('+
-          '  declaration_id , user_id'+
+          '  created_at, declaration_id , user_id'+
           ') VALUES ('+
-          '  ?, ?'+
+          '  NOW(), ?, ?'+
           ')',
           [req.body.id, req.session.auth.user_id],
           function(err) {

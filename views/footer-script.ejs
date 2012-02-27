@@ -237,8 +237,7 @@ function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
 
 
 
-
-$('a[name="join-button-right"], a[name="join-button-bottom"]').click(function() {
+$('a[name="join-button-right"], a[name="join-button-bottom"]').live('click', function() {
   var obj = $(this);
 console.log(obj);
   var event_obj = obj.find('div');

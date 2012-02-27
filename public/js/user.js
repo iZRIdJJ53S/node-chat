@@ -30,7 +30,7 @@ User.prototype = {
 
   render_audience: function () {
     this.element = $( [
-      '<div id="audience-'+this.session_id+'" class="audience" style="float:left">',
+      '<div id="audience-'+this.session_id+'" class="audience" style="">',
         '<span class="audience-balloon" style="display:none;"></span>',
         '<img class="audience-avatar" src="'+this.audience_img+'">',
       '</div>'
