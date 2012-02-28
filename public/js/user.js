@@ -22,7 +22,8 @@ User.prototype = {
 
   render: function () {
     this.element = $( [
-        '<li><img id="'+this.session_id+'" src="'+this.avatar_img+'"></li>'
+        '<img id="'+this.session_id+'" src="'+this.avatar_img+'">'
+        //'<li><img id="'+this.session_id+'" src="'+this.avatar_img+'"></li>'
     ].join( '' ) );
 
     return this.element;
@@ -30,10 +31,11 @@ User.prototype = {
 
   render_audience: function () {
     this.element = $( [
-      '<div id="audience-'+this.session_id+'" class="audience" style="">',
-        '<span class="audience-balloon" style="display:none;"></span>',
-        '<img class="audience-avatar" src="'+this.audience_img+'">',
-      '</div>'
+      '<img id="'+this.session_id+'" class="audience-avatar" src="'+this.audience_img+'">',
+      //'<div id="audience-'+this.session_id+'" class="audience" style="">',
+      //  '<span class="audience-balloon" style="display:none;"></span>',
+      //  '<img class="audience-avatar" src="'+this.audience_img+'">',
+      //'</div>'
     ].join( '' ) );
 
     return this.element;

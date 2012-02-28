@@ -336,12 +336,16 @@ app.configure(function () {
   app.set('views', __dirname+'/views'); // テンプレートパス
   app.set('view engine', 'ejs'); // テンプレートエンジンの指定
 
+  //app.use(express.basicAuth(function(user, pass) {
+  //  return conf.basicAuth.user === user && conf.basicAuth.password === pass;
+  //}));
 });
 
 // develop only.
 app.configure('development', function(){
   logger.info('development mode');
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+
 });
 
 // product only.
@@ -357,6 +361,50 @@ app.configure('production', function(){
  * App routes.
  * --------------------------------------------------------
  */
+
+// IPアドレス制限
+app.all('*', function(req, res, next) {
+  var remote_ip = req.headers["x-forwarded-for"];
+
+  if (remote_ip.match(/^202\.229\.44\.[0-9]+$/) // nttr_ip
+      || remote_ip.match(/^202\.217\.72\.[0-9]+$/) // nttr_ip_tamachi
+      || remote_ip.match(/^110\.74\.103\.[0-9]+$/) // saito_ip
+      || remote_ip.match(/^106\.190\.146\.[0-9]+$/) // kmura_ip
+    ) {
+    // 通過
+  } else {
+    // 拒否
+    res.send('Sorry, access deny', 403);
+    return;
+  }
+
+  //if (req.headers["x-forwarded-for"].match(/^110\.74\.103\.([2-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|50))$/)) {
+    //res.send('Sorry, access deny', 403);
+    //return;
+  //} else {
+    //// リクエストヘッダから認証情報を取得する
+    //var authHeader = req.headers['authorization'] || '';
+    //// エンコードされている認証トークンを取得する
+    //var token = authHeader.split(/\s+/).pop() || '';
+    //// トークンをbase64デコードする
+    //var auth = new Buffer(token, 'base64').toString();
+
+    //// デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
+    //var parts = auth.split(/:/);
+    //var username = parts[0];
+    //var password = parts[1];
+
+    //// ユーザ名とパスワードが一致しない場合は、401を返却する
+    //if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
+    //    res.writeHead(401, {
+    //        'www-Authenticate': 'Basic realm="Authentication required"'
+    //    });
+    //    return;
+    //}
+
+  //}
+  next();
+});
 
 // ----------------------------------------------
 // auth 認証が完了したら来る処理
@@ -382,18 +430,21 @@ app.get('/auth/complete', function(req, res) {
       if (err) {throw err;}
       if (results[0]) {
         req.session.auth.user_id = results[0].id;
-        req.session.auth.mail_addr = results[0].mail_addr;
-      } else {
-        // メルアドを登録するフォームへ
-        // res.redirect();
-        // return;
+
+        if (results[0].mail_addr) {
+          req.session.auth.mail_addr = results[0].mail_addr;
+        } else {
+          // メルアドを登録するフォームへ
+          res.redirect('/firstset');
+          return;
+        }
       }
 
-      if (req.headers.referer) {
-        res.redirect(req.headers.referer);
-      } else {
+      //if (req.headers.referer) {
+      //  res.redirect(req.headers.referer);
+      //} else {
         res.redirect('/');
-      }
+      //}
       return;
 
     }
@@ -697,6 +748,38 @@ app.get('/regist-dec', function (req, res) {
 });
 
 // --------------------------------------------------------
+// firstset
+// --------------------------------------------------------
+app.get('/firstset', function (req, res) {
+
+  if (!__isAuthLogin(req)) {
+    // ログインしていないので、リダイレクト
+    res.redirect('/');
+    return;
+  }
+
+  // パラメータが正しいかDB に聞いてみる
+  client.query(
+    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+    [req.session.auth.user_id],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('user_id error: no result');
+        return;
+      } else {
+        res.render('firstset', {
+          'user_data': results
+        });
+        return;
+      }
+    }
+  );
+});
+
+
+
+// --------------------------------------------------------
 // mypage
 // --------------------------------------------------------
 app.get('/mypage', function (req, res) {
@@ -721,11 +804,19 @@ app.get('/mypage', function (req, res) {
 
   // 自分が宣言しているリストを取得
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.status, d.image'+
+    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    '  , d.target_num, d.deadline, d.status, d.image'+
+    '  , COUNT( spt.declaration_id ) AS supporter_num'+
+    '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+    '  , u.name AS user_name, u.image AS user_image'+
     ' FROM '+TABLE_DECLARATIONS+' AS d'+
-    ' WHERE user_id = ?'+
-    ' ORDER BY created_at DESC'+
-    ' LIMIT 3',
+    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.user_id = ?'+
+    //' WHERE d.user_id = ? AND d.status = ?'+
+    ' GROUP BY d.id'+
+    ' ORDER BY d.created_at DESC'+
+    ' LIMIT 10',
     [req.session.auth.user_id],
     function(err, results, fields) {
       if (err) {throw err;}
@@ -735,74 +826,80 @@ app.get('/mypage', function (req, res) {
         dec_list = results;
       }
 
+
+      res.render('mypage', {
+        'dec_list': dec_list
+      });
+      return;
+
       // 自分がサポーターになっているリストを取得
-      client.query(
-        'SELECT s.declaration_id, s.user_id AS supporter_id'+
-        '  , d.created_at, d.title, d.description, d.user_id AS owner_id'+
-        '  , d.target_num, d.deadline, d.status AS stat, d.image'+
-        ' FROM '+TABLE_SUPPORTERS+' AS s'+
-        ' INNER JOIN '+TABLE_DECLARATIONS+' AS d ON s.declaration_id = d.id'+
-        ' WHERE s.user_id = ?',
-        [req.session.auth.user_id],
-        function(err2, results2) {
-          if (err2) {throw err2;}
-          if (results2.length === 0) {
-            spt_comp_list = [];
-            spt_want_list = [];
-            spt_fail_list = [];
+      //client.query(
+      //  'SELECT s.declaration_id, s.user_id AS supporter_id'+
+      //  '  , d.created_at, d.title, d.description, d.user_id AS owner_id'+
+      //  '  , d.target_num, d.deadline, d.status AS stat, d.image'+
+      //  ' FROM '+TABLE_SUPPORTERS+' AS s'+
+      //  ' INNER JOIN '+TABLE_DECLARATIONS+' AS d ON s.declaration_id = d.id'+
+      //  ' WHERE s.user_id = ?',
+      //  [req.session.auth.user_id],
+      //  function(err2, results2) {
+      //    if (err2) {throw err2;}
+      //    if (results2.length === 0) {
+      //      spt_comp_list = [];
+      //      spt_want_list = [];
+      //      spt_fail_list = [];
 
-            res.render('mypage', {
-              'user_name': req.session.auth.user_name
-              , 'user_image': req.session.auth.user_image
-              , 'user_id': req.session.auth.user_id
-              , 'dec_list': dec_list
-              , 'spt_comp_list': spt_comp_list
-              , 'spt_want_list': spt_want_list
-              , 'spt_fail_list': spt_fail_list
-            });
-          } else {
-            var tmp_cnt;
-            var counter = {};
-            var max_length = results2.length;
-            for (var i = 0; i < max_length; i++) {
-              var stat = results2[i].stat;
-              if (counter[stat]) {
-                tmp_cnt = counter[stat];
-                counter[stat]++;
-              } else {
-                tmp_cnt = 0;
-                counter[stat] = 1;
-              }
+      //      res.render('mypage', {
+      //        'user_name': req.session.auth.user_name
+      //        , 'user_image': req.session.auth.user_image
+      //        , 'user_id': req.session.auth.user_id
+      //        , 'dec_list': dec_list
+      //        , 'spt_comp_list': spt_comp_list
+      //        , 'spt_want_list': spt_want_list
+      //        , 'spt_fail_list': spt_fail_list
+      //      });
+      //    } else {
+      //      var tmp_cnt;
+      //      var counter = {};
+      //      var max_length = results2.length;
+      //      for (var i = 0; i < max_length; i++) {
+      //        var stat = results2[i].stat;
+      //        if (counter[stat]) {
+      //          tmp_cnt = counter[stat];
+      //          counter[stat]++;
+      //        } else {
+      //          tmp_cnt = 0;
+      //          counter[stat] = 1;
+      //        }
 
-              switch (stat) {
-                case FLG_SUPPORTER_COMP_STAT:
-                  spt_comp_list[tmp_cnt] = results2[i];
-                  break;
-                case FLG_SUPPORTER_WANT_STAT:
-                  spt_want_list[tmp_cnt] = results2[i];
-                  break;
-                case FLG_SUPPORTER_FAIL_STAT:
-                  spt_fail_list[tmp_cnt] = results2[i];
-                  break;
-                default:
-                  break;
-              }
-            }
+      //        switch (stat) {
+      //          case FLG_SUPPORTER_COMP_STAT:
+      //            spt_comp_list[tmp_cnt] = results2[i];
+      //            break;
+      //          case FLG_SUPPORTER_WANT_STAT:
+      //            spt_want_list[tmp_cnt] = results2[i];
+      //            break;
+      //          case FLG_SUPPORTER_FAIL_STAT:
+      //            spt_fail_list[tmp_cnt] = results2[i];
+      //            break;
+      //          default:
+      //            break;
+      //        }
+      //      }
 
-            res.render('mypage', {
-              'user_name': req.session.auth.user_name
-              , 'user_image': req.session.auth.user_image
-              , 'user_id': req.session.auth.user_id
-              , 'dec_list': dec_list
-              , 'spt_comp_list': spt_comp_list
-              , 'spt_want_list': spt_want_list
-              , 'spt_fail_list': spt_fail_list
-            });
+      //      res.render('mypage', {
+      //        'user_name': req.session.auth.user_name
+      //        , 'user_image': req.session.auth.user_image
+      //        , 'user_id': req.session.auth.user_id
+      //        , 'dec_list': dec_list
+      //        , 'spt_comp_list': spt_comp_list
+      //        , 'spt_want_list': spt_want_list
+      //        , 'spt_fail_list': spt_fail_list
+      //      });
 
-          }
+      //    }
 
-        }
-      );
+      //  }
+      //);
     }
   );
 });
@@ -1166,63 +1263,6 @@ app.get('/ch/:id', function (req, res) {
 });
 
 
-
-
-// --------------------------------------------------------
-// house_room
-// --------------------------------------------------------
-app.get('/h/:id', function (req, res) {
-  // ID が正しいかチェックする
-  // 正しくなければ、topへリダイレクトする
-  var url_id = (req.params.id) ? req.params.id : '';
-  //logger.debug('----- app.get/h/:id,url_id_typeof: ');logger.debug(typeof url_id);
-  //logger.debug('----- app.get/h/:id,url_id: ');logger.debug(url_id);
-
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
-  //logger.debug('----- app.get/h/:id,req.session.auth: ');logger.debug(req.session.auth);
-
-  if (url_id == '') {
-    res.send('id error: id null');
-    return;
-    //res.redirect('/');
-  } else if (url_id == '[object Object]') {
-    return;
-//    res.render('home', { 'layout': false, 'house_id': '', 'url_id': '' });
-  } else {
-    // URLパラメータが正しいかDB に聞いてみる
-    client.query(
-      'SELECT id, name, image, description FROM '+TABLE_HOUSES+' WHERE url_id = ?',
-      [url_id],
-      function(err, results, fields) {
-        if (err) {throw err;}
-        //logger.debug('----- app.get/h/:id,results: ');logger.debug(results);
-        if (results.length == 0) {
-          res.send('id error: no result');
-          return;
-        } else {
-          if (results[0].image == '') {
-            // デフォルトの背景画像
-            results[0].image = '/img/shiba.jpg';
-          }
-          res.render('home', { 'layout': false,
-            'house_id': results[0].id, 'house_name': results[0].name, 'url_id': url_id,
-            'house_image': results[0].image, 'house_desc': results[0].description,
-            'user_name': req.session.auth.user_name, 'user_image': req.session.auth.user_image,
-            'user_id': req.session.auth.user_id
-          });
-          return;
-        }
-      }
-    );
-  }
-
-});
-
-
 /**
  * --------------------------------------------------------
  * POST: house 作成
@@ -1282,15 +1322,16 @@ app.post('/create-house', function (req, res) {
 app.post('/firstset', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
-    res.redirect('/');
+    res.json({ text: 'ログインして下さい' }, 401);
     return;
   }
 
   // リクエストチェック
   logger.debug('----- app.post/firstset: ');logger.info(req.body);
-  var sex = 0;
-  var age = 0;
-  var mail_addr = '';
+  var sex = 0
+    , age = 0
+    , mail_addr = ''
+    ;
 
   // email
   try {
@@ -1299,7 +1340,7 @@ app.post('/firstset', function (req, res) {
     check(req.body.mail_addr).len(6, 64).isEmail();
   } catch (e) {
     logger.error(e.message); //Invalid
-    res.redirect('/regist');
+    res.json({text: '不正なリクエストです'}, 400);
     return;
   }
 
@@ -1320,16 +1361,16 @@ app.post('/firstset', function (req, res) {
 
       // 新規の場合、ようこそメール送信
       var text_msg = ''
-       , email_tmpl = fs.readFileSync(__dirname + '/views/email/welcome.ejs', 'utf8')
-       , mailto     = mail_addr
-       , subject    = 'SYABERI-HOUSEへようこそ！'
-       ;
+        , email_tmpl = fs.readFileSync(__dirname + '/views/email/welcome.ejs', 'utf8')
+        , mailto     = mail_addr
+        , subject    = 'SYABERI-HOUSEへようこそ！'
+        ;
       text_msg = ejs.render(email_tmpl, {
         user_name: req.session.auth.user_name
       });
       __sendEmail(text_msg, conf, mailto, subject)
 
-      res.redirect('/');
+      res.json({flg_firstset: true}, 200);
       return;
     }
   );
@@ -1548,7 +1589,7 @@ app.post('/upload', function (req, res) {
     , fields = []
     ;
 
-  form.uploadDir = '/var/www/vhosts/www41160u.sakura.ne.jp/node-chat/public/uploads';
+  form.uploadDir = __dirname+'/public/uploads';
 
   form
     .on('field', function(field, value) {
@@ -1606,7 +1647,6 @@ everyauth.everymodule.logoutRedirectPath('/');
  */
 
 app.listen(8081, function () {
-//app.listen(8080, function () {
   var addr = app.address();
   logger.info('   app listening on http://' + addr.address + ':' + addr.port);
 });
@@ -1968,14 +2008,14 @@ var house = io
           return;
         }
 
-        // 自分自身だけに送る
-        socket.to(resArray[0]).emit('video-start', {
-          'video_id': video_id, 'seek_time': seek_time
-        });
-
         // 自分自身以外の全員へデータ送る
         socket.broadcast.to(resArray[0]).emit('video-start', {
-          'video_id': video_id, 'seek_time': seek_time
+          'video_id': video_id, 'seek_time': seek_time, 'flg_owner': false
+        });
+
+        // 自分自身だけに送る
+        socket.to(resArray[0]).emit('video-start', {
+          'video_id': video_id, 'seek_time': seek_time, 'flg_owner': true
         });
       })
     });
@@ -1996,13 +2036,14 @@ var house = io
           return;
         }
 
+        // 自分自身以外の全員へデータ送る
+        socket.broadcast.to(resArray[0]).emit('video-play', {
+        });
+
         // 自分自身だけに送る
         socket.to(resArray[0]).emit('video-play', {
         });
 
-        // 自分自身以外の全員へデータ送る
-        socket.broadcast.to(resArray[0]).emit('video-play', {
-        });
       })
     });
 
@@ -2022,12 +2063,12 @@ var house = io
           return;
         }
 
-        // 自分自身だけに送る
-        socket.to(resArray[0]).emit('video-pause', {
-        });
-
         // 自分自身以外の全員へデータ送る
         socket.broadcast.to(resArray[0]).emit('video-pause', {
+        });
+
+        // 自分自身だけに送る
+        socket.to(resArray[0]).emit('video-pause', {
         });
       })
     });

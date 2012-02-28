@@ -60,13 +60,28 @@
 <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet">
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/localization/messages_ja.js"></script>
+<script src="/js/jquery.ui-timepicker.js"></script>
 <script src="/js/jquery.autosize.min.js?v=1.0"></script>
 <script src="/js/jquery.exdate.js"></script>
+<style type="text/css">
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+</style>
+
 
 <script type="text/javascript">
 <!--
   $().ready(function(){
-    $('#deadline').datepicker();
+    $('#deadline').datetimepicker({
+      //addSliderAccess: true
+      //sliderAccessArgs: { touchonly: false }
+    });
+    //$('#deadline').datepicker();
     $('#description').autosize();
     $('#detail').autosize();
 
@@ -114,13 +129,13 @@
       ;
 
     // rental_time の計算
-    var date_obj = $.exDate(deadline);
+    var date_obj = $.exDate(deadline, 'yyyy/mm/dd hh24:mi');
     var date_rental;
     switch(rental_time) {
       // 1000 == (ミリ秒=1秒)
       case '1d':
         date_obj.setTime(date_obj.getTime() + 1000*86400);
-        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi:ss');
+        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
         break;
       case '1w':
         break;
@@ -129,7 +144,7 @@
       default:
         // 1h
         date_obj.setTime(date_obj.getTime() + 1000*3600);
-        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi:ss');
+        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
         break;
     };
 

@@ -1,9 +1,20 @@
+<script type="text/javascript">
+<!--
+$().ready(function(){
+	//HINT
+	var maxHint = 3;
+	var rnd = Math.floor(Math.random()* maxHint);
+	$('#view_frame').html('<img src="/img/hint'+rnd+'.png">');
+});
+-->
+</script>
+
 <style type="text/css">
 .house_bg { background: url('<%= house_image %>'); }
 </style>
 
 <div class="main-img">
-	<div class="ticket-wrapper">
+	<div class="ticket-wrapper" style="width:969px;">
 		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
 		<!--div class="left">
 			<div class="icon"><img src="<%= user_image %>"></div>
@@ -49,6 +60,9 @@
 						<tr>
 						<td>
 							<div class="buttonContainer">
+								<div id="dropbox" style="float:left;">
+									<span id="drop_message">Drop images here to upload.</span>
+								</div>
 							<label for="submit_1">
 							<input class="submitBtn" id="submit_1" type="submit" value="投稿">
 							</label>
@@ -60,11 +74,9 @@
 				<form>
 			</div><!-- /input -->
 			<div class="title">共有VIEW</div>
-			<div id="view_frame" class="view"><!-- view -->
 				
-			</div><!-- /view -->
 			<div id="disparea"><!-- audience -->
-				
+				<div id="view_frame" class="view"><!-- HINT --></div>
 			</div><!-- /audience -->
 		</div><!-- /main-chat -->
 	</div><!-- /content-body -->

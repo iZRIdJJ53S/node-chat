@@ -8,7 +8,7 @@
 			<div class="member" id="member-parts-area-<%= dec_detail.id %>"></div>
 		</div>
 		<div class="right">
-			<a href="#" name="join-button-right"><div class="button" id="join-button-right-<%= dec_detail.id %>">参加</div></a>
+			<a href="#" name="join-button-right"><div class="btn" id="join-button-right-<%= dec_detail.id %>">参加</div></a>
 		</div>
 		<div class="participant" id="dec-supporters-<%= dec_detail.id %>">
 		</div>
@@ -21,8 +21,12 @@
 		<div><a href="#" name="join-button-bottom"><div class="btn" id="join-button-bottom-<%= dec_detail.id %>">参加する</div></a></div>
 	</div>
 <div class="right-content">
-		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
-		<h2 class="title-sub">HOT EVENTS</h2><h2>
+		<!--div class="AD"><img src="/img/AD_350x240.gif"></div-->
+		<h2 class="title-sub">HOW TO USE</h2>
+		<ul>
+			<li><a href="/create-dec"><img src="/img/howto.png"></a></li>
+		</ul>
+		<!--h2 class="title-sub">HOT EVENTS</h2><h2>
 		<ul>
 			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
 			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
@@ -48,7 +52,7 @@
 			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
 			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
 			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-		</ul>
+		</ul-->
 	</h2></div>
 <div class="clear"></div>
 <div id="write-script-area"></div>
@@ -76,8 +80,8 @@
 
     // 参加状態のチェック
     if (target_num === supporter_num) {
-      $('#join-button-right-'+event_id).parent().parent().text('満員御礼');
-      $('#join-button-bottom-'+event_id).parent().parent().text('満員御礼');
+      $('#join-button-right-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
+      $('#join-button-bottom-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
     } else {
       $.ajax({
         type: 'GET',
@@ -85,14 +89,14 @@
         data: {dec_id: <%= dec_detail.id %>},
         success: function(data){
           if (data.res_flg) {
-            $('#join-button-right-'+event_id).parent().parent().text('参加済み');
-            $('#join-button-bottom-'+event_id).parent().parent().text('参加済み');
+            $('#join-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
+            $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場へ行く</div></a>');
           }
         },
         error: function(data){
           if (data.status === 401) {
-            $('#join-button-right-'+event_id).parent().parent().text('ログインが必要です');
-            $('#join-button-bottom-'+event_id).parent().parent().text('ログインが必要です');
+            $('#join-button-right-'+event_id).parent().parent().html('<a href="/auth/twitter"><div class="btn">ログイン</div></a>');
+            $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/auth/twitter"><div class="btn">ログイン</div></a>');
           }
         }
       });

@@ -38,7 +38,8 @@ var chat = {
     this.userMessage.keydown(function (event) {
       var userMessage = $( this ).val()
         , image_src   = $('#user_up_img').attr('src')
-        , iframeURL = ''
+        , iframeURL   = ''
+        , flg_owner   = true
         ;
 
       // shiftKey だったら改行
@@ -50,17 +51,17 @@ var chat = {
           if (userMessage || image_src) {
             // image_src が優先
             if (image_src) {
-              that._setIframeArea(image_src);
+              that._setIframeArea(image_src, flg_owner);
             } else {
               if (isURL(userMessage)) {
                 if (getURL(userMessage)) {
     //              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
                    iframeURL = getURL(userMessage);
-                   that._setIframeArea(iframeURL);
+                   that._setIframeArea(iframeURL, flg_owner);
                 }
               }
             }
-    
+
             // 自分自身(クライアント)へ描画
             var message_time = that._getCurrentTime();
             that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
@@ -89,20 +90,21 @@ var chat = {
     this.submitter.click(function (event) {
       var userMessage = that.userMessage.val()
         , image_src   = $('#user_up_img').attr('src')
-        , iframeURL = ''
+        , iframeURL   = ''
+        , flg_owner   = true
         ;
 
       if (userMessage || image_src) {
 
         // image_src が優先
         if (image_src) {
-          that._setIframeArea(image_src);
+          that._setIframeArea(image_src, flg_owner);
         } else {
           if (isURL(userMessage)) {
             if (getURL(userMessage)) {
 //              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
                iframeURL = getURL(userMessage);
-               that._setIframeArea(iframeURL);
+               that._setIframeArea(iframeURL, flg_owner);
             }
           }
         }
@@ -131,15 +133,17 @@ var chat = {
         , data.userMessage, data.image_src, data.message_time
       );
 
+      var flg_owner = false;
+
       // もしiframeURL があったら描画する(image_src が優先)
       if (data.image_src) {
         // 最新のだけ出したいからあえて０番目を指定
         if (data.cnt == 0) {
-          that._setIframeArea(data.image_src);
+          that._setIframeArea(data.image_src, flg_owner);
         }
       } else if (isURL(data.iframeURL)) {
         if (getURL(data.iframeURL)) {
-          that._setIframeArea(getURL(data.iframeURL));
+          that._setIframeArea(getURL(data.iframeURL), flg_owner);
         }
       }
     });
@@ -264,7 +268,7 @@ var chat = {
 //    this.messageList.scrollTop( this.messageList.height() );
   },
 
-  _setIframeArea: function (iframeURL) {
+  _setIframeArea: function (iframeURL, flg_owner) {
     this.iframeArea.empty();
 
 
@@ -273,11 +277,6 @@ var chat = {
       // 動画ID を抜き出す
       var youtube_vid = iframeURL.match(/[&\?]v=([\d\w]+)/);
       if (youtube_vid[1]) {
-        // 初期化
-        $('#myytplayer').empty();
-        $('#ytapiplayer').empty();
-        $('#player-ctrl').empty();
-        $('#play_video_id').empty();
 
         // player-ctrl の部品組立
         var video_start = $('<a href="javascript:void(0);" id="video-start">Start</a>');
@@ -288,24 +287,29 @@ var chat = {
         var player_ctrl = $('<div id="player-ctrl">');
         // 部品をappend していく
         player_ctrl.append(video_start);
+        player_ctrl.append($('<span>').text(' | '));
         player_ctrl.append(video_play);
+        player_ctrl.append($('<span>').text(' | '));
         player_ctrl.append(video_pause);
 
-        $('#view_frame').append($('<div id="ytapiplayer">'));
-        $('#view_frame').append(player_ctrl);
+        this.iframeArea.append($('<div id="ytapiplayer">'));
+        // オーナーのみコントロール権限有り
+        if (flg_owner) {
+          this.iframeArea.append(player_ctrl);
+        }
 
         var params = { allowScriptAccess: "always", bgcolor: "#cccccc" };
         var atts = { id: "myytplayer" };
-        var youtube_api = 'http://gdata.youtube.com/apiplayer';
-        //youtube_api += 'key=AI39si7uG-sNXZtXIClnUvP5HArP1LfH60j0EfKc-8pLVRSOauN-NwLbVkxOZ2v3p6v_Cg1_iZf2D2KcM5ih2Gd5VFDH90D7nA';
-        youtube_api += '?enablejsapi=1&playerapiid=ytplayer';
+        var youtube_api = 'http://gdata.youtube.com/apiplayer?';
+        youtube_api += 'key=AI39si7uG-sNXZtXIClnUvP5HArP1LfH60j0EfKc-8pLVRSOauN-NwLbVkxOZ2v3p6v_Cg1_iZf2D2KcM5ih2Gd5VFDH90D7nA';
+        youtube_api += '&version=3&enablejsapi=1&playerapiid=ytplayer';
 
-        //var youtube_api = 'http://www.youtube.com/v/'+youtube_vid[1]
-        //youtube_api += '?enablejsapi=1&playerapiid=ytplayer';
+        //var youtube_api = 'http://www.youtube.com/apiplayer?'
+        //youtube_api += 'version=3&enablejsapi=1&playerapiid=ytplayer';
         swfobject.embedSWF(youtube_api, "ytapiplayer", "500", "300", "8", null, null, params, atts);
 
         // videoid を書きだす
-        $('#view_frame').append($('<input type="hidden" id="play_video_id" value="'+youtube_vid[1]+'">'));
+        this.iframeArea.append($('<input type="hidden" id="play_video_id" value="'+youtube_vid[1]+'">'));
 
         //var iframe_tag = '<iframe width="500" height="300" src="';
         //iframe_tag += 'http://www.youtube.com/embed/'+youtube_vid[1];

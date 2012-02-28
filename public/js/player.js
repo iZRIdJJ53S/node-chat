@@ -9,7 +9,6 @@ var player = {
       //this.element = options.element;
       this.element = $("#myytplayer").get(0);
       this.element.setVolume(100);
-      
       this.bindEvent( 'onStateChange', 'onytplayerStateChange' );
       this._bindSubscribers();
       this._bindEvents();

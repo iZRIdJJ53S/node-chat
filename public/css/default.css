@@ -1,7 +1,7 @@
 /* 
 	SYABERI-HOUSE Layout Stylesheet
-	v0.3
-	Last Updated: 2012-2-26
+	v0.4
+	Last Updated: 2012-2-28
 	Author: Kunshiro Murayama
 */
 
@@ -122,7 +122,13 @@ a:active{color: #00a0c6;}
 			margin-bottom: 16px;
 			padding: 20px;
 		}
-			.main-content .details .details-title{
+			/*.main-content .details .details-title{
+				font-size: 24px;
+				border-bottom: 1px #DFDFDF solid;
+				padding-bottom: 3px;
+				margin-bottom: 10px;
+			}*/
+			.main-content .details h3{
 				font-size: 24px;
 				border-bottom: 1px #DFDFDF solid;
 				padding-bottom: 3px;
@@ -240,6 +246,9 @@ a:active{color: #00a0c6;}
 					font-size: 26px;
 					padding-left: 55px;
 				}
+				.ticket-wrapper .left .title-noicon{
+					font-size: 26px;
+				}
 				.ticket-wrapper .left .time{
 					font-size: 18px;
 					padding-top: 20px;
@@ -256,9 +265,12 @@ a:active{color: #00a0c6;}
 					padding-left: 5px;
 				}
 				.ticket-wrapper .left .counter{
-					background: #222222;
+					/*background: #222222;*/
+					background: -moz-linear-gradient(top, #000, #999);
+					background: -webkit-gradient(linear, left top, left bottom, from(#000), to(#999));
 					color: #FFFFFF;
-					padding: 2px;
+					border: 1px #DFDFDF solid;
+					padding: 3px;
 					margin: 0 10px;
 				}
 			.ticket-wrapper .right{
@@ -267,22 +279,6 @@ a:active{color: #00a0c6;}
 				min-height: 100px;
 				padding: 10px 10px 0 10px;
 			}
-				.ticket-wrapper .right .button{
-					padding: 20px;
-					background-color: #99CC00;
-					text-align: center;
-					font-size: 22px;
-					color: #fff;
-					margin-bottom: 10px;
-				}
-				.ticket-wrapper .right .button:hover{
-					padding: 20px;
-					background-color: #FF6600;
-					text-align: center;
-					font-size: 22px;
-					color: #fff;
-					margin-bottom: 10px;
-				}
 				.ticket-wrapper .right .member{
 					text-align: center;
 					font-size: 12px;
@@ -306,26 +302,6 @@ a:active{color: #00a0c6;}
 					-webkit-border-radius: 6px;
 					-moz-border-radius: 6px;*/
 				}
-		.main .main-content .ticket-wrapper-button{
-			width: 542px;
-			margin-bottom: 16px;
-			background-color: #99CC00;
-			text-align: center;
-			font-size: 22px;
-			color: #fff;
-			padding: 20px;
-			margin-bottom: 10px;
-		}
-		.main .main-content .ticket-wrapper-button:hover{
-			width: 542px;
-			margin-bottom: 16px;
-			background-color: #FF6600;
-			text-align: center;
-			font-size: 22px;
-			color: #fff;
-			padding: 20px;
-			margin-bottom: 10px;
-		}
 		.main .main-content .right-content{
 			float: right;
 			width: 350px;
@@ -397,6 +373,7 @@ a:active{color: #00a0c6;}
 			background-color: #99CC00;
 			text-align: center;
 			font-size: 22px;
+			font-weight: bold;
 			color: #fff;
 			margin-bottom: 10px;
 		}
@@ -405,6 +382,25 @@ a:active{color: #00a0c6;}
 			background-color: #FF6600;
 			text-align: center;
 			font-size: 22px;
+			font-weight: bold;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btn2{
+			padding: 20px;
+			background-color: #00a0c6;
+			text-align: center;
+			font-size: 22px;
+			font-weight: bold;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btn2:hover{
+			padding: 20px;
+			background-color: #FF6600;
+			text-align: center;
+			font-size: 22px;
+			font-weight: bold;
 			color: #fff;
 			margin-bottom: 10px;
 		}
@@ -421,6 +417,16 @@ a:active{color: #00a0c6;}
 			background-color: #FF6600;
 			text-align: left;
 			font-size: 22px;
+			font-weight: bold;
+			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btned{
+			padding: 20px 10px;
+			background-color: #FF6600;
+			text-align: center;
+			font-size: 16px;
+			font-weight: bold;
 			color: #fff;
 			margin-bottom: 10px;
 		}
