@@ -364,12 +364,15 @@ app.configure('production', function(){
 
 // IPアドレス制限
 app.all('*', function(req, res, next) {
+
   var remote_ip = req.headers["x-forwarded-for"];
 
   if (remote_ip.match(/^202\.229\.44\.[0-9]+$/) // nttr_ip
       || remote_ip.match(/^202\.217\.72\.[0-9]+$/) // nttr_ip_tamachi
       || remote_ip.match(/^110\.74\.103\.[0-9]+$/) // saito_ip
-      || remote_ip.match(/^106\.190\.146\.[0-9]+$/) // kmura_ip
+      || remote_ip.match(/^106\.190\.35\.[0-9]+$/) // kmura_ip
+      || remote_ip.match(/^106\.190\.18\.[0-9]+$/) // kmura_ip
+      || remote_ip.match(/^114\.179\.73\.50$/) // aruku.inc
     ) {
     // 通過
   } else {
@@ -698,19 +701,63 @@ app.get('/suc/:id', function (req, res) {
     ' GROUP BY d.id'+
     ' LIMIT 1',
     [suc_id],
-    function(err, results, fields) {
+    function(err, dec_results, fields) {
       if (err) {throw err;}
-      if (results.length === 0) {
+      if (dec_results.length === 0) {
         res.send('suc_id error: no result');
         return;
       } else {
-        var detail_txt = results[0].detail;
+        var detail_txt = dec_results[0].detail;
         detail_txt = detail_txt.replace(/\n/g, '<br />');
-        results[0].detail = detail_txt;
-        res.render('suc-detail', {
-          'suc_detail': results[0]
-        });
-        return;
+        dec_results[0].detail = detail_txt;
+        
+          // 最新のコメント50件分を取得
+		  client.query(
+		    //'SELECT cmt.id, cmt.created_at, cmt.body, cmt.image AS cmt_image, usr.name, usr.image AS usr_image'
+		    //+' FROM '+TABLE_COMMENTS+' AS cmt'
+		    //+' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
+		    //+' WHERE cmt.house_id = ?'
+		    //+' ORDER BY cmt.created_at DESC LIMIT 10',
+		    'SELECT id, created_at, user_name, body, image, profile_image_url'
+		    +'    , type'
+		    +' FROM '+TABLE_DOT1_COMMENTS
+		    +' WHERE dec_id = ?'
+		    +' ORDER BY created_at DESC',
+		    [suc_id],
+		    function(err, results, fields) {
+		      if (err) {throw err;}
+		      if (!results[0]) {
+		        // DB に無し。
+		
+		      } else {
+		        // DB に有り。
+		        var max_result = results.length
+		          , send_data = [];
+		        //logger.debug('最新のコメント10件-----');logger.debug(results);
+		        for (var i = 0; i < max_result; i++) {
+		          var tmp_data = results[i];
+		          // データを溜め込んでいく
+		          send_data[i] = {'comment_id': tmp_data.tweet_id_str,
+		            'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
+		            //'message_time': date_txt, 'userMessage': tmp_data.body,
+		            'image_src': tmp_data.image, 'userName': tmp_data.user_name,
+		            'user_image': tmp_data.profile_image_url, 'iframeURL': '',
+		            'source': tmp_data.source, 'type': tmp_data.type
+		          };
+		
+		        }
+		
+		        // クライアント(自分だけ)へデータを送る
+                res.render('suc-detail', {
+		          'suc_detail': dec_results[0],
+		          'send_data' : send_data,
+		        });        
+		        return;
+
+		      }
+		     }
+		   );
+        
       }
     }
   );
@@ -1213,7 +1260,7 @@ app.get('/ch/:id', function (req, res) {
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, title AS name, image, description, user_id AS owner_id'+
+    'SELECT id, title AS name, image, description, user_id AS owner_id, status'+
     ' FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
     [dec_id],
     function(err, results, fields) {
@@ -1249,7 +1296,7 @@ app.get('/ch/:id', function (req, res) {
               'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
               'house_image': results[0].image, 'house_desc': results[0].description,
               'user_name': user_name, 'user_image': user_image,
-              'user_id': user_id,
+              'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter
             });
             return;
@@ -1397,6 +1444,7 @@ app.post('/create-event', function (req, res) {
     , target_num  = 0
     , deadline    = ''
     , rental_time = ''
+    , dec_image   = ''
     , user_id     = req.session.auth.user_id
     ;
 
@@ -1420,6 +1468,7 @@ app.post('/create-event', function (req, res) {
   target_num  = req.body.target_num;
   deadline    = req.body.deadline;
   rental_time = req.body.rental_time;
+  dec_image   = req.body.dec_image;
 
   client.query(
     'INSERT INTO '+TABLE_DECLARATIONS+' ('+
@@ -1429,7 +1478,7 @@ app.post('/create-event', function (req, res) {
     '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?'+
     ')',
     [title, description, detail, user_id, target_num, deadline
-      , rental_time, FLG_SUPPORTER_WANT_STAT, ''
+      , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image
     ],
     function(err) {
       if (err) {throw err;}
@@ -1538,6 +1587,69 @@ app.post('/join-commit', function (req, res) {
 
 });
 
+
+/**
+ * --------------------------------------------------------
+ * イベント終了対応(update) 
+ * --------------------------------------------------------
+ */
+app.post('/end-proc', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.dec_id).isInt();
+    check(req.body.owner_id).isInt();
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 400);
+    return;
+  }
+
+  // ログインID がイベントオーナーかどうかチェック
+  client.query(
+    'SELECT id, title'+
+    ' FROM '+TABLE_DECLARATIONS+
+    ' WHERE id = ? AND user_id = ?',
+    [req.body.dec_id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: 'オーナーではない。不正なリクエストです'}, 400);
+        return;
+      } else {
+        // イベントID・タイトル
+        var event_id = results[0].id
+          , event_title = results[0].title
+          ;
+
+        // イベントのステータスを更新する
+        client.query(
+          'UPDATE '+TABLE_DECLARATIONS+' SET'+
+          '  status = ?'+
+          ' WHERE id = ?',
+          [FLG_SUPPORTER_COMP_STAT, req.body.dec_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            res.json({flg_update: 'ok'}, 200);
+            return;
+          }
+        );
+      }
+    }
+
+  );
+
+});
+
+
+
+
 /**
  * --------------------------------------------------------
  *  メール送信
@@ -1546,33 +1658,81 @@ app.post('/join-commit', function (req, res) {
 app.post('/sendmail', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
-    res.json({ text: 'ログインして下さい' }, 200);
+    res.json({ text: 'ログインして下さい' }, 401);
     return;
   }
 
   // リクエストチェック
   // id
   try {
-    check(req.body.id).isInt();
+    check(req.body.dec_id).isInt();
+    check(req.body.owner_id).isInt();
   } catch (e) {
     logger.error(e.message); //Invalid
-    res.json({text: '不正なIDです'}, 200);
+    res.json({text: '不正なIDです'}, 400);
     return;
   }
 
-  // シェルコマンド実行
-  var child = exec('perl /home/hara/hitorigoto_setting/pre_data/getData.pl '+req.body.id,
-    function(err, stdout, stderr) {
-      if (err === null) {
-        res.json({text: '送信成功しました'}, 200);
+  // ログインID がイベントオーナーかどうかチェック
+  client.query(
+    'SELECT id, title'+
+    ' FROM '+TABLE_DECLARATIONS+
+    ' WHERE id = ? AND user_id = ?',
+    [req.body.dec_id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: 'オーナーではない。不正なリクエストです'}, 400);
         return;
       } else {
-        res.json({text: 'error!! 送信失敗しました'}, 200);
-        return;
-      }
+        // イベントID・タイトル
+        var event_id = results[0].id
+          , event_title = results[0].title
+          ;
 
+        // メール送信用リストを取得する
+        client.query(
+          'SELECT u.mail_addr, u.name'+
+          ' FROM '+TABLE_SUPPORTERS+' AS s'+
+          ' INNER JOIN '+TABLE_USERS+' AS u ON s.user_id = u.id'+
+          ' WHERE s.declaration_id = ?',
+          [req.body.dec_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            if (results2.length > 0) {
+
+
+              // メール送信
+              for (var i=0; i < results2.length; i++) {
+                var text_msg = ''
+                 , email_tmpl = fs.readFileSync(__dirname + '/views/email/start-event.ejs', 'utf8')
+                 , mailto     = results2[i].mail_addr
+                 , subject    = '【EVENTスタート】'+event_title+' ｜SYABERI-HOUSE'
+                 ;
+                text_msg = ejs.render(email_tmpl, {
+                   user_name: results2[i].name
+                 , event_id: event_id
+                 , event_owner_name: req.session.auth.user_name
+                 , event_title: event_title
+                });
+                __sendEmail(text_msg, conf, mailto, subject);
+              }
+
+              // メール送信OK
+              res.json({flg_sendmail: 'ok'}, 200);
+              return;
+
+            } else {
+              res.json({text: 'no_results'}, 200);
+              return;
+            }
+          }
+        );
+      }
     }
+
   );
+
 });
 
 

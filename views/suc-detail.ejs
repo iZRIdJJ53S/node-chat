@@ -27,22 +27,39 @@ $().ready(function(){
 	<h2 class="title">LOGS</h2>
 	<div class="details">
 		<div class="details-left">
-			<h3 class="details-title">はじめに</h3>
-			<p class="details-body">照英のコラ画像好きに贈る大イベント。「参加」から気軽に入ってくださいー！</p>
-			<h3 class="details-title">概要</h3>
-			<p class="details-body">照英の画像で作って欲しいこら画像を注文すると、主がどんどん画像をつくるHOUSEです。</p>
-			<h3 class="details-title">管理人プロフィール</h3>
-			<p class="details-body">kunmura<br>twitterID:xxx<br>mixi:xxx</p>
+			<% send_data.reverse(); %>
+			<% for(var i=0; i<200; i++){ %>
+				<% if (!send_data[i]) {break;} %>
+				<p>[<%= i+1 %>] <%= send_data[i].userName %> <img style="width:24px;" src="<%= send_data[i].user_image %>"></p>
+				<p style="padding:15px 0;"><%= send_data[i].userMessage %></p>
+				<div id="log_image_<%= i %>">
+				<% if(send_data[i].image_src){ %>
+					<p><img src="<%= send_data[i].image_src %>"></p>
+				<% } %>
+				</div>
+				<p style="text-align:right;color:#999;font-size:12px;"><%= send_data[i].message_time %></p>
+				
+				<script type="text/javascript">
+				<!--
+					var str = "<%= send_data[i].userMessage %>";
+					var rex = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?/g;
+					if(str.match(rex)){
+						var matchUrl = str.match(rex);
+						var showStr = '<img style="max-width:500px;" src="' + matchUrl + '">';
+						$("#log_image_<%= i %>").html(showStr);
+					}else{
+						console.log('URLが見つかりませんでした。');
+					}
+				-->
+				</script>
+
+				<hr>
+			<% } %>
 		</div>
 		<div class="details-right">
 			<div class="view-counter">100,000<p>view</p></div>
 			<div class="content">
-				<h3 class="details-title">はじめに</h3>
-				<p class="details-body">照英のコラ画像好きに贈る大イベント。「参加」から気軽に入ってくださいー！</p>
-				<h3 class="details-title">概要</h3>
-				<p class="details-body">照英の画像で作って欲しいこら画像を注文すると、主がどんどん画像をつくるHOUSEです。</p>
-				<h3 class="details-title">管理人プロフィール</h3>
-				<p class="details-body">kunmura<br>twitterID:xxx<br>mixi:xxx</p>
+				<%- suc_detail.detail %>
 			</div>
 		</div>
 		<div class="clear"></div>

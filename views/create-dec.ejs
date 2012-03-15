@@ -8,10 +8,18 @@
 			<div class="content"><input type="text" size="30" id="title" name="title" value=""></div>
 			<div class="side"></div>
 		</div>
+		<div class="form-container">
+			<div class="title">背景画像</div>
+			<div class="content">
+				<div id="dropbox" style="width:250px; border: 1px #DEDEDE solid;">
+					<span id="drop_message" class="message">Drop images here to upload.</span>
+				</div>
+			</div>
+		</div>
 		<!--div class="form-container">
 			<div class="title">背景画像</div>
 			<div class="content">
-				<input type="file" size="30" id="dec-image">
+				<input type="file" size="30" id="dec_image">
 				<div class="uploadimage"></div>
 			</div>
 			<div class="side"></div>
@@ -63,6 +71,8 @@
 <script src="/js/jquery.ui-timepicker.js"></script>
 <script src="/js/jquery.autosize.min.js?v=1.0"></script>
 <script src="/js/jquery.exdate.js"></script>
+<script src='/js/jquery.filedrop.js?v=1.0'></script>
+<script src='/js/filedrop-script.js?v=1.0'></script>
 <style type="text/css">
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
@@ -119,6 +129,7 @@
 
   });
 
+
   $('#submit-event').click(function() {
     var title = $('#title').val()
       , description = $('#description').val()
@@ -126,7 +137,13 @@
       , target_num  = $('#target_num').val()
       , deadline    = $('#deadline').val()
       , rental_time = $('input[name=rental-time]:checked').val()
+      , dec_image   = ''
       ;
+
+    // 画像アップロードがあったら
+    if ($('#user_up_img').attr('src')) {
+      dec_image = $('#user_up_img').attr('src');
+    }
 
     // rental_time の計算
     var date_obj = $.exDate(deadline, 'yyyy/mm/dd hh24:mi');
@@ -155,6 +172,7 @@
       , target_num:  target_num
       , deadline:    deadline
       , rental_time: date_rental
+      , dec_image:   dec_image
     };
 
     $.ajax({

@@ -148,6 +148,9 @@
 	float: left;
 	padding-left: 3px;
 }
+	#content-wrapper .content-body .main-chat .chat .chat-content .icon img{
+		width: 48px;
+	}
 #content-wrapper .content-body .main-chat .chat .chat-content .voice{
 	vertical-align: top;
 	margin-left: 60px;

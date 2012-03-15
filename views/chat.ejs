@@ -16,13 +16,10 @@ $().ready(function(){
 <div class="main-img">
 	<div class="ticket-wrapper" style="width:969px;">
 		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
-		<!--div class="left">
-			<div class="icon"><img src="<%= user_image %>"></div>
-				<h3 class="title"><%= house_name %><br><span class="username">by <%= user_name %></span><br><span class="tag">一緒に楽しむメンバ</span></h3>
-				<div class="member" id="member-parts-area-<%= house_id %>"></div>
-			</div>
-		<div class="right">
-		</div-->
+		<div id="owner_proc_area" style="float:right; display:none;">
+			<div class="btn" id="event_end_proc">終了</div>
+			<div class="btn" id="event_all_mail">メール一斉送信</div>
+		</div>
 	<div class="participant" id="audienceview"></div>
     <div class="header-icon" id="users_view"></div>
 </div>
@@ -61,7 +58,7 @@ $().ready(function(){
 						<td>
 							<div class="buttonContainer">
 								<div id="dropbox" style="float:left;">
-									<span id="drop_message">Drop images here to upload.</span>
+									<span id="drop_message" class="message">Drop images here to upload.</span>
 								</div>
 							<label for="submit_1">
 							<input class="submitBtn" id="submit_1" type="submit" value="投稿">
@@ -120,11 +117,18 @@ $().ready(function(){
 
     // オーナーだったらsendmail 有効
     if (<%= is_owner %>) {
-      // 何もしない
+      $('#owner_proc_area').show();
     } else {
-      $('#send_mail').empty();
+      $('#owner_proc_area').empty();
     }
 
+    if (<%= house_status %> === 1) {
+      $('#owner_proc_area').empty();
+      $('#owner_proc_area').html('<a href="/suc/<%= house_id %>">このイベントは終了しています</a>');
+
+      $('#message1').attr("disabled", "disabled");
+      $('#submit_1').attr("disabled", "disabled");
+    }
 
     // サポーターだったらチャット有効
     if (<%= is_supporter %> || <%= is_owner %>) {
@@ -179,5 +183,59 @@ $().ready(function(){
     });
   }
 
+
+  // 終了対応
+  $('#event_end_proc').click(function () {
+    if (window.confirm('本当にこのイベントを終了させますか？')) {
+
+    } else {
+      return false;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '/end-proc',
+      data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>},
+      success: function(data){
+        if (data.flg_update) {
+          alert('成功しました');
+          location.href = "/suc/<%= house_id %>";
+          return;
+        }
+      },
+      error: function(data){
+        // error
+      }
+    });
+
+
+    return false;
+  });
+
+  // メール一斉送信
+  $('#event_all_mail').click(function () {
+    if (window.confirm('本当にメール送信しますか？')) {
+
+    } else {
+      return false;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '/sendmail',
+      data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>},
+      success: function(data){
+        if (data.flg_sendmail) {
+          alert('送信成功しました');
+          return;
+        }
+      },
+      error: function(data){
+        // error
+      }
+    });
+
+    return false;
+  });
 //-->
 </script>
