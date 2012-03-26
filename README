@@ -1,0 +1,72 @@
+/var/www/vhosts/www41160u.sakura.ne.jp/node-chat
+├── README
+├── app.js       ★node.js で書かれたサーバー側メイン実行ファイル
+│                      (サーバー側ではこのファイルがリクエストを待ち受けしてる)
+├── conf.js      ★mysql, twitter認証, gmail認証 とかのアカウント情報
+├── logs
+│   ├── node-chat.log   ★app.js のデバック情報などのログ
+├── node_modules         ★node.js のモジュール群 格納ディレクトリ
+│   ├── ejs             ★テンプレートエンジン(PHPで言うと、Smartyみたいな役割)
+│   ├── emailjs         ★メール送信ライブラリ
+│   ├── everyauth       ★twitter認証(facebook認証もこのライブラリを使えば可能)
+│   ├── express         ★フレームワーク(PHPで言うと、cakePHPとか、symfonyみたいな)
+│   ├── formidable      ★フォーム送受信を楽にしてくれるライブラリ
+│   ├── http-proxy -> /home/y-saito/lib/node_modules/http-proxy
+│   │                       ★websocket が利用可能なプロキシ
+│   │                         (apache とかはwebsocketをプロキシしてくれないので仕方なく使ってる)
+│   ├── log4js          ★ログを吐き出すライブラリ
+│   ├── mysql           ★mysql接続モジュール
+│   ├── oauth           ★everyauth が依存しているモジュール
+│   ├── socket.io -> /usr/local/lib/node_modules/socket.io
+│   │                         ★websocket をよしなにやってくれるライブラリ
+│   └── validator       ★ユーザーデータのバリデーション
+├── package.json
+├── public       ★公開ディレクトリ
+│   ├── css
+│   ├── img
+│   ├── js
+│   │   ├── audience.js            ★チャット面でユーザーアイコンを表示
+│   │   ├── bubbletip              ★吹き出しに使おうと思ったけど、使ってない
+│   │   ├── chat.js                ★チャット面で、チャット情報のやり取りを担当
+│   │   ├── countdown              ★jQueryのカウントダウンライブラリ
+│   │   ├── filedrop-script.js     ★drag&drop で画像をアップロード出来る
+│   │   ├── function.js            ★全ページで共通して使いそうな、functionを定義してある
+│   │   ├── house.js               ★サーバー側(app.js)とデータを送受信するハブみたいな役割
+│   │   ├── iscroll.js             ★使ってないかな？
+│   │   ├── jQuery.bubbletip-1.0.6.js  ★使ってない
+│   │   ├── jquery-1.6.1.min.js        ★使ってない
+│   │   ├── jquery-1.7.1.min.js        ★jqueryライブラリ
+│   │   ├── jquery-simple-pubsub-0.2.1.js  ★送信側（Publisher）、受信側（Subscriber）を担当
+│   │   ├── jquery.autosize.min.js     ★テキストエリアのサイズ自動調整
+│   │   ├── jquery.crypt.js            ★暗号化
+│   │   ├── jquery.exdate.js           ★日付関連ライブラリ
+│   │   ├── jquery.filedrop.js         ★drag&drop で画像をアップロード出来る
+│   │   ├── jquery.timeago.js          ★カウントダウンライブラリと関連あり
+│   │   ├── jquery.ui-timepicker.js    ★(名前の通り)timepicker
+│   │   ├── player.js              ★youtube のプレイヤー表示
+│   │   ├── timer.js               ★現在は使ってない
+│   │   ├── user.js                ★users.js と関連あり
+│   │   └── users.js               ★user.js と関連あり
+│   ├── robots.txt
+│   └── uploads
+└── views
+    ├── about.ejs                ★aboutページ
+    ├── chat.ejs                 ★チャット面
+    ├── create-dec.ejs           ★新規作成
+    ├── dec-detail.ejs           ★詳細(開催中)
+    ├── dec-list.ejs             ★一覧(開催中)
+    ├── email                    ★メールテンプレート
+    │   ├── join-event.ejs
+    │   ├── start-event.ejs
+    │   └── welcome.ejs
+    ├── firstset.ejs             ★初期設定
+    ├── footer-script.ejs        ★Ajax関連のfunction をfooter にまとめる用
+    ├── footer.ejs               ★フッター
+    ├── header.ejs               ★ヘッダー
+    ├── index.ejs                ★トップページ
+    ├── layout.ejs               ★大枠(ヘッダー、フッター等)
+    ├── my-setting.ejs           ★マイページの設定変更(現在使われてない)
+    ├── mypage.ejs               ★マイページ
+    ├── suc-detail.ejs           ★詳細(ブログ化された)
+    └── suc-list.ejs             ★一覧(ブログ化された)
+

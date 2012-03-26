@@ -302,13 +302,38 @@ everyauth
 var proxy_options = {
   router: {
     'http.syaberi-house.com': '127.0.0.1:8080' // apache
-   ,'www.syaberi-house.com': '127.0.0.1:8081' // node.js
+   //,'www.syaberi-house.com': '127.0.0.1:8081' // node.js
    ,'syaberi-house.com': '127.0.0.1:8081' // node.js
    //,'rank-life.com': '127.0.0.1:8081' // node.js
-   ,'sh.syaberi-house.com': '127.0.0.1:8082' // node.js
+   //,'sh.syaberi-house.com': '127.0.0.1:8082' // node.js
   }
 };
-var httpProxyServer = httpProxy.createServer(proxy_options);
+var httpProxyServer = httpProxy.createServer(
+  proxy_options
+//  , function (req, res, next) {
+//      // リクエストヘッダから認証情報を取得する
+//      var authHeader = req.headers['authorization'] || '';
+//      // エンコードされている認証トークンを取得する
+//      var token = authHeader.split(/\s+/).pop() || '';
+//      // トークンをbase64デコードする
+//      var auth = new Buffer(token, 'base64').toString();
+//
+//      // デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
+//      var parts = auth.split(/:/);
+//      var username = parts[0];
+//      var password = parts[1];
+//
+//console.log(username);
+//      // ユーザ名とパスワードが一致しない場合は、401を返却する
+//      if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
+//          res.writeHead(401, {
+//              'www-Authenticate': 'Basic realm="Authentication required"'
+//          });
+//          res.end();
+//      }
+//      next();
+//    }
+);
 httpProxyServer.listen(80);
 
 
@@ -328,6 +353,9 @@ var app = express.createServer();
 app.configure(function () {
   app.use(express.static(__dirname + '/public')); // 静的ファイルパス
 
+  // basic認証
+//  app.use(express.basicAuth(conf.basicAuth.user, conf.basicAuth.password));
+
   app.use(express.cookieParser()); // クッキー操作
   app.use(express.session({ secret: 'team0110' }));
   app.use(express.bodyParser()); // POSTメソッド操作
@@ -336,9 +364,6 @@ app.configure(function () {
   app.set('views', __dirname+'/views'); // テンプレートパス
   app.set('view engine', 'ejs'); // テンプレートエンジンの指定
 
-  //app.use(express.basicAuth(function(user, pass) {
-  //  return conf.basicAuth.user === user && conf.basicAuth.password === pass;
-  //}));
 });
 
 // develop only.
@@ -363,7 +388,7 @@ app.configure('production', function(){
  */
 
 // IPアドレス制限
-app.all('*', function(req, res, next) {
+app.get('*', function(req, res, next) {
 
   var remote_ip = req.headers["x-forwarded-for"];
 
@@ -381,31 +406,27 @@ app.all('*', function(req, res, next) {
     return;
   }
 
-  //if (req.headers["x-forwarded-for"].match(/^110\.74\.103\.([2-9]|[1-9][0-9]|1([0-9][0-9])|2([0-4][0-9]|50))$/)) {
-    //res.send('Sorry, access deny', 403);
-    //return;
-  //} else {
-    //// リクエストヘッダから認証情報を取得する
-    //var authHeader = req.headers['authorization'] || '';
-    //// エンコードされている認証トークンを取得する
-    //var token = authHeader.split(/\s+/).pop() || '';
-    //// トークンをbase64デコードする
-    //var auth = new Buffer(token, 'base64').toString();
+//  // リクエストヘッダから認証情報を取得する
+//  var authHeader = req.headers['authorization'] || '';
+//  // エンコードされている認証トークンを取得する
+//  var token = authHeader.split(/\s+/).pop() || '';
+//  // トークンをbase64デコードする
+//  var auth = new Buffer(token, 'base64').toString();
+//
+//  // デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
+//  var parts = auth.split(/:/);
+//  var username = parts[0];
+//  var password = parts[1];
+//
+//  // ユーザ名とパスワードが一致しない場合は、401を返却する
+//  console.log(req.params);
+//  if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
+//      res.writeHead(401, {
+//          'www-Authenticate': 'Basic realm="Authentication required"'
+//      });
+//      res.end();
+//  }
 
-    //// デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
-    //var parts = auth.split(/:/);
-    //var username = parts[0];
-    //var password = parts[1];
-
-    //// ユーザ名とパスワードが一致しない場合は、401を返却する
-    //if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
-    //    res.writeHead(401, {
-    //        'www-Authenticate': 'Basic realm="Authentication required"'
-    //    });
-    //    return;
-    //}
-
-  //}
   next();
 });
 
