@@ -395,8 +395,8 @@ app.get('*', function(req, res, next) {
   if (remote_ip.match(/^202\.229\.44\.[0-9]+$/) // nttr_ip
       || remote_ip.match(/^202\.217\.72\.[0-9]+$/) // nttr_ip_tamachi
       || remote_ip.match(/^110\.74\.103\.[0-9]+$/) // saito_ip
-      || remote_ip.match(/^106\.190\.35\.[0-9]+$/) // kmura_ip
-      || remote_ip.match(/^106\.190\.18\.[0-9]+$/) // kmura_ip
+      || remote_ip.match(/^222\.158\.[0-9]+\.[0-9]+$/) // saito_ip
+      || remote_ip.match(/^106\.190\.[0-9]+\.[0-9]+$/) // kmura_ip
       || remote_ip.match(/^114\.179\.73\.50$/) // aruku.inc
     ) {
     // 通過
@@ -1017,7 +1017,7 @@ app.get('/my-setting', function (req, res) {
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+    'SELECT id, name, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
     [req.session.auth.user_id],
     function(err, results, fields) {
       if (err) {throw err;}
@@ -1445,6 +1445,64 @@ app.post('/firstset', function (req, res) {
 
 });
 
+
+/**
+ * --------------------------------------------------------
+ * POST: mypageプロフィール設定変更
+ * --------------------------------------------------------
+ */
+app.post('/profile-change', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  var mail_addr = '';
+
+  // email
+  try {
+    check(req.body.mail_addr).len(6, 64).isEmail();
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なリクエストです'}, 400);
+    return;
+  }
+
+  mail_addr = req.body.mail_addr;
+
+  client.query(
+    'UPDATE '+TABLE_USERS+' SET'+
+    '  mail_addr = ?'+
+    ' WHERE id = ?',
+    [mail_addr, req.session.auth.user_id],
+    function(err) {
+      if (err) {throw err;}
+
+      // session にメルアドを保持しておく
+      req.session.auth.mail_addr = mail_addr;
+
+      // 変更通知のメール送信
+//      var text_msg = ''
+//        , email_tmpl = fs.readFileSync(__dirname + '/views/email/welcome.ejs', 'utf8')
+//        , mailto     = mail_addr
+//        , subject    = 'SYABERI-HOUSE 設定変更の完了しました'
+//        ;
+//      text_msg = ejs.render(email_tmpl, {
+//        user_name: req.session.auth.user_name
+//      });
+//      __sendEmail(text_msg, conf, mailto, subject)
+
+      res.json({flg_profile_change: true}, 200);
+      return;
+    }
+  );
+
+});
+
+
+
 /**
  * --------------------------------------------------------
  * POST: イベント作成の設定
@@ -1474,9 +1532,9 @@ app.post('/create-event', function (req, res) {
     check(req.body.title).notEmpty().len(1, 250);
     check(req.body.description).notEmpty();
     check(req.body.detail).notEmpty();
-    check(req.body.target_num).isInt();
-    check(req.body.deadline).isDate();
-    check(req.body.rental_time).isDate();
+    //check(req.body.target_num).isInt();
+    //check(req.body.deadline).isDate();
+    //check(req.body.rental_time).isDate();
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なリクエストです'}, 400);
@@ -1486,9 +1544,9 @@ app.post('/create-event', function (req, res) {
   title = req.body.title;
   description = req.body.description;
   detail      = req.body.detail;
-  target_num  = req.body.target_num;
-  deadline    = req.body.deadline;
-  rental_time = req.body.rental_time;
+  //target_num  = req.body.target_num;
+  //deadline    = req.body.deadline;
+  //rental_time = req.body.rental_time;
   dec_image   = req.body.dec_image;
 
   client.query(
@@ -1659,6 +1717,197 @@ app.post('/end-proc', function (req, res) {
             if (err2) {throw err2;}
             res.json({flg_update: 'ok'}, 200);
             return;
+          }
+        );
+      }
+    }
+
+  );
+
+});
+
+
+
+/**
+ * --------------------------------------------------------
+ * 参加取り消し対応(update)
+ * --------------------------------------------------------
+ */
+app.post('/cancel-join', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.dec_id).isInt();
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 400);
+    return;
+  }
+
+  // ログインID 参加済みかどうかチェック
+  client.query(
+    'SELECT id'+
+    ' FROM '+TABLE_SUPPORTERS+
+    ' WHERE declaration_id = ? AND user_id = ?',
+    [req.body.dec_id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: '不正なリクエストです'}, 400);
+        return;
+      } else {
+
+        // 削除する
+        client.query(
+          'DELETE FROM '+TABLE_SUPPORTERS+
+          ' WHERE decraration_id = ? AND user_id = ?'
+          [req.body.dec_id, req.session.auth.user_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            res.json({flg_cancel_join: 'ok'}, 200);
+            return;
+          }
+        );
+      }
+    }
+
+  );
+
+});
+
+
+
+
+/**
+ * --------------------------------------------------------
+ * コメント削除(delete)
+ * --------------------------------------------------------
+ */
+app.post('/delete-comment', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.comment_id).isInt();
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 400);
+    return;
+  }
+
+  // 削除対象コメント が本人かどうかチェック
+  client.query(
+    'SELECT id'+
+    ' FROM '+TABLE_DOT1_COMMENTS+
+    ' WHERE user_id = ?',
+    [req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: '本人ではない。不正なリクエストです'}, 400);
+        return;
+      } else {
+        // commentID
+        var comment_id = results[0].id;
+
+        // コメントを削除する
+        client.query(
+          'DELETE FROM '+TABLE_DOT1_COMMENTS+
+          ' WHERE id = ?',
+          [comment_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            res.json({flg_delete_comment: 'ok'}, 200);
+            return;
+          }
+        );
+      }
+    }
+
+  );
+
+});
+
+
+/**
+ * --------------------------------------------------------
+ * チャット部屋削除(delete)
+ * --------------------------------------------------------
+ */
+app.post('/delete-chatroom', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.dec_id).isInt();
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 400);
+    return;
+  }
+
+  // 削除対象部屋の管理人 が本人かどうかチェック
+  client.query(
+    'SELECT id, title'+
+    ' FROM '+TABLE_DECLARATIONS+
+    ' WHERE id = ? AND user_id = ?',
+    [req.body.dec_id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: '本人ではない。不正なリクエストです'}, 400);
+        return;
+      } else {
+        // チャット部屋ID
+        var dec_id = results[0].id
+          , dec_title = results[0].title
+          ;
+
+        // チャット部屋を削除する
+        client.query(
+          'DELETE FROM '+TABLE_DECLARATIONS+
+          ' WHERE id = ?',
+          [dec_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+            res.json({flg_delete_chatroom: 'ok'}, 200);
+            return;
+          }
+        );
+
+        // 部屋に紐付くコメントを削除する
+        client.query(
+          'DELETE FROM '+TABLE_DOT1_COMMENTS+
+          ' WHERE dec_id = ?',
+          [dec_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
+          }
+        );
+
+        // 部屋に紐付く参加者を削除する
+        client.query(
+          'DELETE FROM '+TABLE_SUPPORTERS+
+          ' WHERE declaration_id = ?',
+          [dec_id],
+          function(err2, results2) {
+            if (err2) {throw err2;}
           }
         );
       }

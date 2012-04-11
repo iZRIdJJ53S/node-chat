@@ -59,7 +59,7 @@
 	padding-top: 5px;
 }
 #content-wrapper .content-body .main-view{
-	float: right;
+	float: left;
 	width: 500px;
 }
 #content-wrapper .content-body .main-view .title{
@@ -80,8 +80,8 @@
 	background-color: #fafafa;
 }
 #content-wrapper .content-body .main-chat{
-	float: left;
-	width: 430px;
+	float: right;
+	width: 440px;
 	/*border: red 1px solid;*/
 }
 #content-wrapper .content-body .main-chat .title{
@@ -97,7 +97,7 @@
 	z-index: 1;
 	height: 0px;
 }
-#content-wrapper .content-body .main-view .input{
+#content-wrapper .content-body .input{
 	width: 100%;
 	border: #999 1px solid;
 	background-color: #fff;
@@ -105,11 +105,11 @@
     -webkit-border-radius: 2px;/* Safari,Google Chrome用 */  
     -moz-border-radius: 2px;/* Firefox用 */
 }
-#content-wrapper .content-body .main-view .input .inputContainer textarea{
+#content-wrapper .content-body .input .inputContainer textarea{
 	background: none repeat scroll 0 0 transparent;
 	border-width: 0;
 	font-size: 13px;
-	width: 494px;
+	width: 430px;
 	height: 50px;
 	margin: 0;
 	outline: medium none;
@@ -118,13 +118,13 @@
 	vertical-align: bottom;
 	background-color: #fff;
 }
-#content-wrapper .content-body .main-view .input .buttonContainer{
+#content-wrapper .content-body .input .buttonContainer{
 	text-align: right;
 	padding: 5px;
 	border-top: 1px #ddd solid;
 	background-color: #fafafa;
 }
-#content-wrapper .content-body .main-view .input .submitBtn{
+#content-wrapper .content-body .input .submitBtn{
 	/*background-image: url("../img/button_bg.png");*/
 	background-color: #303333;
     border: 1px solid #000000;

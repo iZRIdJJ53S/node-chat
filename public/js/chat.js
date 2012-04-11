@@ -318,27 +318,27 @@ var chat = {
       }
 
     // nicovideo 有り
-    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {
-      // 動画ID を抜き出す
-      var nico_vid = iframeURL.match(/(sm[0-9]+)/);
-      if (nico_vid[1]) {
-        var script_tag = document.createElement('script');
-        script_tag.type = 'text/javascript';
-        script_tag.src  = 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1];
-
-        //var iframe_tag = '<script type="text/javascript" src="';
-        //var iframe_tag = '<iframe width="500" height="300" src="';
-        //iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
-        //iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
-//        iframe_tag += '"></script>';
-//        iframe_tag += '<noscript><a href="http://www.nicovideo.jp/watch/'+nico_vid[1]+'" target="_blank">';
-//        iframe_tag += 'nicovideo で見る</a></noscript>';
-        this.iframeArea.prepend(script_tag);
-      }
-
-    // 該当なし。その他
-    } else {
-      this.iframeArea.prepend($('<iframe width="500" height="460">').attr('src', iframeURL));
+//    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {
+//      // 動画ID を抜き出す
+//      var nico_vid = iframeURL.match(/(sm[0-9]+)/);
+//      if (nico_vid[1]) {
+//        var script_tag = document.createElement('script');
+//        script_tag.type = 'text/javascript';
+//        script_tag.src  = 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1];
+//
+//        //var iframe_tag = '<script type="text/javascript" src="';
+//        //var iframe_tag = '<iframe width="500" height="300" src="';
+//        //iframe_tag += 'http://ext.nicovideo.jp/thumb_watch/'+nico_vid[1]+'?w=500&h=300';
+//        //iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
+////        iframe_tag += '"></script>';
+////        iframe_tag += '<noscript><a href="http://www.nicovideo.jp/watch/'+nico_vid[1]+'" target="_blank">';
+////        iframe_tag += 'nicovideo で見る</a></noscript>';
+//        this.iframeArea.prepend(script_tag);
+//      }
+//
+//    // 該当なし。その他
+//    } else {
+//      this.iframeArea.prepend($('<iframe width="500" height="460">').attr('src', iframeURL));
     }
     //this.iframeArea.attr('src', iframeURL);
   },

@@ -161,7 +161,8 @@ player.buffer = {
             if ( secs == 0 ) {
                 that.stop();
             }
-        }, 1000);
+        }, 0);
+        //}, 1000);
     },
 
     stop: function () {

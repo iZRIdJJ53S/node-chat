@@ -1,10 +1,10 @@
 <div class="main-img"></div>
-<h2 class="title">CREATE EVENT</h2>
+<h2 class="title">CREATE ROOM</h2>
 <div class="full-form">
 <form id="full-form-tag" name="full-form-tag" method="post" action="/create-event" enctype="multipart/form-data">
-		<h3>EVENT</h3>
+		<h3>ROOM</h3>
 		<div class="form-container">
-			<div class="title">イベント名</div>
+			<div class="title">チャット部屋名</div>
 			<div class="content"><input type="text" size="30" id="title" name="title" value=""></div>
 			<div class="side"></div>
 		</div>
@@ -34,7 +34,7 @@
 			<div class="content"><textarea cols="40" rows="10" id="detail" name="detail"></textarea></div>
 			<div class="side">タイトルは&lt;h3&gt;で囲んでください。<br>例）&lt;h3&gt;タイトル&lt;/h3&gt;<br><br>文章は&lt;p&gt;で囲んでください。<br>例）&lt;p&gt;文章&lt;/p&gt;</div>
 		</div>
-		<div class="form-container">
+		<!--div class="form-container">
 			<div class="title">開始日</div>
 			<div class="content"><input type="text" id="deadline" name="deadline"></div>
 			<div class="side"></div>
@@ -54,23 +54,23 @@
 				<input type="radio" name="rental-time" value="1m" disabled="disabled">1ヶ月
 			</div>
 			<div class="side">1週間と1ヶ月のご利用はプレミア会員のみ可能です。</div>
-		</div>
+		</div-->
 		<div class="form-container">
 			<div class="button">
-				<span class="btn" id="submit-event">EVENTを作る</span>  <span class="btn">キャンセル</span>
+				<span class="btn" id="submit-event">チャット部屋を作る</span>  <span class="btn">キャンセル</span>
 			</div>
 		</div>
 </form>
 </div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
-<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet">
+<!--script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/i18n/jquery.ui.datepicker-ja.min.js"></script>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" type="text/css" rel="stylesheet"-->
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/localization/messages_ja.js"></script>
-<script src="/js/jquery.ui-timepicker.js"></script>
+<!--script src="/js/jquery.ui-timepicker.js"></script>
+<script src="/js/jquery.exdate.js"></script-->
 <script src="/js/jquery.autosize.min.js?v=1.0"></script>
-<script src="/js/jquery.exdate.js"></script>
 <script src='/js/jquery.filedrop.js?v=1.0'></script>
 <script src='/js/filedrop-script.js?v=1.0'></script>
 <style type="text/css">
@@ -87,10 +87,10 @@
 <script type="text/javascript">
 <!--
   $().ready(function(){
-    $('#deadline').datetimepicker({
-      //addSliderAccess: true
-      //sliderAccessArgs: { touchonly: false }
-    });
+    //$('#deadline').datetimepicker({
+    //  //addSliderAccess: true
+    //  //sliderAccessArgs: { touchonly: false }
+    //});
     //$('#deadline').datepicker();
     $('#description').autosize();
     $('#detail').autosize();
@@ -106,22 +106,22 @@
         },
         detail: {
           required: true
-        },
-        target_num: {
-          required: true,
-          number: true
-        },
-        deadline: {
-          required: true,
-          date: true
         }
+        //target_num: {
+        //  required: true,
+        //  number: true
+        //},
+        //deadline: {
+        //  required: true,
+        //  date: true
+        //}
       },
       messages: {
         title: "タイトルを入力してください。",
         description: "概要を入力して下さい",
-        detail: "詳細な内容を入力して下さい",
-        target_num: "有効な数字を入力して下さい",
-        deadline: "有効な日付を入力して下さい"
+        detail: "詳細な内容を入力して下さい"
+        //target_num: "有効な数字を入力して下さい",
+        //deadline: "有効な日付を入力して下さい"
       },
       //errorClass: "alert-error",
       errorElement: "span"
@@ -134,9 +134,9 @@
     var title = $('#title').val()
       , description = $('#description').val()
       , detail      = $('#detail').val()
-      , target_num  = $('#target_num').val()
-      , deadline    = $('#deadline').val()
-      , rental_time = $('input[name=rental-time]:checked').val()
+      //, target_num  = $('#target_num').val()
+      //, deadline    = $('#deadline').val()
+      //, rental_time = $('input[name=rental-time]:checked').val()
       , dec_image   = ''
       ;
 
@@ -146,32 +146,32 @@
     }
 
     // rental_time の計算
-    var date_obj = $.exDate(deadline, 'yyyy/mm/dd hh24:mi');
-    var date_rental;
-    switch(rental_time) {
-      // 1000 == (ミリ秒=1秒)
-      case '1d':
-        date_obj.setTime(date_obj.getTime() + 1000*86400);
-        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
-        break;
-      case '1w':
-        break;
-      case '1m':
-        break;
-      default:
-        // 1h
-        date_obj.setTime(date_obj.getTime() + 1000*3600);
-        date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
-        break;
-    };
+    //var date_obj = $.exDate(deadline, 'yyyy/mm/dd hh24:mi');
+    //var date_rental;
+    //switch(rental_time) {
+    //  // 1000 == (ミリ秒=1秒)
+    //  case '1d':
+    //    date_obj.setTime(date_obj.getTime() + 1000*86400);
+    //    date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
+    //    break;
+    //  case '1w':
+    //    break;
+    //  case '1m':
+    //    break;
+    //  default:
+    //    // 1h
+    //    date_obj.setTime(date_obj.getTime() + 1000*3600);
+    //    date_rental = date_obj.toChar('yyyy/mm/dd hh24:mi');
+    //    break;
+    //};
 
     var post_data = {
         title: title
       , description: description
       , detail:      detail
-      , target_num:  target_num
-      , deadline:    deadline
-      , rental_time: date_rental
+    //  , target_num:  target_num
+    //  , deadline:    deadline
+    //  , rental_time: date_rental
       , dec_image:   dec_image
     };
 

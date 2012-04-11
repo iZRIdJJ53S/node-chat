@@ -52,3 +52,7 @@ function setAttrSrcURL(url) {
   return false;
 }
 
+// htmlspecialchars
+function __h(str) {
+
+}

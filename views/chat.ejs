@@ -36,14 +36,10 @@ $().ready(function(){
 	<div style="clear:both;"></div>
 	
 	<div class="content-body"><!-- content-body -->
-		<div class="main-chat"><!-- main-chat -->
-			<div class="title">voice</div>
-			<div id="lines1" class="chat"><!-- chat -->
-			</div><!-- /chat -->			
-		</div><!-- /main-chat -->
 		<div class="main-view"><!-- main-view -->
-			<div class="inputleft"><img src="/img/chatleft.png"></div>
-			<div class="input"><!-- input -->
+			<div class="title">みんなで見る画面</div>
+			<div class="buttonContainer">
+				<div class="input"><!-- input -->
 				<form id="send-message1">
 					<table class="" cellspacing="0" cellpadding="0">
 					<tbody>
@@ -58,7 +54,7 @@ $().ready(function(){
 						<td>
 							<div class="buttonContainer">
 								<div id="dropbox" style="float:left;">
-									<span id="drop_message" class="message">Drop images here to upload.</span>
+									<span id="drop_message" class="message">このエリアに画像をドラック＆ドロップ</span>
 								</div>
 							<label for="submit_1">
 							<input class="submitBtn" id="submit_1" type="submit" value="投稿">
@@ -69,12 +65,40 @@ $().ready(function(){
 					</tbody>
 					</table>
 				<form>
-			</div><!-- /input -->
-			<div class="title">共有VIEW</div>
-				
-			<div id="disparea"><!-- audience -->
+				</div><!-- /input -->
+			</div>
+			<div id="disparea">
 				<div id="view_frame" class="view"><!-- HINT --></div>
-			</div><!-- /audience -->
+			</div>		
+		</div><!-- /main-view -->
+		<div class="main-chat"><!-- main-chat -->
+			<div class="title">チャット</div>
+			<div class="input"><!-- input -->
+				<form id="send-message1">
+					<table class="" cellspacing="0" cellpadding="0">
+					<tbody>
+						<tr>
+						<td>
+							<div class="inputContainer">
+								<textarea id="message1"></textarea>
+							</div>
+						</td>
+						</tr>
+						<tr>
+						<td>
+							<div class="buttonContainer">
+							<label for="submit_1">
+								<input class="submitBtn" id="submit_1" type="submit" value="投稿">
+							</label>
+							</div>
+						</td>
+						</tr>
+					</tbody>
+					</table>
+				<form>
+			</div><!-- /input -->
+			<div id="lines1" class="chat"><!-- chat -->
+			</div><!-- /chat -->
 		</div><!-- /main-chat -->
 	</div><!-- /content-body -->
 	<div style="clear:both;"></div>
