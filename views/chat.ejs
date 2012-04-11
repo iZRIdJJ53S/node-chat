@@ -14,12 +14,19 @@ $().ready(function(){
 </style>
 
 <div class="main-img">
-	<div class="ticket-wrapper" style="width:969px;">
+		<div class="ticket-wrapper" style="width:969px;">
+		<div id="owner_proc_area" style="float:right;">
+			<span>管理者メニュー：</span>
+			<span id="event_all_mail">メール一斉送信</span>
+			<span id="event_end_proc">チャット部屋を閉じる</span>
+		</div>
 		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
+<!--
 		<div id="owner_proc_area" style="float:right; display:none;">
 			<div class="btn" id="event_end_proc">終了</div>
 			<div class="btn" id="event_all_mail">メール一斉送信</div>
 		</div>
+-->
 	<div class="participant" id="audienceview"></div>
     <div class="header-icon" id="users_view"></div>
 </div>
@@ -38,35 +45,33 @@ $().ready(function(){
 	<div class="content-body"><!-- content-body -->
 		<div class="main-view"><!-- main-view -->
 			<div class="title">みんなで見る画面</div>
-			<div class="buttonContainer">
-				<div class="input"><!-- input -->
-				<form id="send-message1">
-					<table class="" cellspacing="0" cellpadding="0">
-					<tbody>
-						<tr>
-						<td>
-							<div class="inputContainer">
-								<textarea id="message1"></textarea>
+			<div class="input"><!-- input -->
+			<form id="send-message1">
+				<table class="" cellspacing="0" cellpadding="0">
+				<tbody>
+					<tr>
+					<td>
+						<div class="inputContainer">
+							<input type="url" id="message1"></input>
+						</div>
+					</td>
+					</tr>
+					<tr>
+					<td>
+						<div class="buttonContainer">
+							<div id="dropbox" style="float:left;">
+								<span id="drop_message" class="message">このエリアに画像をドラック＆ドロップ</span>
 							</div>
-						</td>
-						</tr>
-						<tr>
-						<td>
-							<div class="buttonContainer">
-								<div id="dropbox" style="float:left;">
-									<span id="drop_message" class="message">このエリアに画像をドラック＆ドロップ</span>
-								</div>
-							<label for="submit_1">
-							<input class="submitBtn" id="submit_1" type="submit" value="投稿">
-							</label>
-							</div>
-						</td>
-						</tr>
-					</tbody>
-					</table>
-				<form>
-				</div><!-- /input -->
-			</div>
+						<label for="submit_1">
+						<input class="submitBtn" id="submit_1" type="submit" value="投稿">
+						</label>
+						</div>
+					</td>
+					</tr>
+				</tbody>
+				</table>
+			<form>
+			</div><!-- /input -->
 			<div id="disparea">
 				<div id="view_frame" class="view"><!-- HINT --></div>
 			</div>		

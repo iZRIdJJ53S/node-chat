@@ -60,8 +60,8 @@ $('#view-more-events').click(function() {
  */
 function makeEventListParts(event_data) {
     var write_data = '';
-    write_data += '<li>';
-    write_data += '<div class="ticket-wrapper">';
+    write_data += '<li id="event-first-li-area-'+event_data.id+'">';
+    write_data += '<div class="ticket-wrapper" id="ticket-wrapper-'+event_data.id+'">';
     write_data += '<div class="left">';
     write_data += '<div class="icon"><img src="'+event_data.user_image+'"></div>';
     write_data += '<h3 class="title">';
@@ -86,12 +86,17 @@ function makeEventListParts(event_data) {
 	write_data += '</div>';
 	write_data += '<div class="right">';
 	write_data += ' <a href="#" name="join-button-right">';
-	write_data += ' <div class="btn" id="join-button-right-'+event_data.id+'">参加</div></a>';
+	write_data += ' <div class="btn" id="join-button-right-'+event_data.id+'" style="display:none;">参加</div></a>';
+	write_data += ' <a href="/ch/'+event_data.id+'">';
+	write_data += ' <div class="btn2" id="room-button-right-'+event_data.id+'" style="display:none;">会場</div></a>';
 	write_data += ' <a href="/dec/'+event_data.id+'"><div class="btn">詳細</div></a>';
+	write_data += ' <a href="#" name="delete-button-right">';
+	write_data += ' <div class="btn" id="delete-button-right-'+event_data.id+'" style="display:none;">削除</div></a>';
 	write_data += '</div>';
     write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'"></div>';
     write_data += makeParticipantParts(event_data.id);	//participant script
     write_data += makeCheckStatusJoinParts(event_data.id, event_data.target_num, event_data.supporter_num);	//checkStatusJoin script
+	write_data += makeDeleteChatRoomParts(event_data.id);
     write_data += '</li>';
     /**
      * イベントリスト
@@ -216,6 +221,31 @@ function makeParticipantParts(id){
 }
 
 
+function makeDeleteChatRoomParts(id) {
+	var write_data = '';
+	write_data += '<script type="text/javascript">';
+	write_data += '$().ready(function(){';
+	write_data += '$.ajax({';
+	write_data += 'type: "GET",';
+	write_data += 'url: "/get-is-owner",';
+	write_data += 'data: {dec_id: '+id+'},';
+	write_data += 'success: function(data){';
+	write_data += '  if (data.res_flg) {';
+	write_data += '    $("#delete-button-right-'+id+'").show();';
+	write_data += '  } else {';
+	write_data += '    $("#delete-button-right-'+id+'").hide();';
+	write_data += '  }';
+	write_data += '},';
+	write_data += 'error: function(data){';
+	write_data += '  $("#delete-button-right-'+id+'").hide();';
+	write_data += '}';
+	write_data += '});';
+	write_data += '});';
+	write_data += '</scr'+'ipt>';
+	return write_data;
+}
+
+
 function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
   var write_data = '';
   write_data += '<script type="text/javascript">';
@@ -231,12 +261,15 @@ function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
   write_data += '      data: {dec_id: '+event_id+'},';
   write_data += '      success: function(data){';
   write_data += '        if (data.res_flg) {';
-  write_data += '          $("#join-button-right-'+event_id+'").parent().parent().html(\'<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>\');';
+  write_data += '          $("#room-button-right-'+event_id+'").show();';
+  write_data += '        } else {';
+  write_data += '          $("#join-button-right-'+event_id+'").show();';
+  write_data += '          $("#room-button-right-'+event_id+'").hide();';
   write_data += '        }';
   write_data += '      },';
   write_data += '      error: function(data){';
   write_data += '        if (data.status === 401) {';
-  write_data += '          $("#join-button-right-'+event_id+'").parent().parent().html(\'<a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>\');';
+  write_data += '          $("#room-button-right-'+event_id+'").hide();';
   write_data += '        }';
   write_data += '      }';
   write_data += '    });';
@@ -267,13 +300,19 @@ console.log(obj);
     success: function(data){
       if (data.join_flg === 'ok') {
         // 参加した
-        $('#join-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
-        $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
+//        $('#join-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
+        $('#join-button-right-'+event_id).hide();
+        $('#room-button-right-'+event_id).show();
+
+//        $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
+        $('#join-button-bottom'+event_id).hide();
+        $('#room-button-bottom'+event_id).show();
+
         // 人数も変更
         var sup_cnt = $('#member-counter-'+event_id).text();
-        sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) - 1;
+        sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) + 1;
         if (sup_cnt > 0) {
-          $('#member-counter-'+event_id).text('残り'+sup_cnt+'人');
+          $('#member-counter-'+event_id).text('参加者：'+sup_cnt+'人');
         } else {
           $('#member-counter-'+event_id).html('<div class="btned">満員</div><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
         }
@@ -293,7 +332,13 @@ console.log(obj);
 });
 
 
-$('a[name="delete-button-bottom"]').live('click', function() {
+$('a[name="delete-button-right"]').live('click', function() {
+  if (window.confirm('本当に削除しますか？')) {
+
+  } else {
+    return false;
+  }
+
   var obj = $(this);
   var event_obj = obj.find('div');
   var event_id  = event_obj.attr('id');
@@ -309,9 +354,9 @@ $('a[name="delete-button-bottom"]').live('click', function() {
     success: function(data){
       if (data.flg_delete_chatroom === 'ok') {
         // 削除した
-        $('#delete-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
-        $('#delete-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
-
+        $('#ticket-wrapper-'+event_id).animate({height:'hide', opacity:'hide'}, "slow",
+          function() {$('#event-first-li-area-'+event_id).remove();}
+        );
       }
 
     },
@@ -321,6 +366,7 @@ $('a[name="delete-button-bottom"]').live('click', function() {
   });
 
   return false;
+});
 
 
 function __isLogin() {

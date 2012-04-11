@@ -18,7 +18,11 @@
 		<div class="details">
 			<%= dec_detail.detail %>
 		</div>
-		<div><a href="#" name="join-button-bottom"><div class="btn" id="join-button-bottom-<%= dec_detail.id %>">参加する</div></a></div>
+		<div>
+			<a href="#" name="join-button-bottom"><div class="btn" id="join-button-bottom-<%= dec_detail.id %>">参加する</div></a>
+			<a href="/ch/<%= dec_detail.id %>" name="room-button-bottom"><div class="btn2" id="room-button-bottom-<%= dec_detail.id %>" style="display:none;">会場</div></a>
+			
+		</div>
 	</div>
 <div class="right-content">
 		<!--div class="AD"><img src="/img/AD_350x240.gif"></div-->

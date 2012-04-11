@@ -1099,6 +1099,52 @@ app.get('/get-is-login', function (req, res) {
 });
 
 
+/**
+ * --------------------------------------------------------
+ * オーナーかどうか判断するAPI
+ * --------------------------------------------------------
+ */
+app.get('/get-is-owner', function (req, res) {
+
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+    res.json({text: 'ログインが必要です'}, 401);
+    return;
+  }
+
+
+  // リクエストチェック
+  try {
+    req.query.dec_id = parseInt(req.query.dec_id);
+
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なリクエストです'}, 400);// Bad Request
+    return;
+  }
+
+  // データ取得
+  client.query(
+    'SELECT id'+
+    ' FROM '+TABLE_DECLARATIONS+
+    ' WHERE id = ? AND user_id = ?'+
+    ' LIMIT 1',
+    [req.query.dec_id, req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({res_flg: false}, 200);
+      } else {
+        res.json({res_flg: true}, 200);
+      }
+      return;
+    }
+  );
+
+});
+
+
 
 /**
  * --------------------------------------------------------
