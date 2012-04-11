@@ -11,7 +11,8 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , sio     = require('socket.io') // WebSockets realtime
   , log4js  = require('log4js')    // ロギング
   , util    = require('util')      // デバッグ等に便利な
-  , fs      = require('fs')        // ファイル操作
+  , OAuth   = require('oauth').OAuth  // twitter投稿などに使用する
+  , fs      = require('fs')           // ファイル操作
   , emailjs = require('emailjs/email') // メール操作
   , exec    = require('child_process').exec // シェルコマンドを叩く為に必要
   , formidable = require('formidable') // ファイルアップロード
@@ -28,6 +29,17 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
 var FLG_SUPPORTER_COMP_STAT = 1; // 完了/サクセスしたもの
 var FLG_SUPPORTER_WANT_STAT = 2; // 現在開催中のもの
 var FLG_SUPPORTER_FAIL_STAT = 3; // 失敗/挫折したもの
+
+// ----------------------------------------------
+// oauth関連初期設定
+// ----------------------------------------------
+oa_obj = new OAuth('https://twitter.com/oauth/request_token'
+  , 'https://twitter.com/oauth/access_token'
+  , conf.twit.consumerKey
+  , conf.twit.consumerSecret
+  , '1.0A', '/oauth/callback', 'HMAC-SHA1'
+);
+
 
 
 // ----------------------------------------------
@@ -1364,7 +1376,8 @@ app.get('/ch/:id', function (req, res) {
               'house_image': results[0].image, 'house_desc': results[0].description,
               'user_name': user_name, 'user_image': user_image,
               'user_id': user_id, 'house_status': results[0].status,
-              'is_owner': is_owner, 'is_supporter': is_supporter
+              'is_owner': is_owner, 'is_supporter': is_supporter,
+              'meta_title': results[0].name+'｜'
             });
             return;
           }
@@ -1828,6 +1841,66 @@ app.post('/cancel-join', function (req, res) {
 });
 
 
+/**
+ * --------------------------------------------------------
+ * twitter投稿(post)
+ * --------------------------------------------------------
+ */
+app.post('/post-twitter', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.post_txt).len(1, 140);
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なパラメータです'}, 400);
+    return;
+  }
+
+  // 本人のoauth情報を取得
+  client.query(
+    'SELECT id, oauth_id, oauth_secret_id'+
+    ' FROM '+TABLE_USERS+
+    ' WHERE id = ?',
+    [req.session.auth.user_id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.json({text: '本人ではない。不正なリクエストです'}, 400);
+        return;
+      } else {
+        // oauth情報
+        var oauth_id = results[0].oauth_id
+          , oauth_secret_id = results[0].oauth_secret_id
+          ;
+
+        // twitterに投稿する
+        //oa_obj.post(
+        //  'https://api.twitter.com/1/statuses/update.json'
+        //  ,
+        //  req.session.oauth.access_token, 
+        //  req.session.oauth.access_token_secret,
+        //  {"status": text},
+        //  function (err, data, response) {
+        //    if (err) {
+        //      res.send('too bad.' + JSON.stringify(err));
+        //    } else {
+        //      res.send('posted successfully...!');
+        //    }
+        //});
+      }
+    }
+
+  );
+
+});
+
 
 
 /**
@@ -1856,8 +1929,8 @@ app.post('/delete-comment', function (req, res) {
   client.query(
     'SELECT id'+
     ' FROM '+TABLE_DOT1_COMMENTS+
-    ' WHERE user_id = ?',
-    [req.session.auth.user_id],
+    ' WHERE id = ? AND user_id = ?',
+    [req.body.comment_id, req.session.auth.user_id],
     function(err, results) {
       if (err) {throw err;}
       if (results.length === 0) {
@@ -2336,7 +2409,7 @@ var house = io
         //+' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
         //+' WHERE cmt.house_id = ?'
         //+' ORDER BY cmt.created_at DESC LIMIT 10',
-        'SELECT id, created_at, user_name, body, image, profile_image_url'
+        'SELECT id, created_at, user_id, user_name, body, image, profile_image_url'
         +'    , type'
         +' FROM '+TABLE_DOT1_COMMENTS
         +' WHERE dec_id = ?'
@@ -2355,9 +2428,9 @@ var house = io
             for (var i = 0; i < max_result; i++) {
               var tmp_data = results[i];
               // データを溜め込んでいく
-              send_data[i] = {'comment_id': tmp_data.tweet_id_str,
+              send_data[i] = {'comment_id': tmp_data.id,
                 'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
-                //'message_time': date_txt, 'userMessage': tmp_data.body,
+                'user_id': tmp_data.user_id,
                 'image_src': tmp_data.image, 'userName': tmp_data.user_name,
                 'user_image': tmp_data.profile_image_url, 'iframeURL': '',
                 'source': tmp_data.source, 'type': tmp_data.type
@@ -2394,11 +2467,6 @@ var house = io
         //logger.info('url_id: '+resArray[0]);
         //logger.info('house_id: '+resArray[1]);
         //logger.info('frameURL: '+iframeURL);
-        socket.broadcast.to(resArray[0]).emit('chat message', {
-          'comment_id': '', 'userName': userName, 'user_image': user_image,
-          'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
-          'message_time': message_time
-        });
 
         if (!image_src) {image_src = '';}
         // オリジナルコメントテーブルに格納 
@@ -2431,15 +2499,36 @@ var house = io
             , user_image, '', '', '', '', '', '', ''
           ],
           function(err, results) {
-            if (err) {
-              throw err;
-            } else {
-              return;
-            }
+            if (err) {throw err;}
+
+            client.query(
+              'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_DOT1_COMMENTS,
+              function(err2, results2) {
+                if (err2) {throw err2;}
+                if (results2[0]) {
+                  var last_id = results2[0].last_id;
+                  // 自分自身だけに配信
+                  socket.to(resArray[0]).emit('chat message', {
+                    'comment_id': last_id, 'userName': userName, 'user_image': user_image,
+                    'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
+                    'message_time': message_time, 'is_owner': true
+                  });
+
+                  // 自分以外、全員に配信
+                  socket.broadcast.to(resArray[0]).emit('chat message', {
+                    'comment_id': last_id, 'userName': userName, 'user_image': user_image,
+                    'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
+                    'message_time': message_time, 'is_owner': false
+                  });
+                }
+              }
+            );
+
           }
         );
       })
 
+      return;
       //logger.info('socket.manager.rooms: ');logger.info(socket.manager.rooms);
 //      logger.info('socket.manager.roomClients: ');logger.info(socket.manager.roomClients);
 

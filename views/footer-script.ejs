@@ -76,24 +76,24 @@ function makeEventListParts(event_data) {
     }
     */
     write_data += '</h3>';
+    /*
+	 *
     write_data += '<div class="time" id="deadline_time_'+event_data.id+'">';
     write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
     write_data += '</div>';
 	write_data += makeCountDownParts(event_data.deadline,event_data.id);	//deadline script
-	write_data += '<div class="member" id="member-parts-area-'+event_data.id+'">';
-	write_data += makeMemberParts(event_data.id, event_data.target_num, event_data.supporter_num);
+	*/
 	write_data += '</div>';
-	write_data += '</div>';
-	write_data += '<div class="right">';
-	write_data += ' <a href="#" name="join-button-right">';
-	write_data += ' <div class="btn" id="join-button-right-'+event_data.id+'" style="display:none;">参加</div></a>';
-	write_data += ' <a href="/ch/'+event_data.id+'">';
-	write_data += ' <div class="btn2" id="room-button-right-'+event_data.id+'" style="display:none;">会場</div></a>';
-	write_data += ' <a href="/dec/'+event_data.id+'"><div class="btn">詳細</div></a>';
+	write_data += '<div class="right"><ul>';
 	write_data += ' <a href="#" name="delete-button-right">';
-	write_data += ' <div class="btn" id="delete-button-right-'+event_data.id+'" style="display:none;">削除</div></a>';
-	write_data += '</div>';
-    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'"></div>';
+	write_data += ' <li class="btn3" id="delete-button-right-'+event_data.id+'" style="display:none;">×削除</li></a>';
+	write_data += ' <a href="/dec/'+event_data.id+'"><li class="btn">詳細</li></a>';
+	write_data += ' <a href="/ch/'+event_data.id+'">';
+	write_data += ' <li class="btn2" id="room-button-right-'+event_data.id+'" style="display:none;">会場</li></a>';
+	write_data += ' <a href="#" name="join-button-right">';
+	write_data += ' <li class="btn" id="join-button-right-'+event_data.id+'" style="display:none;">参加</li></a>';
+	write_data += '</ul></div>';
+    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'">'+makeMemberParts(event_data.id, event_data.target_num, event_data.supporter_num)+'</div>';
     write_data += makeParticipantParts(event_data.id);	//participant script
     write_data += makeCheckStatusJoinParts(event_data.id, event_data.target_num, event_data.supporter_num);	//checkStatusJoin script
 	write_data += makeDeleteChatRoomParts(event_data.id);
@@ -119,7 +119,11 @@ function makeSuccessListParts(event_data) {
     write_data += '<div class="ticket-wrapper">';
     write_data += '<div class="left">';
     write_data += '<h3 class="title-noicon">';
+    write_data += event_data.title+'<br>';
+    /*
+     * 募集中タグの削除 4.11 km
     write_data += event_data.title+'<br><span class="tag">一緒に楽しむメンバ</span>';
+     */
     write_data += '</h3>';
     write_data += '<div class="view" id="view_'+event_data.id+'">';
     write_data += 'view:';
@@ -176,8 +180,8 @@ function makeCountDownParts(deadline,id){
 }
 
 function makeMemberParts(event_id, target_num, supporter_num){
-	var write_data = '参加者:';
-	write_data += supporter_num+'人';
+	var write_data = '<span class="member-count">';
+	write_data += supporter_num+'人参加</span>';
 	/*
 	 * 参加者最大値の削除 4.11 km
 	if (target_num === supporter_num) {

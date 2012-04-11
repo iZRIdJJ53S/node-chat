@@ -14,22 +14,23 @@ $().ready(function(){
 </style>
 
 <div class="main-img">
-		<div class="ticket-wrapper" style="width:969px;">
-		<div id="owner_proc_area" style="float:right;">
-			<span>管理者メニュー：</span>
-			<span id="event_all_mail">メール一斉送信</span>
-			<span id="event_end_proc">チャット部屋を閉じる</span>
+	<div class="ticket-wrapper" style="width:969px;">
+		<div class="left">
+			<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
 		</div>
-		<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
-<!--
-		<div id="owner_proc_area" style="float:right; display:none;">
-			<div class="btn" id="event_end_proc">終了</div>
-			<div class="btn" id="event_all_mail">メール一斉送信</div>
+		<div id="owner_proc_area" class="right">
+			<ul>
+				<li id="event_all_mail" class="btn" style="width:200px;">参加者にメール送信</li>
+				<li id="event_end_proc" class="btn" style="width:200px;">まとめログを作る</li>
+			<ul>
 		</div>
--->
-	<div class="participant" id="audienceview"></div>
-    <div class="header-icon" id="users_view"></div>
-</div>
+		<div class="right" style="min-height:60px;">
+			<a href="https://twitter.com/share" class="twitter-share-button" data-lang="ja" data-size="large" data-related="syaberihouse">ツイート</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+		</div>
+		<div class="participant" id="audienceview"></div>
+	    <div class="header-icon" id="users_view"></div>
+	</div>
 
 <!-- OLD STYLE -->
 
@@ -45,33 +46,6 @@ $().ready(function(){
 	<div class="content-body"><!-- content-body -->
 		<div class="main-view"><!-- main-view -->
 			<div class="title">みんなで見る画面</div>
-			<div class="input"><!-- input -->
-			<form id="send-message1">
-				<table class="" cellspacing="0" cellpadding="0">
-				<tbody>
-					<tr>
-					<td>
-						<div class="inputContainer">
-							<input type="url" id="message1"></input>
-						</div>
-					</td>
-					</tr>
-					<tr>
-					<td>
-						<div class="buttonContainer">
-							<div id="dropbox" style="float:left;">
-								<span id="drop_message" class="message">このエリアに画像をドラック＆ドロップ</span>
-							</div>
-						<label for="submit_1">
-						<input class="submitBtn" id="submit_1" type="submit" value="投稿">
-						</label>
-						</div>
-					</td>
-					</tr>
-				</tbody>
-				</table>
-			<form>
-			</div><!-- /input -->
 			<div id="disparea">
 				<div id="view_frame" class="view"><!-- HINT --></div>
 			</div>		
@@ -92,6 +66,9 @@ $().ready(function(){
 						<tr>
 						<td>
 							<div class="buttonContainer">
+								<div id="dropbox" style="float:left;">
+									<span id="drop_message" class="message">このエリアに画像をドラック＆ドロップ</span>
+								</div>
 							<label for="submit_1">
 								<input class="submitBtn" id="submit_1" type="submit" value="投稿">
 							</label>
@@ -264,6 +241,43 @@ $().ready(function(){
       }
     });
 
+    return false;
+  });
+
+
+  // コメント削除
+  $('a[name="delete_cmt"]').live('click', function() {
+    if (window.confirm('本当に削除しますか？')) {
+  
+    } else {
+      return false;
+    }
+  
+    var obj = $(this);
+    var comment_id  = obj.attr('id');
+    comment_id = parseInt(comment_id.match(/[0-9]+/));
+  
+    var loader_img = $('<img src="/img/loader-mini.gif">');
+    obj.html(loader_img);
+  
+    $.ajax({
+      type: 'POST',
+      url: '/delete-comment',
+      data: {comment_id: comment_id},
+      success: function(data){
+        if (data.flg_delete_comment === 'ok') {
+          // 削除した
+          $('#chat-content-'+comment_id).animate({height:'hide', opacity:'hide'}, "slow",
+            function() {$('#chat-content-'+comment_id).remove();}
+          );
+        }
+  
+      },
+      error: function(data){
+        // error
+      }
+    });
+  
     return false;
   });
 //-->

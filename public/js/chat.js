@@ -64,7 +64,7 @@ var chat = {
 
             // 自分自身(クライアント)へ描画
             var message_time = that._getCurrentTime();
-            that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
+//            that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
             // サーバーへpush して全クライアントへ配信してもらう
             $.publish( 'user:message-sent', {
               'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
@@ -111,7 +111,7 @@ var chat = {
 
         // 自分自身(クライアント)へ描画
         var message_time = that._getCurrentTime();
-        that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
+//        that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
         // サーバーへpush して全クライアントへ配信してもらう
         $.publish( 'user:message-sent', {
           'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
@@ -131,6 +131,7 @@ var chat = {
     $.subscribe( 'user:message-received', function ( event, data ) {
       that._addMessage(data.comment_id, data.userName, data.user_image
         , data.userMessage, data.image_src, data.message_time
+        , data.is_owner
       );
 
       var flg_owner = false;
@@ -204,7 +205,8 @@ var chat = {
 
 
 
-  _addMessage: function (comment_id, userName, user_image, userMessage, image_src, message_time) {
+  _addMessage: function (comment_id, userName, user_image, userMessage,
+      image_src, message_time, is_owner) {
     var text_node = $('<div id="text_node"></div>');
     userMessage = text_node.text(userMessage).html();
     // 改行br変換
@@ -236,16 +238,20 @@ var chat = {
     var utc_time   = this._changeTimeStamp(message_time);
     var easy_time  = this._changeEasyTimeStamp(message_time);
     var time_node  = $('<abbr class="time">').attr('title', utc_time);
-    var chat_content_node = $('<div class="chat-content">');
+    var chat_content_node = $('<div class="chat-content" id="chat-content-'+comment_id+'">');
 
-    var star_node = $('<a href="#" id="'+comment_id+'" class="star">').text('★');
+//    var star_node = $('<a href="#" id="'+comment_id+'" class="star">').text('★');
+    var delete_cmt_node = $('<a href="#" name="delete_cmt" id="del_cmt_'+comment_id+'">').text('削除×');
 
 //    if (userName == 'me') {
       voice_node.prepend($('<div class="name">').text(userName));
       voice_node.append($('<div class="message">').html(userMessage));
       voice_node.append(image_node);
       voice_node.append(time_node.text(easy_time));
-      voice_node.append($('<div id="star_'+comment_id+'">').html(star_node));
+//      voice_node.append($('<div id="star_'+comment_id+'">').html(star_node));
+      if (is_owner) {
+        voice_node.append($('<div>').html(delete_cmt_node));
+      }
 
       chat_content_node.prepend(voice_node);
       chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
@@ -311,11 +317,25 @@ var chat = {
         // videoid を書きだす
         this.iframeArea.append($('<input type="hidden" id="play_video_id" value="'+youtube_vid[1]+'">'));
 
+        var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">youtube.com</a>';
+        this.iframeArea.append($('<p>').html(domain_txt));
+
         //var iframe_tag = '<iframe width="500" height="300" src="';
         //iframe_tag += 'http://www.youtube.com/embed/'+youtube_vid[1];
         //iframe_tag += '" frameborder="0" allowfullscreen></iframe>';
         //this.iframeArea.prepend(iframe_tag);
+        //
       }
+
+
+    // 画像あり
+    } else if (iframeURL.match(/\.gif|\.jpg|\.jpeg|\.png/)) {
+      this.iframeArea.prepend($('<img class="img">').attr('src', iframeURL));
+
+      // ドメイン取得
+      var domain = iframeURL.match(/^[https]+:\/{2,3}([0-9a-z\.\-:]+?):?[0-9]*?\//i)[1];
+      var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+domain+'</a>';
+      this.iframeArea.append($('<p>').html(domain_txt));
 
     // nicovideo 有り
 //    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {

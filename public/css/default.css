@@ -194,8 +194,8 @@ a:active{color: #00a0c6;}
 		}
 			.ticket-wrapper .left{
 				float: left;
-				width: 445px;
-				min-height: 100px;
+				width: 100%;
+				min-height: 50px;
 				padding: 10px;
 			}
 				.ticket-wrapper .left .icon{
@@ -275,10 +275,13 @@ a:active{color: #00a0c6;}
 				}
 			.ticket-wrapper .right{
 				float: right;
-				width: 92px;
-				min-height: 100px;
-				padding: 10px 10px 0 10px;
+				/*min-height: 100px;*/
+				/*padding: 10px 10px 0 10px;*/
 			}
+				.ticket-wrapper .right ul li{
+					float: left;
+					width: 50px;
+				}
 				.ticket-wrapper .right .member{
 					text-align: center;
 					font-size: 12px;
@@ -291,13 +294,21 @@ a:active{color: #00a0c6;}
 			.ticket-wrapper .participant{
 				clear: both;
 				text-align: left;
-				padding: 4px 0px 2px 6px;
+				padding: 4px;
+				/*padding: 4px 0px 2px 6px;*/
 				background-color: #DEDEDE;
 				/*border-top: 2px #DFDFDF dashed;*/
 			}
+				.ticket-wrapper .participant .member-count{
+					font-size: 28px;
+					font-weight: bold;
+					color: #FFF;
+					margin-right: 4px;
+				}
 				.ticket-wrapper .participant img{
 					width: 24px;
 					margin: 1px;
+					vertical-align:top;
 					/*border-radius: 6px;
 					-webkit-border-radius: 6px;
 					-moz-border-radius: 6px;*/
@@ -402,6 +413,20 @@ a:active{color: #00a0c6;}
 			font-size: 22px;
 			font-weight: bold;
 			color: #fff;
+			margin-bottom: 10px;
+		}
+		.btn3{
+			padding: 24px;
+			text-align: center;
+			font-size: 16px;
+			color: #DFDFDF;
+			margin-bottom: 10px;
+		}
+		.btn3:hover{
+			padding: 24px;
+			text-align: center;
+			font-size: 16px;
+			color: #FF6600;
 			margin-bottom: 10px;
 		}
 		.btn-sub{

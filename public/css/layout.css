@@ -33,7 +33,7 @@
 	font-size: 20px;
 }
 #content-wrapper .content-header .title p{
-	font-size: 12px;
+	font-size: 14px;
 	padding-top: 4px;
 	padding-left: 4px;
 }
@@ -65,7 +65,7 @@
 #content-wrapper .content-body .main-view .title{
 	height: 20px;
 	color: #73b847;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 }
 #content-wrapper .content-body .main-view .view{
@@ -87,7 +87,7 @@
 #content-wrapper .content-body .main-chat .title{
 	height: 20px;
 	color: #73b847;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 }
 #content-wrapper .content-body .main-view .inputleft{
@@ -129,7 +129,7 @@
 	background-color: #303333;
     border: 1px solid #000000;
     color: #FFFFFF;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: bold;
     line-height: 14px;
     margin: 0 2px;
@@ -155,7 +155,7 @@
 	vertical-align: top;
 	margin-left: 60px;
 	padding-top: 2px;
-	font-size: 12px;
+	font-size: 14px;
 	/*border-left: #999 1px solid;*/
 }
 #content-wrapper .content-body .main-chat .chat .chat-content .voice .name{

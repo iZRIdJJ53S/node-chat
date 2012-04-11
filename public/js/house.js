@@ -9,6 +9,7 @@ var house = {
     var user_id     = options.user_id;
     var user_image  = options.user_image;
 
+    that.user_id = user_id;
     if (house_image) {
       //console.log($('body.chat'));
       //$('body.chat').css({background-image: "url("+house_image+")"});
@@ -77,6 +78,14 @@ var house = {
         for (var i = max_loop-1; i >= 0; i--) {
           var received_data = data[i];
           received_data['cnt'] = i;
+
+          // コメントのオーナー判断
+          if (that.user_id == data[i].user_id) {
+            received_data['is_owner'] = true;
+          } else {
+            received_data['is_owner'] = false;
+          }
+
           $.publish( 'user:message-received', received_data);
         }
       }
