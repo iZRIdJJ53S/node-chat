@@ -351,7 +351,7 @@ $('a[name="delete-button-right"]').live('click', function() {
   }
 
   var obj = $(this);
-  var event_obj = obj.find('div');
+  var event_obj = obj.find('li');
   var event_id  = event_obj.attr('id');
   event_id = parseInt(event_id.match(/[0-9]+/));
 

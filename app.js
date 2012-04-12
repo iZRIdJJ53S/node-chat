@@ -1057,6 +1057,8 @@ app.get('/get-supporters', function (req, res) {
   // リクエストチェック
   // id
   try {
+    check(req.query.id).isInt();
+    check(req.query.limit).isInt();
     req.query.id = parseInt(req.query.id);
     req.query.limit = parseInt(req.query.limit);
 
@@ -1128,6 +1130,7 @@ app.get('/get-is-owner', function (req, res) {
 
   // リクエストチェック
   try {
+    check(req.query.dec_id).isInt();
     req.query.dec_id = parseInt(req.query.dec_id);
 
   } catch (e) {
@@ -1175,6 +1178,7 @@ app.get('/get-is-supporters', function (req, res) {
 
   // リクエストチェック
   try {
+    check(req.query.dec_id).isInt();
     req.query.dec_id = parseInt(req.query.dec_id);
 
   } catch (e) {
@@ -1219,6 +1223,10 @@ app.get('/get-events', function (req, res) {
     , dec_status
     ;
   try {
+    check(req.query.last_id).isInt();
+    check(req.query.limit).isInt();
+    check(req.query.dec_status).isInt();
+
     last_id = parseInt(req.query.last_id);
     limit = parseInt(req.query.limit);
     dec_status = parseInt(req.query.dec_status);
@@ -1642,6 +1650,7 @@ app.post('/join-commit', function (req, res) {
   // リクエストチェック
   // id
   try {
+    check(req.body.id).isInt();
     req.body.id = parseInt(req.body.id);
   } catch (e) {
     logger.error(e.message); //Invalid

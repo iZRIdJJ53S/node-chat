@@ -51,13 +51,13 @@ var chat = {
           if (userMessage || image_src) {
             // image_src が優先
             if (image_src) {
-              that._setIframeArea(image_src, flg_owner);
+//              that._setIframeArea(image_src, flg_owner);
             } else {
               if (isURL(userMessage)) {
                 if (getURL(userMessage)) {
     //              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
                    iframeURL = getURL(userMessage);
-                   that._setIframeArea(iframeURL, flg_owner);
+//                   that._setIframeArea(iframeURL, flg_owner);
                 }
               }
             }
@@ -98,13 +98,13 @@ var chat = {
 
         // image_src が優先
         if (image_src) {
-          that._setIframeArea(image_src, flg_owner);
+//          that._setIframeArea(image_src, flg_owner);
         } else {
           if (isURL(userMessage)) {
             if (getURL(userMessage)) {
 //              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
                iframeURL = getURL(userMessage);
-               that._setIframeArea(iframeURL, flg_owner);
+//               that._setIframeArea(iframeURL, flg_owner);
             }
           }
         }
@@ -134,17 +134,15 @@ var chat = {
         , data.is_owner
       );
 
-      var flg_owner = false;
-
       // もしiframeURL があったら描画する(image_src が優先)
       if (data.image_src) {
         // 最新のだけ出したいからあえて０番目を指定
         if (data.cnt == 0) {
-          that._setIframeArea(data.image_src, flg_owner);
+          that._setIframeArea(data.image_src, data.is_owner);
         }
       } else if (isURL(data.iframeURL)) {
         if (getURL(data.iframeURL)) {
-          that._setIframeArea(getURL(data.iframeURL), flg_owner);
+          that._setIframeArea(getURL(data.iframeURL), data.is_owner);
         }
       }
     });
@@ -330,7 +328,7 @@ var chat = {
 
     // 画像あり
     } else if (iframeURL.match(/\.gif|\.jpg|\.jpeg|\.png/)) {
-      this.iframeArea.prepend($('<img class="img">').attr('src', iframeURL));
+      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
 
       // ドメイン取得
       var domain = iframeURL.match(/^[https]+:\/{2,3}([0-9a-z\.\-:]+?):?[0-9]*?\//i)[1];
