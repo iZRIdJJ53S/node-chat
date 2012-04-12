@@ -85,6 +85,8 @@ function makeEventListParts(event_data) {
 	*/
 	write_data += '</div>';
 	write_data += '<div class="right"><ul>';
+	write_data += ' <a href="#" name="cancel-join-button-right">';
+	write_data += ' <li class="btn3" id="cancel-join-button-right-'+event_data.id+'" style="display:none;">×参加取消</li></a>';
 	write_data += ' <a href="#" name="delete-button-right">';
 	write_data += ' <li class="btn3" id="delete-button-right-'+event_data.id+'" style="display:none;">×削除</li></a>';
 	write_data += ' <a href="/dec/'+event_data.id+'"><li class="btn">詳細</li></a>';
@@ -180,7 +182,7 @@ function makeCountDownParts(deadline,id){
 }
 
 function makeMemberParts(event_id, target_num, supporter_num){
-	var write_data = '<span class="member-count">';
+	var write_data = '<span class="member-count" id="member-counter-'+event_id+'">';
 	write_data += supporter_num+'人参加</span>';
 	/*
 	 * 参加者最大値の削除 4.11 km
@@ -212,7 +214,10 @@ function makeParticipantParts(id){
 	write_data += 'success: function(data){';
 	write_data += 'var img_tag = "";';
 	write_data += 'for (var j = 0; j < data.supporter_data.length; j++){';
-	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
+//	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
+	write_data += 'var img_id = '+id+';';
+	write_data += 'img_id += \'__\'+data.supporter_data[j].id;';
+	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'" id="sup-icon-\'+img_id+\'">\';';
 	write_data += '}';
 	write_data += '$("#dec-supporters-'+id+'").append(img_tag);';
 	write_data += '},';
@@ -266,14 +271,17 @@ function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
   write_data += '      success: function(data){';
   write_data += '        if (data.res_flg) {';
   write_data += '          $("#room-button-right-'+event_id+'").show();';
+  write_data += '          $("#cancel-join-button-right-'+event_id+'").show();';
   write_data += '        } else {';
   write_data += '          $("#join-button-right-'+event_id+'").show();';
   write_data += '          $("#room-button-right-'+event_id+'").hide();';
+  write_data += '          $("#cancel-join-button-right-'+event_id+'").hide();';
   write_data += '        }';
   write_data += '      },';
   write_data += '      error: function(data){';
   write_data += '        if (data.status === 401) {';
   write_data += '          $("#room-button-right-'+event_id+'").hide();';
+  write_data += '          $("#cancel-join-button-right-'+event_id+'").hide();';
   write_data += '        }';
   write_data += '      }';
   write_data += '    });';
@@ -289,8 +297,7 @@ function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
 
 $('a[name="join-button-right"], a[name="join-button-bottom"]').live('click', function() {
   var obj = $(this);
-console.log(obj);
-  var event_obj = obj.find('div');
+  var event_obj = obj.find('li');
   var event_id  = event_obj.attr('id');
   event_id = parseInt(event_id.match(/[0-9]+/));
 
@@ -309,16 +316,16 @@ console.log(obj);
         $('#room-button-right-'+event_id).show();
 
 //        $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
-        $('#join-button-bottom'+event_id).hide();
-        $('#room-button-bottom'+event_id).show();
+        $('#join-button-bottom-'+event_id).hide();
+        $('#room-button-bottom-'+event_id).show();
 
         // 人数も変更
         var sup_cnt = $('#member-counter-'+event_id).text();
         sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) + 1;
         if (sup_cnt > 0) {
-          $('#member-counter-'+event_id).text('参加者：'+sup_cnt+'人');
+          $('#member-counter-'+event_id).text(sup_cnt+'人参加');
         } else {
-          $('#member-counter-'+event_id).html('<div class="btned">満員</div><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
+//          $('#member-counter-'+event_id).html('<div class="btned">満員</div><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
         }
 
         // アイコンも追加
@@ -360,6 +367,54 @@ $('a[name="delete-button-right"]').live('click', function() {
         // 削除した
         $('#ticket-wrapper-'+event_id).animate({height:'hide', opacity:'hide'}, "slow",
           function() {$('#event-first-li-area-'+event_id).remove();}
+        );
+      }
+
+    },
+    error: function(data){
+      // error
+    }
+  });
+
+  return false;
+});
+
+
+$('a[name="cancel-join-button-right"]').live('click', function() {
+  if (window.confirm('本当に参加取り消しますか？')) {
+
+  } else {
+    return false;
+  }
+
+  var obj = $(this);
+  var event_obj = obj.find('li');
+  var event_id  = event_obj.attr('id');
+  event_id = parseInt(event_id.match(/[0-9]+/));
+
+  var loader_img = $('<img src="/img/loader-mini.gif">');
+  event_obj.html(loader_img);
+
+  $.ajax({
+    type: 'POST',
+    url: '/cancel-join',
+    data: {dec_id: event_id},
+    success: function(data){
+      if (data.flg_cancel_join === 'ok') {
+        // 削除した
+        $('#sup-icon-'+event_id+'__'+data.auth_user_id).animate({height:'hide', opacity:'hide'}, "slow",
+          function() {
+            $('#sup-icon-'+event_id+'__'+data.auth_user_id).remove();
+            var member_counter = $('#member-counter-'+event_id).text();
+            member_counter = parseInt(member_counter.match(/[0-9]+/));
+            if (member_counter > 0) {
+              member_counter--;
+              $('#member-counter-'+event_id).text(member_counter+'人参加');
+              $('#room-button-right-'+event_id).hide();
+              $('#join-button-right-'+event_id).show();
+            }
+            event_obj.empty();
+          }
         );
       }
 

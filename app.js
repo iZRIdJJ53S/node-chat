@@ -1825,11 +1825,11 @@ app.post('/cancel-join', function (req, res) {
         // 削除する
         client.query(
           'DELETE FROM '+TABLE_SUPPORTERS+
-          ' WHERE decraration_id = ? AND user_id = ?'
+          ' WHERE declaration_id = ? AND user_id = ?',
           [req.body.dec_id, req.session.auth.user_id],
           function(err2, results2) {
             if (err2) {throw err2;}
-            res.json({flg_cancel_join: 'ok'}, 200);
+            res.json({flg_cancel_join: 'ok', auth_user_id: req.session.auth.user_id}, 200);
             return;
           }
         );
