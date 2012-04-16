@@ -410,6 +410,9 @@ app.get('*', function(req, res, next) {
       || remote_ip.match(/^222\.158\.[0-9]+\.[0-9]+$/) // saito_ip
       || remote_ip.match(/^106\.190\.[0-9]+\.[0-9]+$/) // kmura_ip
       || remote_ip.match(/^114\.179\.73\.50$/) // aruku.inc
+      || remote_ip.match(/^64\.39\.96\.[0-9]+$/) // QualysGuard
+      || remote_ip.match(/^62\.210\.136\.[0-9]+$/) // QualysGuard
+      || remote_ip.match(/^167\.216\.252\.[0-9]+$/) // QualysGuard
     ) {
     // 通過
   } else {
@@ -479,7 +482,7 @@ app.get('/auth/complete', function(req, res) {
       //if (req.headers.referer) {
       //  res.redirect(req.headers.referer);
       //} else {
-        res.redirect('/');
+        res.redirect('/mypage');
       //}
       return;
 
@@ -606,6 +609,16 @@ app.get('/about', function (req, res) {
     );
 
 });
+
+
+app.get('/terms', function (req, res) {
+  res.render('terms', {
+    'dummy': ''
+  });
+  return;
+});
+
+
 
 
 // ----------------------------------------------
@@ -743,7 +756,7 @@ app.get('/suc/:id', function (req, res) {
         var detail_txt = dec_results[0].detail;
         detail_txt = detail_txt.replace(/\n/g, '<br />');
         dec_results[0].detail = detail_txt;
-        
+
           // 最新のコメント50件分を取得
 		  client.query(
 		    //'SELECT cmt.id, cmt.created_at, cmt.body, cmt.image AS cmt_image, usr.name, usr.image AS usr_image'
@@ -778,19 +791,28 @@ app.get('/suc/:id', function (req, res) {
 		            'source': tmp_data.source, 'type': tmp_data.type
 		          };
 		
+                  // 部屋終了日時
+                  if (i == 0) {
+                    dec_results[0].end_date = tmp_data.created_at;
+                  }
+
+                  // 部屋開始日時
+                  if (i == (max_result - 1)) {
+                    dec_results[0].start_date = tmp_data.created_at;
+                  }
+
 		        }
 		
 		        // クライアント(自分だけ)へデータを送る
                 res.render('suc-detail', {
 		          'suc_detail': dec_results[0],
 		          'send_data' : send_data,
-		        });        
+		        });
 		        return;
 
 		      }
 		     }
 		   );
-        
       }
     }
   );
@@ -1347,7 +1369,7 @@ app.get('/ch/:id', function (req, res) {
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, title AS name, image, description, user_id AS owner_id, status'+
+    'SELECT id, title AS name, image, detail, user_id AS owner_id, status'+
     ' FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
     [dec_id],
     function(err, results, fields) {
@@ -1381,7 +1403,7 @@ app.get('/ch/:id', function (req, res) {
             }
             res.render('chat', {
               'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
-              'house_image': results[0].image, 'house_desc': results[0].description,
+              'house_image': results[0].image, 'house_desc': results[0].detail,
               'user_name': user_name, 'user_image': user_image,
               'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter,
@@ -1470,8 +1492,8 @@ app.post('/firstset', function (req, res) {
 
   // email
   try {
-    check(req.body.sex).is(/^(1|2)$/);
-    check(req.body.age).is(/^[1-8]$/);
+//    check(req.body.sex).is(/^(1|2)$/);
+//    check(req.body.age).is(/^[1-8]$/);
     check(req.body.mail_addr).len(6, 64).isEmail();
   } catch (e) {
     logger.error(e.message); //Invalid
@@ -1479,8 +1501,8 @@ app.post('/firstset', function (req, res) {
     return;
   }
 
-  sex = req.body.sex;
-  age = req.body.age;
+//  sex = req.body.sex;
+//  age = req.body.age;
   mail_addr = req.body.mail_addr;
 
   client.query(
@@ -1597,7 +1619,7 @@ app.post('/create-event', function (req, res) {
   // validate
   try {
     check(req.body.title).notEmpty().len(1, 250);
-    check(req.body.description).notEmpty();
+    //check(req.body.description).notEmpty();
     check(req.body.detail).notEmpty();
     //check(req.body.target_num).isInt();
     //check(req.body.deadline).isDate();
@@ -1609,7 +1631,7 @@ app.post('/create-event', function (req, res) {
   }
 
   title = req.body.title;
-  description = req.body.description;
+  //description = req.body.description;
   detail      = req.body.detail;
   //target_num  = req.body.target_num;
   //deadline    = req.body.deadline;

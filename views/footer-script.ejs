@@ -88,7 +88,7 @@ function makeEventListParts(event_data) {
 	write_data += ' <a href="#" name="cancel-join-button-right">';
 	write_data += ' <li class="btn3" id="cancel-join-button-right-'+event_data.id+'" style="display:none;">×参加取消</li></a>';
 	write_data += ' <a href="#" name="delete-button-right">';
-	write_data += ' <li class="btn3" id="delete-button-right-'+event_data.id+'" style="display:none;">×削除</li></a>';
+	write_data += ' <li class="btn3" id="delete-button-right-'+event_data.id+'" style="display:none;">×部屋削除</li></a>';
 	write_data += ' <a href="/dec/'+event_data.id+'"><li class="btn">詳細</li></a>';
 	write_data += ' <a href="/ch/'+event_data.id+'">';
 	write_data += ' <li class="btn2" id="room-button-right-'+event_data.id+'" style="display:none;">会場</li></a>';
@@ -127,17 +127,21 @@ function makeSuccessListParts(event_data) {
     write_data += event_data.title+'<br><span class="tag">一緒に楽しむメンバ</span>';
      */
     write_data += '</h3>';
+    /*
     write_data += '<div class="view" id="view_'+event_data.id+'">';
     write_data += 'view:';
     write_data += '</div>';
+	*/
+	/*
 	write_data += '<div class="member" id="member-parts-area'+event_data.id+'">';
 	write_data += makeSuccessMemberParts(event_data.target_num,event_data.supporter_num);
 	write_data += '</div>';
+	*/
 	write_data += '</div>';
 	write_data += '<div class="right">';
 	write_data += '	<a href="/suc/'+event_data.id+'"><div class="btn">見る</div></a>';
 	write_data += '</div>';
-    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'"></div>';
+    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'">'+makeMemberParts(event_data.id, event_data.target_num, event_data.supporter_num)+'</div>';
     write_data += makeParticipantParts(event_data.id);	//participant script
     write_data += '</li>';
     /**

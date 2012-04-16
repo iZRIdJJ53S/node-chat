@@ -192,7 +192,7 @@ $().ready(function(){
 
   // 終了対応
   $('#event_end_proc').click(function () {
-    if (window.confirm('本当にこのイベントを終了させますか？')) {
+    if (window.confirm('本当にこのチャット部屋を終了させて、まとめログを作りますか？')) {
 
     } else {
       return false;
@@ -204,7 +204,7 @@ $().ready(function(){
       data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>},
       success: function(data){
         if (data.flg_update) {
-          alert('成功しました');
+          alert('成功しました。まとめログが作られました。');
           location.href = "/suc/<%= house_id %>";
           return;
         }

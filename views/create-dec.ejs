@@ -24,15 +24,15 @@
 			</div>
 			<div class="side"></div>
 		</div-->
-		<div class="form-container">
+		<!--div class="form-container">
 			<div class="title">概要</div>
 			<div class="content"><textarea cols="40" rows="2" id="description" name="description"></textarea></div>
 			<div class="side"></div>
-		</div>
+		</div-->
 		<div class="form-container">
 			<div class="title">詳細</div>
 			<div class="content"><textarea cols="40" rows="10" id="detail" name="detail"></textarea></div>
-			<div class="side">タイトルは&lt;h3&gt;で囲んでください。<br>例）&lt;h3&gt;タイトル&lt;/h3&gt;<br><br>文章は&lt;p&gt;で囲んでください。<br>例）&lt;p&gt;文章&lt;/p&gt;</div>
+			<div class="side"><!--タイトルは&lt;h3&gt;で囲んでください。<br>例）&lt;h3&gt;タイトル&lt;/h3&gt;<br><br>文章は&lt;p&gt;で囲んでください。<br>例）&lt;p&gt;文章&lt;/p&gt;--></div>
 		</div>
 		<!--div class="form-container">
 			<div class="title">開始日</div>
@@ -92,7 +92,7 @@
     //  //sliderAccessArgs: { touchonly: false }
     //});
     //$('#deadline').datepicker();
-    $('#description').autosize();
+    //$('#description').autosize();
     $('#detail').autosize();
 
 
@@ -101,9 +101,9 @@
         title: {
           required: true
         },
-        description: {
-          required: true
-        },
+        //description: {
+        //  required: true
+        //},
         detail: {
           required: true
         }
@@ -118,7 +118,7 @@
       },
       messages: {
         title: "タイトルを入力してください。",
-        description: "概要を入力して下さい",
+        //description: "概要を入力して下さい",
         detail: "詳細な内容を入力して下さい"
         //target_num: "有効な数字を入力して下さい",
         //deadline: "有効な日付を入力して下さい"
@@ -132,7 +132,7 @@
 
   $('#submit-event').click(function() {
     var title = $('#title').val()
-      , description = $('#description').val()
+      //, description = $('#description').val()
       , detail      = $('#detail').val()
       //, target_num  = $('#target_num').val()
       //, deadline    = $('#deadline').val()
@@ -167,7 +167,7 @@
 
     var post_data = {
         title: title
-      , description: description
+    //  , description: description
       , detail:      detail
     //  , target_num:  target_num
     //  , deadline:    deadline

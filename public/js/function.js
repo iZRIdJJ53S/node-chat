@@ -52,6 +52,22 @@ function setAttrSrcURL(url) {
   return false;
 }
 
+function __changeFormatTimeStamp (time_str, flg_include_time) {
+  if (!time_str) {return false;}
+  var d = new Date(time_str);
+  var date_txt = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+
+  // 時間を含むかどうかのフラグチェック
+  if (flg_include_time) {
+    date_txt += ' '+d.toLocaleTimeString();
+  }
+
+  return date_txt;
+}
+
+
+
+
 // htmlspecialchars
 function __h(str) {
 

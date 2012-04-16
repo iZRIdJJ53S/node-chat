@@ -1,7 +1,17 @@
 <style type="text/css">
 
-.house_bg { background: url('http://files.hangame.co.jp/blog/2011/65/49193ff9/07/13/35709618/49193ff9_1310504154888.jpg'); }
+.house_bg { background: url('<%= suc_detail.image %>'); }
 </style>
+
+<script src="/js/function.js"></script>
+<script src='//www.google.com/jsapi'></script>
+<script type="text/javascript">
+<!--
+
+  google.load("swfobject", "2.1");
+
+// -->
+</script>
 
 <script type="text/javascript">
 <!--
@@ -17,14 +27,13 @@ $().ready(function(){
 		<div class="ticket-wrapper">
 			<div class="left">
 				<!--div class="icon"><img src="<%= suc_detail.image %>"></div-->
-				<h3 class="title-noicon"><%= suc_detail.title %><br><span class="tag">一緒に楽しむメンバ</span></h3>
-				<div class="time">期間: <%= suc_detail.deadline %> - ???</div>
-				<div class="member">参加者: <%= suc_detail.supporter_num %>人/<%= suc_detail.target_num %>人</div>
+				<h3 class="title-noicon"><%= suc_detail.title %></h3>
+				<div class="time">チャット期間: <%= suc_detail.start_date %> - ???</div>
 			</div>
-			<div class="participant"></div>
+			<div class="participant"><span class="member-count"><%= suc_detail.supporter_num %>人参加</span></div>
 		</div>
 	</div>
-	<h2 class="title">LOGS</h2>
+	<h2 class="title">まとめログ</h2>
 	<div class="details">
 		<div class="details-left">
 			<% send_data.reverse(); %>
@@ -40,26 +49,52 @@ $().ready(function(){
 				<p style="text-align:right;color:#999;font-size:12px;"><%= send_data[i].message_time %></p>
 				
 				<script type="text/javascript">
-				<!--
+				$().ready(function(){
+
 					var str = "<%= send_data[i].userMessage %>";
 					var rex = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?/g;
-					if(str.match(rex)){
+
+					if (str.indexOf('youtube.com') !== -1) {
+						if(str.match(rex)){
+							var matchUrl = str.match(rex);
+							var youtube_vid = str.match(/[&\?]v=([\d\w]+)/);
+							if (youtube_vid && youtube_vid[1]) {
+								var y_embed_url = 'http://www.youtube.com/embed/'+youtube_vid[1];
+								var showStr = '<iframe width="420" height="315" src="' + y_embed_url + '" frameborder="0" allowfullscreen></iframe>';
+								var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">youtube.com</a>';
+								$("#log_image_<%= i %>").append(showStr);
+								$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
+							}
+
+						}
+						
+					} else if (str.match(/\.gif|\.jpg|\.jpeg|\.png/)) {
 						var matchUrl = str.match(rex);
-						var showStr = '<img style="max-width:500px;" src="' + matchUrl + '">';
-						$("#log_image_<%= i %>").html(showStr);
-					}else{
-						console.log('URLが見つかりませんでした。');
+						if (matchUrl) {
+							var showObj = $('<img>').attr('src', matchUrl);
+							
+							var domain = '';
+							domain = str.match(/^[https]+:\/{2,3}([0-9a-z\.\-:]+?):?[0-9]*?\//i);
+							if (domain && domain[1]) {
+								var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">'+domain[1]+'</a>';
+
+								$("#log_image_<%= i %>").append(showObj);
+								$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
+							}
+						}
 					}
-				-->
+
+				});
+				
 				</script>
 
 				<hr>
 			<% } %>
 		</div>
 		<div class="details-right">
-			<div class="view-counter">100,000<p>view</p></div>
+			<!--div class="view-counter">100,000<p>view</p></div-->
 			<div class="content">
-				<%- suc_detail.detail %>
+				<%= suc_detail.detail %>
 			</div>
 		</div>
 		<div class="clear"></div>

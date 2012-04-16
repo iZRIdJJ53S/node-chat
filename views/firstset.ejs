@@ -3,7 +3,7 @@
 <div class="full-form">
 <form id="full-form-tag" name="full-form-tag" method="post" action="/firstset">
 		<h3>USER INFO</h3>
-		<div class="form-container">
+		<!--div class="form-container">
 			<div class="title">性別</div>
 			<div class="content">
 				<select id="sex" name="sex">
@@ -12,8 +12,8 @@
 				</select>
 			</div>
 			<div class="side"></div>
-		</div>
-		<div class="form-container">
+		</div-->
+		<!--div class="form-container">
 			<div class="title">年齢</div>
 			<div class="content">
 				<select id="age" name="age">
@@ -28,7 +28,7 @@
 				</select>
 			</div>
 			<div class="side"></div>
-		</div>
+		</div-->
 		<div class="form-container">
 			<div class="title">メールアドレス</div>
 			<div class="content"><input type="text" size="30" id="mail_addr" name="mail_addr"></div>
@@ -52,20 +52,20 @@
 
     $("#full-form-tag").validate({
       rules: {
-        sex: {
-          required: true
-        },
-        age: {
-          required: true
-        },
+//        sex: {
+//          required: true
+//        },
+//        age: {
+//          required: true
+//        },
         mail_addr: {
           required: true,
           email: true
         }
       },
       messages: {
-        sex: "性別を選んでください。",
-        age: "年齢を選んでください。",
+//        sex: "性別を選んでください。",
+//        age: "年齢を選んでください。",
         mail_addr: "有効なメールアドレスを入力して下さい"
       },
       //errorClass: "alert-error",
@@ -75,15 +75,17 @@
   });
 
   $('#submit-event').click(function() {
-    var sex = $('#sex option:selected').val()
-      , age = $('#age option:selected').val()
-      , mail_addr = $('#mail_addr').val()
-      ;
+//    var sex = $('#sex option:selected').val()
+//      , age = $('#age option:selected').val()
+//      , mail_addr = $('#mail_addr').val()
+//      ;
+    var mail_addr = $('#mail_addr').val();
 
     var post_data = {
-        sex: sex
-      , age: age
-      , mail_addr: mail_addr
+      mail_addr: mail_addr
+//        sex: sex
+//      , age: age
+//      , mail_addr: mail_addr
     };
 
     $.ajax({

@@ -5,56 +5,32 @@
 			<h3 class="title"><%= dec_detail.title %><br><span class="username">by <%= dec_detail.user_name %></span><!--br><span class="tag">一緒に楽しむメンバ</span><span class="status-a">参加者募集中</span--></h3>
 			<div class="member" id="member-parts-area-<%= dec_detail.id %>"></div>
 		</div>
-		<div class="right">
-			<a href="#" name="join-button-right"><div class="btn" id="join-button-right-<%= dec_detail.id %>">参加</div></a>
-		</div>
+		<div class="right"><ul>
+			<a href="#" name="join-button-right"><li class="btn" id="join-button-right-<%= dec_detail.id %>" style="display:none;">参加</li></a>
+			<a href="/ch/<%= dec_detail.id %>" name="room-button-right"><li class="btn2" id="room-button-right-<%= dec_detail.id %>" style="display:none;">会場</li></a>
+			<a href="/auth/twitter"><div class="btn" id="login-button-right-<%= dec_detail.id %>" style="display:none;">ログイン</div></a>
+		</ul></div>
 		<div class="participant" id="dec-supporters-<%= dec_detail.id %>">
 		</div>
 	</div>
 <div class="left-content">
-		<h2 class="title">DETAILS</h2>
+		<h2 class="title">詳細</h2>
 		<div class="details">
 			<%= dec_detail.detail %>
 		</div>
-		<div>
-			<a href="#" name="join-button-bottom"><div class="btn" id="join-button-bottom-<%= dec_detail.id %>">参加する</div></a>
-			<a href="/ch/<%= dec_detail.id %>" name="room-button-bottom"><div class="btn2" id="room-button-bottom-<%= dec_detail.id %>" style="display:none;">会場</div></a>
+		<div><ul>
+			<a href="#" name="join-button-bottom"><li class="btn" id="join-button-bottom-<%= dec_detail.id %>" style="display:none;">参加する</li></a>
+			<a href="/ch/<%= dec_detail.id %>" name="room-button-bottom"><li class="btn2" id="room-button-bottom-<%= dec_detail.id %>" style="display:none;">会場に行く</li></a>
+			<a href="/auth/twitter"><div class="btn" id="login-button-bottom-<%= dec_detail.id %>" style="display:none;">ログイン</div></a>
 			
-		</div>
+		</ul></div>
 	</div>
 <div class="right-content">
 		<!--div class="AD"><img src="/img/AD_350x240.gif"></div-->
-		<h2 class="title-sub">HOW TO USE</h2>
+		<h2 class="title-sub">楽しみかた</h2>
 		<ul>
-			<li><a href="/create-dec"><img src="/img/howto.png"></a></li>
+			<li><img src="/img/howto.png"></li>
 		</ul>
-		<!--h2 class="title-sub">HOT EVENTS</h2><h2>
-		<ul>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-		</ul>
-		</h2><h2 class="title-sub">もうすぐスタート！</h2><h2>
-		<ul>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-		</ul>
-		</h2><h2 class="title-sub">参加人数ランキング</h2><h2>
-		<ul>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-			<a href="011.html"><li class="btn-sub">照英の〇〇してる画像作ります！</li></a>
-		</ul-->
 	</h2></div>
 <div class="clear"></div>
 <div id="write-script-area"></div>
@@ -65,14 +41,14 @@
 
     // カウントダウンパーツの書き出し
     var event_id = <%= dec_detail.id %>;
-    var countdown_parts = makeCountDownParts("<%= dec_detail.deadline %>", event_id);
-    $('#write-script-area').append(countdown_parts);
+//    var countdown_parts = makeCountDownParts("<%= dec_detail.deadline %>", event_id);
+//    $('#write-script-area').append(countdown_parts);
 
     // 参加者数の書き出し
     var target_num = <%= dec_detail.target_num %>;
     var supporter_num = <%= dec_detail.supporter_num %>;
     var member_parts = makeMemberParts(event_id, target_num, supporter_num);
-    $('#member-parts-area-'+event_id).append(member_parts);
+    $('#dec-supporters-'+event_id).append(member_parts);
 
     // サポーターリストパーツの書き出し
     var participant_parts = makeParticipantParts(event_id);
@@ -81,29 +57,34 @@
 
 
     // 参加状態のチェック
-    if (target_num === supporter_num) {
-      $('#join-button-right-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
-      $('#join-button-bottom-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
-    } else {
+//    if (target_num === supporter_num) {
+//      $('#join-button-right-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
+//      $('#join-button-bottom-'+event_id).parent().parent().html('<div class="btned">満員</div><a href="/dec/'+event_id+'">');
+//    } else {
       $.ajax({
         type: 'GET',
         url: '/get-is-supporters',
         data: {dec_id: <%= dec_detail.id %>},
         success: function(data){
           if (data.res_flg) {
-            $('#join-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a>');
-            $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場へ行く</div></a>');
+            $('#room-button-right-'+event_id).show();
+            $('#room-button-bottom-'+event_id).show();
+          } else {
+            $('#join-button-right-'+event_id).show();
+            $('#join-button-bottom-'+event_id).show();
+            $('#room-button-right-'+event_id).hide();
+            $('#room-button-bottom-'+event_id).hide();
           }
         },
         error: function(data){
           if (data.status === 401) {
-            $('#join-button-right-'+event_id).parent().parent().html('<a href="/auth/twitter"><div class="btn">ログイン</div></a>');
-            $('#join-button-bottom-'+event_id).parent().parent().html('<a href="/auth/twitter"><div class="btn">ログイン</div></a>');
+            $('#login-button-right-'+event_id).show();
+            $('#login-button-bottom-'+event_id).show();
           }
         }
       });
 
-    }
+//    }
   });
 
 

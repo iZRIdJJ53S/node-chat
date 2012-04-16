@@ -239,7 +239,7 @@ var chat = {
     var chat_content_node = $('<div class="chat-content" id="chat-content-'+comment_id+'">');
 
 //    var star_node = $('<a href="#" id="'+comment_id+'" class="star">').text('★');
-    var delete_cmt_node = $('<a href="#" name="delete_cmt" id="del_cmt_'+comment_id+'">').text('削除×');
+    var delete_cmt_node = $('<a href="#" name="delete_cmt" id="del_cmt_'+comment_id+'">').text('×削除');
 
 //    if (userName == 'me') {
       voice_node.prepend($('<div class="name">').text(userName));
@@ -248,7 +248,7 @@ var chat = {
       voice_node.append(time_node.text(easy_time));
 //      voice_node.append($('<div id="star_'+comment_id+'">').html(star_node));
       if (is_owner) {
-        voice_node.append($('<div>').html(delete_cmt_node));
+        voice_node.append($('<div class="delete_cmt">').html(delete_cmt_node));
       }
 
       chat_content_node.prepend(voice_node);

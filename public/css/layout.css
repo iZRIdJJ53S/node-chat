@@ -176,3 +176,10 @@
 	font-size: 10px;
 	color: #999;
 }
+#content-wrapper .content-body .main-chat .chat .chat-content .voice .delete_cmt{
+	width: 100%;
+	padding-top: 3px;
+	text-align: right;
+	font-size: 12px;
+	color: #999;
+}
