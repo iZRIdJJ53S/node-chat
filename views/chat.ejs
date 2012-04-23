@@ -18,9 +18,9 @@ $().ready(function(){
 		<div class="left">
 			<h1 style="font-size:26px;padding:20px;"><%= house_name %></h1>
 		</div>
-		<div id="owner_proc_area" class="right">
+		<div id="owner_proc_area" class="right" style="display:none;">
 			<ul>
-				<li id="event_all_mail" class="btn" style="width:200px;">参加者にメール送信</li>
+				<li id="event_all_mail" class="btn" style="width:200px;" style="display:none;">参加者にメール送信</li>
 				<li id="event_end_proc" class="btn" style="width:200px;">まとめログを作る</li>
 			<ul>
 		</div>
@@ -91,6 +91,7 @@ $().ready(function(){
 </div>
 
 <!-- /OLD STYLE -->
+<input type="hidden" id="onetime_token" name="onetime_token" value="<%= onetime_token %>">
 
 
 <script src='/js/jquery-simple-pubsub-0.2.1.js'></script>
@@ -124,6 +125,11 @@ $().ready(function(){
     // オーナーだったらsendmail 有効
     if (<%= is_owner %>) {
       $('#owner_proc_area').show();
+      if (<%= is_mailsend %>) {
+        $('#event_all_mail').show();
+      } else {
+        $('#event_all_mail').hide();
+      }
     } else {
       $('#owner_proc_area').empty();
     }
@@ -198,10 +204,14 @@ $().ready(function(){
       return false;
     }
 
+    var onetime_token = $('#onetime_token').val();
+
     $.ajax({
       type: 'POST',
       url: '/end-proc',
-      data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>},
+      data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>
+        , onetime_token: onetime_token
+      },
       success: function(data){
         if (data.flg_update) {
           alert('成功しました。まとめログが作られました。');
@@ -211,6 +221,8 @@ $().ready(function(){
       },
       error: function(data){
         // error
+        alert('エラーが発生しました');
+        return;
       }
     });
 
@@ -231,13 +243,17 @@ $().ready(function(){
       url: '/sendmail',
       data: {dec_id: <%= house_id %>, owner_id: <%= user_id %>},
       success: function(data){
+        $('#event_all_mail').hide();
         if (data.flg_sendmail) {
           alert('送信成功しました');
           return;
         }
       },
       error: function(data){
+        $('#event_all_mail').hide();
         // error
+        alert('エラーが発生しました');
+        return;
       }
     });
 
@@ -252,6 +268,8 @@ $().ready(function(){
     } else {
       return false;
     }
+
+    var onetime_token = $('#onetime_token').val();
   
     var obj = $(this);
     var comment_id  = obj.attr('id');
@@ -263,7 +281,7 @@ $().ready(function(){
     $.ajax({
       type: 'POST',
       url: '/delete-comment',
-      data: {comment_id: comment_id},
+      data: {comment_id: comment_id, onetime_token: onetime_token},
       success: function(data){
         if (data.flg_delete_comment === 'ok') {
           // 削除した
@@ -275,6 +293,9 @@ $().ready(function(){
       },
       error: function(data){
         // error
+        obj.hide();
+        alert('エラーが発生しました');
+        return;
       }
     });
   

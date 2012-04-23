@@ -11,10 +11,14 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , sio     = require('socket.io') // WebSockets realtime
   , log4js  = require('log4js')    // ロギング
   , util    = require('util')      // デバッグ等に便利な
-  , OAuth   = require('oauth').OAuth  // twitter投稿などに使用する
-  , fs      = require('fs')           // ファイル操作
-  , emailjs = require('emailjs/email') // メール操作
-  , exec    = require('child_process').exec // シェルコマンドを叩く為に必要
+  , nodehttp = require('http')      // http
+  , OAuth    = require('oauth').OAuth  // twitter投稿などに使用する
+  , crypto   = require('crypto')       // 暗号化関連
+  , fs       = require('fs')           // ファイル操作
+  , nodeurl  = require('url')          // URL操作
+  , nodepath = require('path')        // ファイルのパス操作
+  , emailjs  = require('emailjs/email') // メール操作
+  , exec     = require('child_process').exec // シェルコマンドを叩く為に必要
   , formidable = require('formidable') // ファイルアップロード
   , everyauth  = require('everyauth')  // 認証
   , httpProxy  = require('http-proxy') // プロキシサーバー
@@ -30,6 +34,8 @@ var FLG_SUPPORTER_COMP_STAT = 1; // 完了/サクセスしたもの
 var FLG_SUPPORTER_WANT_STAT = 2; // 現在開催中のもの
 var FLG_SUPPORTER_FAIL_STAT = 3; // 失敗/挫折したもの
 
+
+
 // ----------------------------------------------
 // oauth関連初期設定
 // ----------------------------------------------
@@ -39,6 +45,13 @@ oa_obj = new OAuth('https://twitter.com/oauth/request_token'
   , conf.twit.consumerSecret
   , '1.0A', '/oauth/callback', 'HMAC-SHA1'
 );
+
+
+function get_md5_hex(src) {
+    var md5 = crypto.createHash('md5');
+    md5.update(src, 'utf8');
+    return md5.digest('hex');
+}
 
 
 
@@ -132,6 +145,42 @@ function __isAuthLogin(req) {
     return true;
   }
 }
+
+// CSRF対策用キー発行
+function __getOnetimeToken(user_id) {
+  if (user_id) {
+    var seed_key = conf.csrf.onetimeKey + user_id;
+    var onetime_token = get_md5_hex(seed_key);
+    return onetime_token;
+  } else {
+    return '';
+  }
+
+}
+
+// CSRF対策用キーチェック
+function __checkOnetimeToken(user_data, server_data) {
+  if (user_data && server_data) {
+    if (user_data == server_data) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+// sleep
+function __sleep(time) {
+  var d1 = new Date().getTime();
+  var d2 = new Date().getTime();
+  while (d2 < d1 + time) {
+    d2 = new Date().getTime();
+  }
+  return;
+}
+
+
 
 
 // ----------------------------------------------
@@ -501,72 +550,54 @@ app.get('/', function (req, res) {
   //logger.info('---------- req.session: ----- ');logger.info(req.session);
   //res.render('home', { layout: false });
 
-  //if (__isAuthLogin(req)) {
-  //  client.query(
-  //    'SELECT id, sex, age, mail_addr'+
-  //    ' FROM '+TABLE_USERS+
-  //    ' WHERE name = ? AND oauth_service = ?',
-  //    [req.session.auth.user_name, req.session.auth.service],
-  //    function(err, results, fields) {
-  //      if (err) {throw err;}
-  //      if (results) {
-  //        req.session.auth.user_id = results[0].id;
-  //        // mail_addr のチェック。無ければ初回設定ページへリダイレクト
-  //        if (!results[0].mail_addr) {
-  //          res.redirect('/regist');
-  //          return;
-  //        } else {
-  //          res.redirect('/dec');
-  //          return;
-  //        }
-  //      }
-  //    }
-  //  );
+  var onetime_token = '';
+  if (req.session && req.session.auth) {
+    onetime_token = __getOnetimeToken(req.session.auth.user_id);
+  }
 
-  //} else {
 
-    // 最新のリストを取得
-    client.query(
-      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
-      '  , d.target_num, d.deadline, d.status, d.image'+
-      '  , COUNT( spt.declaration_id ) AS supporter_num'+
-      '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
-      '  , u.name AS user_name, u.image AS user_image'+
-      ' FROM '+TABLE_DECLARATIONS+' AS d'+
-      ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
-      ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-      ' WHERE d.status = ?'+
-      ' GROUP BY d.id'+
-      ' ORDER BY d.created_at DESC'+
-      ' LIMIT 5',
-      [FLG_SUPPORTER_WANT_STAT],
-      function(err, results, fields) {
-        if (err) {throw err;}
-        if (results.length === 0) {
-          res.send('declaration error: no result');
-          return;
-        } else {
-          var dec_list = [];
+  // 最新のリストを取得
+  client.query(
+    'SELECT d.id, d.created_at, d.title, d.user_id'+
+    '  , d.target_num, d.deadline, d.status, d.image'+
+    '  , COUNT( spt.declaration_id ) AS supporter_num'+
+    '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+    '  , u.name AS user_name, u.image AS user_image'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.status = ?'+
+    ' GROUP BY d.id'+
+    ' ORDER BY d.created_at DESC'+
+    ' LIMIT 5',
+    [FLG_SUPPORTER_WANT_STAT],
+    function(err, results, fields) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        res.send('declaration error: no result');
+        return;
+      } else {
+        var dec_list = [];
 
-          var max_dec_num = results.length;
-          for (var i = 0; i < max_dec_num; i++) {
-            dec_list[i] = results[i];
-          };
+        var max_dec_num = results.length;
+        for (var i = 0; i < max_dec_num; i++) {
+          dec_list[i] = results[i];
+        };
 
-          res.render('index', {'locals':
-              {'title': 'SHABERI-HOUSE index'
-                ,'dec_list': dec_list
-              }
-           //,'user_name': req.session.auth.user_name
-           //,'user_image': req.session.auth.user_image
-           //,'user_id': req.session.auth.user_id
-          });
-          return;
+        res.render('index', {'locals':
+            {'title': 'SHABERI-HOUSE index'
+              , 'dec_list': dec_list
+              , 'onetime_token': onetime_token
+            }
+         //,'user_name': req.session.auth.user_name
+         //,'user_image': req.session.auth.user_image
+         //,'user_id': req.session.auth.user_id
+        });
+        return;
 
-        }
       }
-    );
-  //}
+    }
+  );
 
 
 });
@@ -578,7 +609,7 @@ app.get('/', function (req, res) {
 app.get('/about', function (req, res) {
 
     client.query(
-      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      'SELECT d.id, d.created_at, d.title, d.user_id'+
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -632,7 +663,7 @@ app.get('/dec', function (req, res) {
   //if (req.session && req.session.auth) {
     // 最新の宣言リストを取得
     client.query(
-      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      'SELECT d.id, d.created_at, d.title, d.user_id'+
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -686,7 +717,7 @@ app.get('/suc', function (req, res) {
   //if (req.session && req.session.auth) {
     // 最新の宣言リストを取得
     client.query(
-      'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+      'SELECT d.id, d.created_at, d.title, d.user_id'+
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -735,7 +766,7 @@ app.get('/suc/:id', function (req, res) {
 
   // 正しいかDB に確認
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.detail, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.detail, d.user_id'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( s.declaration_id ) AS supporter_num'+
     '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
@@ -764,7 +795,8 @@ app.get('/suc/:id', function (req, res) {
 		    //+' LEFT JOIN '+TABLE_USERS+' AS usr ON cmt.user_id=usr.id'
 		    //+' WHERE cmt.house_id = ?'
 		    //+' ORDER BY cmt.created_at DESC LIMIT 10',
-		    'SELECT id, created_at, user_name, body, image, profile_image_url'
+		    'SELECT id, created_at, user_name, body, image'
+            +'    , ext_image_path, ext_image_domain, profile_image_url'
 		    +'    , type'
 		    +' FROM '+TABLE_DOT1_COMMENTS
 		    +' WHERE dec_id = ?'
@@ -774,7 +806,12 @@ app.get('/suc/:id', function (req, res) {
 		      if (err) {throw err;}
 		      if (!results[0]) {
 		        // DB に無し。
-		
+                res.render('suc-detail', {
+                  'suc_detail': dec_results[0],
+                  'send_data' : [] 
+                });
+                return;
+
 		      } else {
 		        // DB に有り。
 		        var max_result = results.length
@@ -787,6 +824,7 @@ app.get('/suc/:id', function (req, res) {
 		            'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
 		            //'message_time': date_txt, 'userMessage': tmp_data.body,
 		            'image_src': tmp_data.image, 'userName': tmp_data.user_name,
+                    'ext_image_path': tmp_data.ext_image_path, 'ext_image_domain': tmp_data.ext_image_domain,
 		            'user_image': tmp_data.profile_image_url, 'iframeURL': '',
 		            'source': tmp_data.source, 'type': tmp_data.type
 		          };
@@ -860,6 +898,9 @@ app.get('/firstset', function (req, res) {
     return;
   }
 
+  // onetime_token 取得
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // パラメータが正しいかDB に聞いてみる
   client.query(
     'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
@@ -871,7 +912,7 @@ app.get('/firstset', function (req, res) {
         return;
       } else {
         res.render('firstset', {
-          'user_data': results
+          'user_data': results, 'onetime_token': onetime_token
         });
         return;
       }
@@ -892,12 +933,8 @@ app.get('/mypage', function (req, res) {
     return;
   }
 
-  //res.render('mypage', { 'layout': false
-  //  ,'user_name': req.session.auth.user_name
-  //  ,'user_image': req.session.auth.user_image
-  //  ,'user_id': req.session.auth.user_id
-  //});
-  //return;
+  // onetime_token 取得
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
 
   var dec_list = [];
   var spt_comp_list = []; // 完了
@@ -906,7 +943,7 @@ app.get('/mypage', function (req, res) {
 
   // 自分が宣言しているリストを取得
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.user_id'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( spt.declaration_id ) AS supporter_num'+
     '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -930,14 +967,14 @@ app.get('/mypage', function (req, res) {
 
 
       res.render('mypage', {
-        'dec_list': dec_list
+        'dec_list': dec_list, 'onetime_token': onetime_token
       });
       return;
 
       // 自分がサポーターになっているリストを取得
       //client.query(
       //  'SELECT s.declaration_id, s.user_id AS supporter_id'+
-      //  '  , d.created_at, d.title, d.description, d.user_id AS owner_id'+
+      //  '  , d.created_at, d.title, d.user_id AS owner_id'+
       //  '  , d.target_num, d.deadline, d.status AS stat, d.image'+
       //  ' FROM '+TABLE_SUPPORTERS+' AS s'+
       //  ' INNER JOIN '+TABLE_DECLARATIONS+' AS d ON s.declaration_id = d.id'+
@@ -1049,6 +1086,9 @@ app.get('/my-setting', function (req, res) {
     return;
   }
 
+  // onetime_token 取得
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // パラメータが正しいかDB に聞いてみる
   client.query(
     'SELECT id, name, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
@@ -1060,7 +1100,7 @@ app.get('/my-setting', function (req, res) {
         return;
       } else {
         res.render('my-setting', {
-          'user_data': results
+          'user_data': results, 'onetime_token': onetime_token
         });
         return;
       }
@@ -1104,8 +1144,24 @@ app.get('/get-supporters', function (req, res) {
     [req.query.id, req.query.limit],
     function(err, results) {
       if (err) {throw err;}
-      res.json({supporter_data: results}, 200);
-      return;
+      var sup_list = [];
+      if (results.length === 0) {
+        res.json({supporter_data: sup_list, text: 'no result'}, 200);
+        return;
+      } else {
+
+        var max_sup_num = results.length;
+        for (var i = 0; i < max_sup_num; i++) {
+          sup_list[i] = results[i];
+          // xss 対策
+          sup_list[i].name = sanitize(sup_list[i].name).xss();
+          sup_list[i].image = sanitize(sup_list[i].image).xss();
+        };
+        res.json({supporter_data: sup_list}, 200);
+        return;
+
+      }
+
     }
   );
 
@@ -1265,7 +1321,7 @@ app.get('/get-events', function (req, res) {
 
   // 条件に合うリストを取得
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.user_id'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( spt.declaration_id ) AS supporter_num'+
     '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -1289,6 +1345,11 @@ app.get('/get-events', function (req, res) {
         var max_dec_num = results.length;
         for (var i = 0; i < max_dec_num; i++) {
           dec_list[i] = results[i];
+          // xss 対策
+          dec_list[i].title = sanitize(dec_list[i].title).xss();
+          dec_list[i].image = sanitize(dec_list[i].image).xss();
+          dec_list[i].user_name = sanitize(dec_list[i].user_name).xss();
+          dec_list[i].user_image = sanitize(dec_list[i].user_image).xss();
         };
         res.json({event_data: dec_list}, 200);
         return;
@@ -1309,9 +1370,14 @@ app.get('/dec/:id', function (req, res) {
   // 正しくなければ、一覧へリダイレクトする
   var dec_id = (req.params.id) ? req.params.id : '';
 
+  var onetime_token = '';
+  if (req.session && req.session.auth) {
+    onetime_token = __getOnetimeToken(req.session.auth.user_id);
+  }
+
   // 正しいかDB に確認
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.description, d.detail, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.detail, d.user_id'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( s.declaration_id ) AS supporter_num'+
     '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
@@ -1333,7 +1399,7 @@ app.get('/dec/:id', function (req, res) {
         detail_txt = detail_txt.replace(/\n/g, '<br />');
         results[0].detail = detail_txt;
         res.render('dec-detail', {
-          'dec_detail': results[0]
+          'dec_detail': results[0], 'onetime_token': onetime_token
         });
         return;
       }
@@ -1356,6 +1422,7 @@ app.get('/ch/:id', function (req, res) {
     , user_id = '' 
     , is_owner = false
     , is_supporter = false // サポーターかどうか？。チャットをさせるかどうかの判断で使う
+    , is_mailsend  = true // メール送信機能の表示/非表示判断
     ;
   if (__isAuthLogin(req)) {
     user_id = req.session.auth.user_id;
@@ -1367,9 +1434,13 @@ app.get('/ch/:id', function (req, res) {
     return;
   }
 
+  // onetime_token 取得
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // パラメータが正しいかDB に聞いてみる
   client.query(
     'SELECT id, title AS name, image, detail, user_id AS owner_id, status'+
+    '  , mailsend_status'+
     ' FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
     [dec_id],
     function(err, results, fields) {
@@ -1386,6 +1457,11 @@ app.get('/ch/:id', function (req, res) {
         // 宣言者かどうかチェック
         if (results[0].owner_id == user_id) {
           is_owner = true;
+        }
+
+        // メール送信機能
+        if (results[0].mailsend_status) {
+          is_mailsend = false;
         }
 
         // サポーターかどうかチェック
@@ -1407,7 +1483,8 @@ app.get('/ch/:id', function (req, res) {
               'user_name': user_name, 'user_image': user_image,
               'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter,
-              'meta_title': results[0].name+'｜'
+              'is_mailsend': is_mailsend,
+              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token
             });
             return;
           }
@@ -1490,11 +1567,19 @@ app.post('/firstset', function (req, res) {
     , mail_addr = ''
     ;
 
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // email
   try {
 //    check(req.body.sex).is(/^(1|2)$/);
 //    check(req.body.age).is(/^[1-8]$/);
     check(req.body.mail_addr).len(6, 64).isEmail();
+
+    // onetime_token のチェック
+    if (!__checkOnetimeToken(req.body.onetime_token, onetime_token)) {
+      throw 'error!! onetime_token';
+    }
+
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なリクエストです'}, 400);
@@ -1550,9 +1635,15 @@ app.post('/profile-change', function (req, res) {
   // リクエストチェック
   var mail_addr = '';
 
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // email
   try {
     check(req.body.mail_addr).len(6, 64).isEmail();
+    // onetime_token のチェック
+    if (!__checkOnetimeToken(req.body.onetime_token, onetime_token)) {
+      throw 'error!! onetime_token';
+    }
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なリクエストです'}, 400);
@@ -1683,7 +1774,7 @@ app.post('/join-commit', function (req, res) {
   // 無駄な処理だけど、、、事前に情報を取得しておく
   var event_data = {};
   client.query(
-    'SELECT d.title, d.description, d.detail,'+
+    'SELECT d.title, d.detail,'+
     '  u.id AS user_id, u.name AS user_name'+
     ' FROM '+TABLE_DECLARATIONS+' AS d'+
     ' INNER JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
@@ -1769,11 +1860,19 @@ app.post('/end-proc', function (req, res) {
     return;
   }
 
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // リクエストチェック
   // id
   try {
     check(req.body.dec_id).isInt();
     check(req.body.owner_id).isInt();
+
+    // onetime_token のチェック
+    if (!__checkOnetimeToken(req.body.onetime_token, onetime_token)) {
+      throw 'error!! onetime_token';
+    }
+
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 400);
@@ -1946,10 +2045,18 @@ app.post('/delete-comment', function (req, res) {
     return;
   }
 
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // リクエストチェック
   // id
   try {
     check(req.body.comment_id).isInt();
+
+    // onetime_token のチェック
+    if (!__checkOnetimeToken(req.body.onetime_token, onetime_token)) {
+      throw 'error!! onetime_token';
+    }
+
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 400);
@@ -2002,10 +2109,18 @@ app.post('/delete-chatroom', function (req, res) {
     return;
   }
 
+  var onetime_token = __getOnetimeToken(req.session.auth.user_id);
+
   // リクエストチェック
   // id
   try {
     check(req.body.dec_id).isInt();
+
+    // onetime_token のチェック
+    if (!__checkOnetimeToken(req.body.onetime_token, onetime_token)) {
+      throw 'error!! onetime_token';
+    }
+
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 400);
@@ -2095,7 +2210,7 @@ app.post('/sendmail', function (req, res) {
 
   // ログインID がイベントオーナーかどうかチェック
   client.query(
-    'SELECT id, title'+
+    'SELECT id, title, mailsend_status'+
     ' FROM '+TABLE_DECLARATIONS+
     ' WHERE id = ? AND user_id = ?',
     [req.body.dec_id, req.session.auth.user_id],
@@ -2108,7 +2223,14 @@ app.post('/sendmail', function (req, res) {
         // イベントID・タイトル
         var event_id = results[0].id
           , event_title = results[0].title
+          , mailsend_status = results[0].mailsend_status
           ;
+
+        // 送信履歴のチェック
+        if (mailsend_status) {
+          res.json({text: '既に送信済みです'}, 400);
+          return;
+        }
 
         // メール送信用リストを取得する
         client.query(
@@ -2140,6 +2262,19 @@ app.post('/sendmail', function (req, res) {
 
               // メール送信OK
               res.json({flg_sendmail: 'ok'}, 200);
+
+              // status update
+              client.query(
+                'UPDATE '+TABLE_DECLARATIONS+
+                ' SET mailsend_status = ?'+
+                ' WHERE id = ?',
+                ['1', req.body.dec_id],
+                function(err3) {
+                  if (err3) {throw err3;}
+                }
+              );
+
+
               return;
 
             } else {
@@ -2441,6 +2576,7 @@ var house = io
         //+' WHERE cmt.house_id = ?'
         //+' ORDER BY cmt.created_at DESC LIMIT 10',
         'SELECT id, created_at, user_id, user_name, body, image, profile_image_url'
+        +'    , ext_image_path, ext_image_domain'
         +'    , type'
         +' FROM '+TABLE_DOT1_COMMENTS
         +' WHERE dec_id = ?'
@@ -2463,6 +2599,7 @@ var house = io
                 'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
                 'user_id': tmp_data.user_id,
                 'image_src': tmp_data.image, 'userName': tmp_data.user_name,
+                'ext_image_path': tmp_data.ext_image_path, 'ext_image_path': tmp_data.ext_image_domain,
                 'user_image': tmp_data.profile_image_url, 'iframeURL': '',
                 'source': tmp_data.source, 'type': tmp_data.type
               };
@@ -2488,7 +2625,7 @@ var house = io
      * ----------------------------------------------------
      */
     socket.on('chat message',
-    function (user_id, userName, user_image, message, iframeURL, image_src, message_time) {
+    function (user_id, userName, user_image, message, iframeURL, image_src, message_time, fn) {
       //logger.info('chat message received: ok');
       socket.get('house_data', function(err, house_data) {
         //logger.info('house_data: '+house_data);
@@ -2500,6 +2637,34 @@ var house = io
         //logger.info('frameURL: '+iframeURL);
 
         if (!image_src) {image_src = '';}
+        var extimg_path = null;
+        var extimg_domain = null;
+        if (iframeURL) {
+          var res_url = nodeurl.parse(iframeURL);
+          if (res_url.href) {
+
+            var md5digest = get_md5_hex(res_url.href);
+            var ext = nodepath.extname(res_url.href);
+            var filename = md5digest+ext;
+            var destPath = __dirname+'/public/ext-img/'+filename;
+            extimg_path = '/ext-img/'+filename;
+            extimg_domain = res_url.hostname;
+
+            exec('wget -O "'+destPath+'" "'+res_url.href+'"',
+              function(err, stdout, stderr) {
+                if (err) {
+                  logger.error('exec error:'+err);
+                }
+              }
+            );
+
+          }
+        }
+
+        if (!extimg_path) {
+          extimg_path = '';
+          extimg_domain = '';
+        }
         // オリジナルコメントテーブルに格納 
         //client.query(
         //  'INSERT INTO '+TABLE_COMMENTS+' (created_at, house_id,'+
@@ -2519,14 +2684,16 @@ var house = io
         // (読みだす時にこのテーブルだけを読みこめばいいように楽する為)
         client.query(
           'INSERT INTO '+TABLE_DOT1_COMMENTS+' (created_at, dec_id'+
-          ', user_id, user_id_str, user_name, body, image, max_id_str'+
+          ', user_id, user_id_str, user_name, body, image'+
+          ', ext_image_path, ext_image_domain, max_id_str'+
           ', profile_image_url, profile_image_url_https'+
           ', source, to_user, to_user_id, to_user_id_str, to_user_name'+
           ', type'+
           ') VALUES ('+
-          '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
+          '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
           ')',
-          [resArray[1], user_id, '', userName, message, image_src, ''
+          [resArray[1], user_id, '', userName, message, image_src
+            , extimg_path, extimg_domain, ''
             , user_image, '', '', '', '', '', '', ''
           ],
           function(err, results) {
@@ -2537,19 +2704,27 @@ var house = io
               function(err2, results2) {
                 if (err2) {throw err2;}
                 if (results2[0]) {
+
+                  // iframeurl がある場合、あえて遅延させる。外部画像を表示させる為
+                  if (iframeURL) {
+                    __sleep(1000);
+                  }
+
                   var last_id = results2[0].last_id;
                   // 自分自身だけに配信
                   socket.to(resArray[0]).emit('chat message', {
                     'comment_id': last_id, 'userName': userName, 'user_image': user_image,
                     'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
-                    'message_time': message_time, 'is_owner': true
+                    'message_time': message_time, 'is_owner': true,
+                    'ext_image_path': extimg_path, 'ext_image_domain': extimg_domain
                   });
 
                   // 自分以外、全員に配信
                   socket.broadcast.to(resArray[0]).emit('chat message', {
                     'comment_id': last_id, 'userName': userName, 'user_image': user_image,
                     'userMessage': message, 'iframeURL': iframeURL, 'image_src': image_src,
-                    'message_time': message_time, 'is_owner': false
+                    'message_time': message_time, 'is_owner': false,
+                    'ext_image_path': extimg_path, 'ext_image_domain': extimg_domain
                   });
                 }
               }

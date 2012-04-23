@@ -1,3 +1,7 @@
+<% if (typeof onetime_token !== 'undefined' && onetime_token) { %>
+<input type="hidden" id="onetime_token" name="onetime_token" value="<%= onetime_token %>">
+<% } %>
+
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="/js/countdown/jquery.countdown.min.js"></script>
 <script type="text/javascript" src="/js/countdown/jquery.countdown-ja.js"></script>
@@ -217,6 +221,7 @@ function makeParticipantParts(id){
 	write_data += 'data: {id: '+id+', limit: 20},';
 	write_data += 'success: function(data){';
 	write_data += 'var img_tag = "";';
+	write_data += 'if (!data.supporter_data) {return false;}';
 	write_data += 'for (var j = 0; j < data.supporter_data.length; j++){';
 //	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
 	write_data += 'var img_id = '+id+';';
@@ -362,10 +367,12 @@ $('a[name="delete-button-right"]').live('click', function() {
   var loader_img = $('<img src="/img/loader-mini.gif">');
   event_obj.html(loader_img);
 
+  var onetime_token = $('#onetime_token').val();
+
   $.ajax({
     type: 'POST',
     url: '/delete-chatroom',
-    data: {dec_id: event_id},
+    data: {dec_id: event_id, onetime_token: onetime_token},
     success: function(data){
       if (data.flg_delete_chatroom === 'ok') {
         // 削除した
@@ -377,6 +384,8 @@ $('a[name="delete-button-right"]').live('click', function() {
     },
     error: function(data){
       // error
+      obj.hide();
+      alert('エラーが発生しました');
     }
   });
 

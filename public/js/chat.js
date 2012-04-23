@@ -131,18 +131,22 @@ var chat = {
     $.subscribe( 'user:message-received', function ( event, data ) {
       that._addMessage(data.comment_id, data.userName, data.user_image
         , data.userMessage, data.image_src, data.message_time
-        , data.is_owner
+        , data.is_owner, data.ext_image_path, data.ext_image_domain
       );
 
       // もしiframeURL があったら描画する(image_src が優先)
       if (data.image_src) {
         // 最新のだけ出したいからあえて０番目を指定
         if (data.cnt == 0) {
-          that._setIframeArea(data.image_src, data.is_owner);
+          that._setIframeArea(data.image_src, data.is_owner, '', '');
         }
+
+      } else if (data.ext_image_path && data.ext_image_domain) {
+        that._setIframeArea(getURL(data.iframeURL), data.is_owner, data.ext_image_path, data.ext_image_domain);
+
       } else if (isURL(data.iframeURL)) {
         if (getURL(data.iframeURL)) {
-          that._setIframeArea(getURL(data.iframeURL), data.is_owner);
+          that._setIframeArea(getURL(data.iframeURL), data.is_owner, '', '');
         }
       }
     });
@@ -204,7 +208,7 @@ var chat = {
 
 
   _addMessage: function (comment_id, userName, user_image, userMessage,
-      image_src, message_time, is_owner) {
+      image_src, message_time, is_owner, ext_image_path, ext_image_domain) {
     var text_node = $('<div id="text_node"></div>');
     userMessage = text_node.text(userMessage).html();
     // 改行br変換
@@ -272,7 +276,7 @@ var chat = {
 //    this.messageList.scrollTop( this.messageList.height() );
   },
 
-  _setIframeArea: function (iframeURL, flg_owner) {
+  _setIframeArea: function (iframeURL, flg_owner, ext_image_path, ext_image_domain) {
     this.iframeArea.empty();
 
 
@@ -327,12 +331,11 @@ var chat = {
 
 
     // 画像あり
-    } else if (iframeURL.match(/\.gif|\.jpg|\.jpeg|\.png/)) {
-      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
+    } else if (ext_image_path && ext_image_domain) {
+      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', ext_image_path));
 
       // ドメイン取得
-      var domain = iframeURL.match(/^[https]+:\/{2,3}([0-9a-z\.\-:]+?):?[0-9]*?\//i)[1];
-      var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+domain+'</a>';
+      var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+ext_image_domain+'</a>';
       this.iframeArea.append($('<p>').html(domain_txt));
 
     // nicovideo 有り

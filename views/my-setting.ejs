@@ -12,9 +12,10 @@
 		<div class="form-container">
 			<div id="img-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
 			<div class="button">
-				<span class="btn" id="submit-event">変更する</span>  <span class="btn">キャンセル</span>
+				<span class="btn" id="submit-event">変更する</span>  <span class="btn" id="submit-cancel">キャンセル</span>
 			</div>
 		</div>
+<input type="hidden" id="onetime_token" name="onetime_token" value="<%= onetime_token %>">
 </form>
 </div>
 
@@ -42,12 +43,21 @@
 
   });
 
+  $('#submit-cancel').click(function() {
+    location.href = '/mypage';
+    return;
+  });
+
+
   $('#submit-event').click(function() {
-    var mail_addr = $('#mail_addr').val();
+    var mail_addr = $('#mail_addr').val()
+      , onetime_token = $('#onetime_token').val()
+      ;
 
     $('#img-loader').show();
     var post_data = {
-      mail_addr: mail_addr
+        mail_addr: mail_addr
+      , onetime_token: onetime_token
     };
 
     $.ajax({
@@ -63,6 +73,8 @@
       },
       error: function(data){
         // error
+        $('#img-loader').hide();
+        $('#msg-area').text('エラーが発生しました');
       }
     });
 

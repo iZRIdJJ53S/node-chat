@@ -52,6 +52,8 @@ $().ready(function(){
 				$().ready(function(){
 
 					var str = "<%= send_data[i].userMessage %>";
+					var ext_image_path = "<%= send_data[i].ext_image_path %>";
+					var ext_image_domain = "<%= send_data[i].ext_image_domain %>";
 					var rex = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?/g;
 
 					if (str.indexOf('youtube.com') !== -1) {
@@ -68,19 +70,15 @@ $().ready(function(){
 
 						}
 						
-					} else if (str.match(/\.gif|\.jpg|\.jpeg|\.png/)) {
+					} else if (ext_image_path && ext_image_domain) {
 						var matchUrl = str.match(rex);
 						if (matchUrl) {
-							var showObj = $('<img>').attr('src', matchUrl);
+							var showObj = $('<img>').attr('src', ext_image_path);
 							
-							var domain = '';
-							domain = str.match(/^[https]+:\/{2,3}([0-9a-z\.\-:]+?):?[0-9]*?\//i);
-							if (domain && domain[1]) {
-								var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">'+domain[1]+'</a>';
+							var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">'+ext_image_domain+'</a>';
 
-								$("#log_image_<%= i %>").append(showObj);
-								$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
-							}
+							$("#log_image_<%= i %>").append(showObj);
+							$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
 						}
 					}
 

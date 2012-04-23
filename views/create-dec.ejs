@@ -57,7 +57,7 @@
 		</div-->
 		<div class="form-container">
 			<div class="button">
-				<span class="btn" id="submit-event">チャット部屋を作る</span>  <span class="btn">キャンセル</span>
+				<span class="btn" id="submit-event">チャット部屋を作る</span>  <span class="btn" id="submit-cancel">キャンセル</span>
 			</div>
 		</div>
 </form>
@@ -128,6 +128,12 @@
     });
 
   });
+
+  $('#submit-cancel').click(function() {
+    location.href = '/mypage';
+    return;
+  });
+
 
 
   $('#submit-event').click(function() {

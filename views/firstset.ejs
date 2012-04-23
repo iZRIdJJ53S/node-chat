@@ -39,6 +39,7 @@
 				<span class="btn" id="submit-event">設定する</span>  <span class="btn">キャンセル</span>
 			</div>
 		</div>
+<input type="hidden" id="onetime_token" name="onetime_token" value="<%= onetime_token %>">
 </form>
 </div>
 
@@ -79,10 +80,13 @@
 //      , age = $('#age option:selected').val()
 //      , mail_addr = $('#mail_addr').val()
 //      ;
-    var mail_addr = $('#mail_addr').val();
+    var mail_addr = $('#mail_addr').val()
+      , onetime_token = $('#onetime_token').val()
+      ;
 
     var post_data = {
-      mail_addr: mail_addr
+        mail_addr: mail_addr
+      , onetime_token: onetime_token
 //        sex: sex
 //      , age: age
 //      , mail_addr: mail_addr
