@@ -448,50 +448,50 @@ app.configure('production', function(){
  */
 
 // IPアドレス制限
-app.get('*', function(req, res, next) {
-
-  var remote_ip = req.headers["x-forwarded-for"];
-
-  if (remote_ip.match(/^202\.229\.44\.[0-9]+$/) // nttr_ip
-      || remote_ip.match(/^202\.217\.72\.[0-9]+$/) // nttr_ip_tamachi
-      || remote_ip.match(/^110\.74\.103\.[0-9]+$/) // saito_ip
-      || remote_ip.match(/^222\.158\.[0-9]+\.[0-9]+$/) // saito_ip
-      || remote_ip.match(/^106\.190\.[0-9]+\.[0-9]+$/) // kmura_ip
-      || remote_ip.match(/^114\.179\.73\.50$/) // aruku.inc
-      || remote_ip.match(/^64\.39\.96\.[0-9]+$/) // QualysGuard
-      || remote_ip.match(/^62\.210\.136\.[0-9]+$/) // QualysGuard
-      || remote_ip.match(/^167\.216\.252\.[0-9]+$/) // QualysGuard
-    ) {
-    // 通過
-  } else {
-    // 拒否
-    res.send('Sorry, access deny', 403);
-    return;
-  }
-
-//  // リクエストヘッダから認証情報を取得する
-//  var authHeader = req.headers['authorization'] || '';
-//  // エンコードされている認証トークンを取得する
-//  var token = authHeader.split(/\s+/).pop() || '';
-//  // トークンをbase64デコードする
-//  var auth = new Buffer(token, 'base64').toString();
+//app.get('*', function(req, res, next) {
 //
-//  // デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
-//  var parts = auth.split(/:/);
-//  var username = parts[0];
-//  var password = parts[1];
+//  var remote_ip = req.headers["x-forwarded-for"];
 //
-//  // ユーザ名とパスワードが一致しない場合は、401を返却する
-//  console.log(req.params);
-//  if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
-//      res.writeHead(401, {
-//          'www-Authenticate': 'Basic realm="Authentication required"'
-//      });
-//      res.end();
+//  if (remote_ip.match(/^202\.229\.44\.[0-9]+$/) // nttr_ip
+//      || remote_ip.match(/^202\.217\.72\.[0-9]+$/) // nttr_ip_tamachi
+//      || remote_ip.match(/^110\.74\.103\.[0-9]+$/) // saito_ip
+//      || remote_ip.match(/^222\.158\.[0-9]+\.[0-9]+$/) // saito_ip
+//      || remote_ip.match(/^106\.190\.[0-9]+\.[0-9]+$/) // kmura_ip
+//      || remote_ip.match(/^114\.179\.73\.50$/) // aruku.inc
+//      || remote_ip.match(/^64\.39\.96\.[0-9]+$/) // QualysGuard
+//      || remote_ip.match(/^62\.210\.136\.[0-9]+$/) // QualysGuard
+//      || remote_ip.match(/^167\.216\.252\.[0-9]+$/) // QualysGuard
+//    ) {
+//    // 通過
+//  } else {
+//    // 拒否
+//    res.send('Sorry, access deny', 403);
+//    return;
 //  }
-
-  next();
-});
+//
+////  // リクエストヘッダから認証情報を取得する
+////  var authHeader = req.headers['authorization'] || '';
+////  // エンコードされている認証トークンを取得する
+////  var token = authHeader.split(/\s+/).pop() || '';
+////  // トークンをbase64デコードする
+////  var auth = new Buffer(token, 'base64').toString();
+////
+////  // デコードした文字列を「:」で分割して、ユーザ名とパスワードを取得する
+////  var parts = auth.split(/:/);
+////  var username = parts[0];
+////  var password = parts[1];
+////
+////  // ユーザ名とパスワードが一致しない場合は、401を返却する
+////  console.log(req.params);
+////  if (conf.basicAuth.user !== username || conf.basicAuth.password !== password) {
+////      res.writeHead(401, {
+////          'www-Authenticate': 'Basic realm="Authentication required"'
+////      });
+////      res.end();
+////  }
+//
+//  next();
+//});
 
 // ----------------------------------------------
 // auth 認証が完了したら来る処理
