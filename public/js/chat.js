@@ -332,7 +332,7 @@ var chat = {
 
     // 画像あり
     } else if (ext_image_path && ext_image_domain) {
-      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', ext_image_path));
+      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
 
       // ドメイン取得
       var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+ext_image_domain+'</a>';

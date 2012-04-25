@@ -22,7 +22,7 @@ $().ready(function(){
 </script>
 
 	<div class="main-img">
-		<img src="/img/main01.png" alt="イベントを作成＞人集め＞ネットでしゃべりあう。">
+		<img src="/img/main01.png" alt="Twitterの仲間とリアルタイムに動画を楽しむ・情報をまとめるチャットルーム">
 	</div>
 	<div class="left-content">
 		<h2 class="title">新しいチャット部屋<h2>
@@ -43,49 +43,57 @@ $().ready(function(){
 		<ul>
 			<li class="btn-sub">4/25 オープンβ公開</li>
 		</ul>
-		<h2 class="title-sub">楽しみかた</h2>
-		<ul>
-			<li><img src="/img/howto.png"></li>
-		</ul>
 		<h2 class="title-sub">TWITTER</h2>
 		<ul>
-			<li>
+			<li style="margin:10px;text-align:center;">
+<a href="https://twitter.com/syaberihouse" class="twitter-follow-button" data-show-count="false" data-lang="ja">@syaberihouseをフォロー</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+            </li>
+            <li>
 <script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
 <script>
 new TWTR.Widget({
   version: 2,
-  type: 'profile',
-  rpp: 4,
+  type: 'search',
+  search: 'シャベリハウス',
   interval: 30000,
+  title: '趣味や興味でつながるチャットルーム',
+  subject: 'シャベリハウス',
   width: 350,
   height: 300,
   theme: {
     shell: {
-      background: '#ffffff',
-      color: '#000333'
+      background: '#00A0C6',
+      color: '#ffffff'
     },
     tweets: {
-      background: '#EEEEEE',
-      color: '#00b1d4',
-      links: '#ff6600'
+      background: '#ffffff',
+      color: '#444444',
+      links: '#1985b5'
     }
   },
   features: {
     scrollbar: false,
-    loop: false,
-    live: false,
-    behavior: 'all'
+    loop: true,
+    live: true,
+    behavior: 'default'
   }
-}).render().setUser('syaberihouse').start();
+}).render().start();
 </script>
 			</li>
 		</ul>
+		<h2 class="title-sub">楽しみかた</h2>
+		<ul>
+			<li><img src="/img/howto.png"></li>
+		</ul>
+		<!-- 
 		<h2 class="title-sub">FACEBOOK</h2>
 		<ul>
 			<li>
 <iframe src="//www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FSyaberi-House%2F374958809181094&amp;width=350&amp;height=590&amp;colorscheme=light&amp;show_faces=true&amp;border_color&amp;stream=true&amp;header=true&amp;pageId=374958809181094" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:350px; height:590px;" allowTransparency="true"></iframe>
 			</li>
 		</ul>
+		 -->
 		<!--div class="AD"><img src="/img/AD_350x240.gif"></div-->
 	</div>
 

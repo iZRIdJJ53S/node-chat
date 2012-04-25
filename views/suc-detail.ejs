@@ -28,7 +28,14 @@ $().ready(function(){
 			<div class="left">
 				<!--div class="icon"><img src="<%= suc_detail.image %>"></div-->
 				<h3 class="title-noicon"><%= suc_detail.title %></h3>
-				<div class="time">チャット期間: <%= suc_detail.start_date %> - ???</div>
+				<!--div class="time">チャット期間: 
+					<% if (!(typeof suc_detail.start_date == 'undefined')) { %>
+						<%= suc_detail.start_date %>
+					<% } %>
+					<% if (!(typeof suc_detail.end_date == 'undefined')) { %>
+						 ～ <%= suc_detail.end_date %>
+					<% } %>
+				</div-->
 			</div>
 			<div class="participant"><span class="member-count"><%= suc_detail.supporter_num %>人参加</span></div>
 		</div>

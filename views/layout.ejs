@@ -2,7 +2,7 @@
 <html lang="ja" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
 
 <head>
-	<title>シャベリハウス</title>
+	<title><% if (!(typeof meta_title == 'undefined')) { %><%= meta_title %><% } %>シャベリハウス</title>
 	<meta charset="UTF-8">
 	<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 	<meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
@@ -19,6 +19,17 @@
 <!-- js -->
 	<script type="text/javascript" src="/js/iscroll.js"></script>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 </head>
 
 <body>

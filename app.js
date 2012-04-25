@@ -116,7 +116,6 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_COMMENTS   = 'comments'
   , TABLE_OFFCOMMENTS = 'offcomments'
   , TABLE_STREAM_LOGS = 'stream_logs'
-  , TABLE_CLICK_LOGS  = 'click_logs'
   , TABLE_COMMENT_STREAMS = 'comment_streams'
   , TABLE_DECLARATIONS    = 'declarations'
   , TABLE_SUPPORTERS      = 'supporters'
@@ -574,7 +573,11 @@ app.get('/', function (req, res) {
     function(err, results, fields) {
       if (err) {throw err;}
       if (results.length === 0) {
-        res.send('declaration error: no result');
+        res.render('index', {
+            'title': ''
+          , 'dec_list': []
+          , 'onetime_token': onetime_token 
+        });
         return;
       } else {
         var dec_list = [];
@@ -628,7 +631,8 @@ app.get('/about', function (req, res) {
         } else {
 
           res.render('about', {
-            'declaration_list': results
+              'declaration_list': results
+            , 'meta_title': 'シャベリハウスについて｜'
            //,'user_name': req.session.auth.user_name
            //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
@@ -644,7 +648,7 @@ app.get('/about', function (req, res) {
 
 app.get('/terms', function (req, res) {
   res.render('terms', {
-    'dummy': ''
+    'meta_title': '利用規約｜'
   });
   return;
 });
@@ -680,12 +684,16 @@ app.get('/dec', function (req, res) {
       function(err, results, fields) {
         if (err) {throw err;}
         if (results.length == 0) {
-          res.send('declaration error: no result');
+          res.render('dec-list', {
+              'dec_list': []
+            , 'meta_title': 'チャット部屋一覧｜' 
+          });
           return;
         } else {
 
           res.render('dec-list', {
-            'dec_list': results
+              'dec_list': results
+            , 'meta_title': 'チャット部屋一覧｜'
            //,'user_name': req.session.auth.user_name
            //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
@@ -731,12 +739,16 @@ app.get('/suc', function (req, res) {
       function(err, results, fields) {
         if (err) {throw err;}
         if (results.length == 0) {
-          res.send('declaration error: no result');
+          res.render('suc-list', {
+              'suc_list': []
+            , 'meta_title': 'まとめログ一覧｜'
+          });
           return;
         } else {
 
           res.render('suc-list', {
-            'suc_list': results
+              'suc_list': results
+            , 'meta_title': 'まとめログ一覧｜'
            //,'user_name': req.session.auth.user_name
            //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
@@ -807,8 +819,9 @@ app.get('/suc/:id', function (req, res) {
 		      if (!results[0]) {
 		        // DB に無し。
                 res.render('suc-detail', {
-                  'suc_detail': dec_results[0],
-                  'send_data' : [] 
+                    'suc_detail': dec_results[0]
+                  , 'send_data' : []
+                  , 'meta_title': dec_results[0].title+'｜'
                 });
                 return;
 
@@ -843,8 +856,9 @@ app.get('/suc/:id', function (req, res) {
 		
 		        // クライアント(自分だけ)へデータを送る
                 res.render('suc-detail', {
-		          'suc_detail': dec_results[0],
-		          'send_data' : send_data,
+		            'suc_detail': dec_results[0]
+		          , 'send_data' : send_data
+                  , 'meta_title': dec_results[0].title+'｜'
 		        });
 		        return;
 
@@ -860,32 +874,32 @@ app.get('/suc/:id', function (req, res) {
 // --------------------------------------------------------
 // regist_dec(登録)
 // --------------------------------------------------------
-app.get('/regist-dec', function (req, res) {
-
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
-
-  // パラメータが正しいかDB に聞いてみる
-  client.query(
-    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
-    [req.session.auth.user_id],
-    function(err, results, fields) {
-      if (err) {throw err;}
-      if (results.length === 0) {
-        res.send('user_id error: no result');
-        return;
-      } else {
-        res.render('regist-dec', {
-          'user_data': results
-        });
-        return;
-      }
-    }
-  );
-});
+//app.get('/regist-dec', function (req, res) {
+//
+//  if (!__isAuthLogin(req)) {
+//    // ログインしていないので、リダイレクト
+//    res.redirect('/');
+//    return;
+//  }
+//
+//  // パラメータが正しいかDB に聞いてみる
+//  client.query(
+//    'SELECT id, name, sex, age, mail_addr FROM '+TABLE_USERS+' WHERE id = ?',
+//    [req.session.auth.user_id],
+//    function(err, results, fields) {
+//      if (err) {throw err;}
+//      if (results.length === 0) {
+//        res.send('user_id error: no result');
+//        return;
+//      } else {
+//        res.render('regist-dec', {
+//          'user_data': results
+//        });
+//        return;
+//      }
+//    }
+//  );
+//});
 
 // --------------------------------------------------------
 // firstset
@@ -912,7 +926,9 @@ app.get('/firstset', function (req, res) {
         return;
       } else {
         res.render('firstset', {
-          'user_data': results, 'onetime_token': onetime_token
+            'user_data': results
+          , 'onetime_token': onetime_token
+          , 'meta_title': '新規登録｜'
         });
         return;
       }
@@ -967,7 +983,9 @@ app.get('/mypage', function (req, res) {
 
 
       res.render('mypage', {
-        'dec_list': dec_list, 'onetime_token': onetime_token
+          'dec_list': dec_list
+        , 'onetime_token': onetime_token
+        , 'meta_title': 'マイページ｜'
       });
       return;
 
@@ -1067,7 +1085,8 @@ app.get('/create-dec', function (req, res) {
         return;
       } else {
         res.render('create-dec', {
-          'user_data': results
+            'user_data': results
+          , 'meta_title': 'チャット部屋作成｜'
         });
         return;
       }
@@ -1100,7 +1119,9 @@ app.get('/my-setting', function (req, res) {
         return;
       } else {
         res.render('my-setting', {
-          'user_data': results, 'onetime_token': onetime_token
+            'user_data': results
+          , 'onetime_token': onetime_token
+          , 'meta_title': 'プロフィール設定｜'
         });
         return;
       }
@@ -1399,7 +1420,8 @@ app.get('/dec/:id', function (req, res) {
         detail_txt = detail_txt.replace(/\n/g, '<br />');
         results[0].detail = detail_txt;
         res.render('dec-detail', {
-          'dec_detail': results[0], 'onetime_token': onetime_token
+            'dec_detail': results[0], 'onetime_token': onetime_token
+          , 'meta_title': results[0].title+'｜'
         });
         return;
       }
@@ -2306,19 +2328,20 @@ app.post('/upload', function (req, res) {
 
   form.uploadDir = __dirname+'/public/uploads';
 
+  logger.debug('upload--------------------');logger.debug(__dirname+'/public/uploads');
   form
     .on('field', function(field, value) {
-//      logger.debug('field----------------');logger.debug(field, value);
+      logger.debug('field----------------');logger.debug(field, value);
       fields.push([field, value]);
     })
     .on('file', function(field, file) {
-//      logger.debug('file-----------------');logger.debug(field, file);
+      logger.debug('file-----------------');logger.debug(field, file);
       fs.rename(file.path, file.path+'.jpg');
       files.push([field, file]);
     })
     .on('end', function() {
-      //logger.debug('---> upload done');
-      //logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
+      logger.debug('---> upload done');
+      logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
 //      var tmp_arr = files[0];
 //      logger.debug(tmp_arr[1].path);
       var tmp_path = files[0][1].path.split('/');
@@ -2342,6 +2365,7 @@ app.post('/upload', function (req, res) {
 //    });
     //res.end(sys.inspect({fields: fields, files: files}));
   });
+  logger.debug('upload-after-------------------');
   return;
 });
 
@@ -2870,44 +2894,6 @@ var house = io
           +' user_id, body'
           +') VALUES (NOW(), ?, ?, ?)',
           [resArray[1], user_id, userMessage],
-          function(err, results) {
-            if (err) {
-              throw err;
-            } else {
-              return;
-            }
-          }
-        );
-      })
-
-    });
-
-    /**
-     * ----------------------------------------------------
-     * star が押された場合
-     * ----------------------------------------------------
-     */
-    socket.on('click-star', function (userName, userId, click_id, user_id) {
-      socket.get('house_data', function(err, house_data) {
-        if (err) {return;}
-        var resArray = [];
-        // house_data を分解
-        if (house_data) {
-          resArray = house_data.split('___');
-        } else {
-          return;
-        }
-
-        // 自分自身以外の全員へデータ送る
-//        socket.broadcast.to(resArray[0]).emit('click-star', {
-//          'userName': userName, 'userId': userId, 'click_id': click_id
-//        });
-
-        client.query(
-          'INSERT INTO '+TABLE_CLICK_LOGS+' (created_at, house_id,'
-          +' user_id, body'
-          +') VALUES (NOW(), ?, ?, ?)',
-          [resArray[1], user_id, click_id],
           function(err, results) {
             if (err) {
               throw err;
