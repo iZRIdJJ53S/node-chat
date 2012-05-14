@@ -338,6 +338,20 @@ var chat = {
       var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+ext_image_domain+'</a>';
       this.iframeArea.append($('<p>').html(domain_txt));
 
+    // ustream 有り
+    } else if (iframeURL.indexOf('ustream.tv') !== -1) {
+      // http://api.ustream.tv/html/channel/%E5%86%86%E8%94%B5%E3%81%AEmondayfx/getCustomEmbedTag?params=autoplay:true;mute:false;height:300;width:500&key=3DBF5635DA59C6C68093332D58FB3E18
+
+      // videoId の取得
+      var ustream_vid = iframeURL.match(/\/channel\/([\d\w]+)/);
+      if (ustream_vid[1]) {
+        var ust_api_url = 'http://api.ustream.tv/json/channel/';
+        ust_api_url += ustream_vid[1]+'/getCustomEmbedTag';
+        ust_api_url += '?params=autoplay:true;mute:false;height:300;width:500';
+        ust_api_url += '&key=3DBF5635DA59C6C68093332D58FB3E18';
+      }
+
+
     // nicovideo 有り
 //    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {
 //      // 動画ID を抜き出す
