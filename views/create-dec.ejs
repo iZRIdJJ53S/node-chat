@@ -1,66 +1,691 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+<title>コミュニティを作る｜シャベリハウス</title>
+<meta charset="UTF-8">
+<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
+<meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
+<script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
+<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
+<script src="/js/upfile.js" charset="UTF-8"></script>
+<script src="/js/jquery.tinyscrollbar.min.js" charset="UTF-8"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#scrollbar1').tinyscrollbar();
+});
+</script>
+</head>
+<body>
+<div id="wrapper">
+
+<%- partial('header') %>
+
+<form id="full-form-tag" name="full-form-tag" method="post" action="/create-event" enctype="multipart/form-data">
+<div id="contents_wrapp">
+	<div id="contents_wrapp_inside">
+		<section id="make_community">
+			<h3 id="makecommunity_h3"><img src="/images/makecommunity_h3.gif" width="125" height="18" alt=""></h3>
+			<form action="" method="">
+			<table id="makecommunity_table">
+				<tr>
+					<th><img src="/images/makecommunity_name.gif" width="100" height="30" alt="コミュニティ名"></th>
+					<td><div class="input_makecommunity_name_area"><input type="text" value=""></div></td>
+				</tr>
+				<tr>
+					<th><img src="/images/makecommunity_tag.gif" width="100" height="15" alt="タグ"></th>
+					<td id="makecommunity_table_tag clearfix">
+						<a href="javascript:void(0)" id="appned_Tag"><img src="/images/makecommunity_tagbox_close.gif" width="22" height="22" class="fltl mag11"></a>
+					</td>
+				</tr>
+				<tr>
+					<th><img src="/images/makecommunity_explain.gif" width="100" height="32" alt="説明"></th>
+					<td><div id="input_makecommunity_name_textarea"><textarea></textarea></div></td>
+				</tr>
+				<tr>
+					<th><img src="/images/makecommunity_bg.gif" width="100" height="16" alt="背景画像"></th>
+					<td>
+						<div class="fileToImage" id="block">
+							<input type="file" name="file" id="file" class="hide" value="" onchange="changeFile();" />
+						</div>
+					</td>
+				</tr>
+			</table>
+			<div id="makecommunity_detail">
+				<a href="javascript:void(0);"><img src="/images/makecommunity_details.gif" width="91" height="39" alt="詳細設定" id="detailsetting"></a>
+				<div id="detail_box">
+					<div id="detail_box_top"></div>
+					<div id="detail_box_center">
+						<div id="detail_box_close"><a href="javascript:void(0);"><img src="/images/makecommunity_detail_close.png" width="26" height="26"></a></div>
+						<table id="detail_box_table">
+							<tr>
+								<th class="bdbt">プライバシー</th>
+								<td class="bdbt"><input type="checkbox" name="" id="" value="" class="">公開</td>
+							</tr>
+							<tr>
+								<th class="bdbt" rowspan="3">メンバー承認</th>
+								<td><input type="checkbox" name="" id="" value="" class="">参加申請したメンバーは自動承認されます。</td>
+							</tr>
+							<tr>
+								<td colspan="2"><input type="checkbox" name="" id="" value="" class="">メンバーは新メンバーを追加できます。</td>
+							</tr>
+							<tr>
+								<td class="bdbt" colspan="2"><input type="checkbox" name="" id="" value="" class="">メンバーは新メンバーを追加できますが、管理人の承認が必要です。</td>
+							</tr>
+							<tr>
+								<th rowspan="2">部屋作成の権限</th>
+								<td><input type="checkbox" name="" id="" value="" class="">管理人・メンバーもチャット部屋を作成できます。</td>
+							</tr>
+							<tr>
+								<td colspan="2"><input type="checkbox" name="" id="" value="" class="">管理人だけがチャット部屋を作成できます。</td>
+							</tr>
+						</table>
+					</div>
+					<div id="detail_box_bottom"></div>
+				</div>
+			</div>
+		</section>
+		<section id="make_community_invite">
+			<h3 id="makecommunity_invite_h3"><img src="/images/makecommunity_invite_h3.gif" width="98" height="15" alt="友達を招待する"></h3>
+			<div id="makecommunity_invite_tab">
+				<ul id="tab_ul">
+					<li id="tab_1" class="bg_ov top1px"><img src="/images/makecommunity_invite_fb.png" width="97" height="25" alt=""></li>
+					<li id="tab_2"><img src="/images/makecommunity_invite_tw.png" width="98" height="25" alt=""></li>
+					<li id="tab_3"><img src="/images/makecommunity_invite_mx.png" width="79" height="25" alt=""></li>
+					<li id="tab_4"><img src="/images/makecommunity_invite_ml.png" width="41" height="25" alt=""></li>
+				</ul>
+				<div id="scrollbar1">
+					<div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+					<div class="viewport">
+						 <div class="overview">
+						<ul id="tab_1_area" class="tab_wrapp">
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">1飯島　おさむ</div>
+							</li>
+						</ul>
+						<ul id="tab_2_area" class="tab_wrapp none">
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">2飯島　おさむ</div>
+							</li>
+						</ul>
+						<ul id="tab_3_area" class="tab_wrapp none">
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">3飯島　おさむ</div>
+							</li>
+						</ul>
+						<ul id="tab_4_area" class="tab_wrapp none">
+							<li>
+								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
+								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
+								<div class="invite_li_name">4飯島　おさむ</div>
+							</li>
+						</ul>
+						</div><!--/overview-->
+					</div><!--/viewport-->
+				</div><!--/scrollbar1-->
+		</div><!--/makecommunity_invite_tab-->
+			<div class="txtc magt20 magb200"><input type="image" src="/images/makecommunity_invite_submit.png" width="396" height="73" alt="送信"></div>
+		</section>
+	</div><!--/#contents_wrapp_inside-->
+</div><!--/#contents_wrapp-->
+</form>
+
+
+
+
+
+
 <div class="main-img"></div>
 <h2 class="title">CREATE ROOM</h2>
 <div class="full-form">
-<form id="full-form-tag" name="full-form-tag" method="post" action="/create-event" enctype="multipart/form-data">
+<!--form id="full-form-tag" name="full-form-tag" method="post" action="/create-event" enctype="multipart/form-data">
 		<h3>ROOM</h3>
 		<div class="form-container">
 			<div class="title">チャット部屋名</div>
 			<div class="content"><input type="text" size="30" id="title" name="title" value=""></div>
 			<div class="side"></div>
 		</div>
-		<!--div class="form-container">
-			<div class="title">背景画像</div>
-			<div class="content">
-				<div id="dropbox" style="width:250px; border: 1px #DEDEDE solid;">
-					<span id="drop_message" class="message">Drop images here to upload.</span>
-				</div>
-			</div>
-		</div>
-		<div class="form-container">
-			<div class="title">背景画像</div>
-			<div class="content">
-				<input type="file" size="30" id="dec_image">
-				<div class="uploadimage"></div>
-			</div>
-			<div class="side"></div>
-		</div-->
-		<!--div class="form-container">
-			<div class="title">概要</div>
-			<div class="content"><textarea cols="40" rows="2" id="description" name="description"></textarea></div>
-			<div class="side"></div>
-		</div-->
 		<div class="form-container">
 			<div class="title">部屋の説明</div>
 			<div class="content"><textarea cols="40" rows="10" id="detail" name="detail"></textarea></div>
-			<div class="side"><!--タイトルは&lt;h3&gt;で囲んでください。<br>例）&lt;h3&gt;タイトル&lt;/h3&gt;<br><br>文章は&lt;p&gt;で囲んでください。<br>例）&lt;p&gt;文章&lt;/p&gt;--></div>
-		</div>
-		<!--div class="form-container">
-			<div class="title">開始日</div>
-			<div class="content"><input type="text" id="deadline" name="deadline"></div>
 			<div class="side"></div>
 		</div>
-		<div class="form-container">
-			<div class="title">目標人数</div>
-			<div class="content"><input type="text" size="10" id="target_num" name="target_num" value=""></div>
-			<div class="side"></div>
-		</div>
-		<h3>HOUSE</h3>
-		<div class="form-container">
-			<div class="title">レンタル期間</div>
-			<div class="content">
-				<input type="radio" name="rental-time" value="1h" checked="">1時間
-				<input type="radio" name="rental-time" value="1d">1日
-				<input type="radio" name="rental-time" value="1w" disabled="disabled">1週間
-				<input type="radio" name="rental-time" value="1m" disabled="disabled">1ヶ月
-			</div>
-			<div class="side">1週間と1ヶ月のご利用はプレミア会員のみ可能です。</div>
-		</div-->
 		<div class="form-container">
 			<div class="button">
 				<span class="btn" id="submit-event">チャット部屋を作る</span>  <span class="btn" id="submit-cancel">キャンセル</span>
 			</div>
 		</div>
-</form>
+</form-->
 </div>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
@@ -171,6 +796,8 @@
     //    break;
     //};
 
+
+
     var post_data = {
         title: title
     //  , description: description
@@ -187,6 +814,7 @@
       data: post_data,
       success: function(data){
         if (data.flg_create) {
+
           // post成功
           location.href='/mypage';
         }
@@ -201,3 +829,12 @@
 
 //-->
 </script>
+
+
+<%- partial('footer') %>
+<%- partial('footer-script') %>
+
+
+
+</body>
+</html>

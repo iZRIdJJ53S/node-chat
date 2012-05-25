@@ -1,3 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+	<title>マイページ｜シャベリハウス</title>
+<meta charset="UTF-8">
+<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
+<meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
+<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
+<script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<script>
+$(function(){
+	var contscrol_elm = $('.thread_article_box_left');
+	var distance_of_top = $('.thread_article_box_left').offset().top - 101;
+	$(window).scroll(function(){
+		if($(window).scrollTop() > distance_of_top){
+			contscrol_elm.css({'position':'fixed','top':'101px'});
+		}else{
+			contscrol_elm.css('position','static');
+		}
+	});
+});
+//-------------------------------------------------------------------------------------(；´∀｀)
+</script>
+</head>
+<body>
+<div id="wrapper">
+
+<%- partial('header') %>
+
+
+
 <style type="text/css">
 
 .house_bg { background: url('<%= suc_detail.image %>'); }
@@ -23,84 +58,147 @@ $().ready(function(){
 </script>
 
 
-<div class="main-img">
-		<div class="ticket-wrapper">
-			<div class="left">
-				<!--div class="icon"><img src="<%= suc_detail.image %>"></div-->
-				<h3 class="title-noicon"><%= suc_detail.title %></h3>
-				<!--div class="time">チャット期間: 
-					<% if (!(typeof suc_detail.start_date == 'undefined')) { %>
-						<%= suc_detail.start_date %>
-					<% } %>
-					<% if (!(typeof suc_detail.end_date == 'undefined')) { %>
-						 ～ <%= suc_detail.end_date %>
-					<% } %>
-				</div-->
-			</div>
-			<div class="participant"><span class="member-count"><%= suc_detail.supporter_num %>人参加</span></div>
-		</div>
-	</div>
-	<h2 class="title">まとめログ</h2>
-	<div class="details">
-		<div class="details-left">
-			<% send_data.reverse(); %>
-			<% for(var i=0; i<200; i++){ %>
-				<% if (!send_data[i]) {break;} %>
-				<p>[<%= i+1 %>] <%= send_data[i].userName %> <img style="width:24px;" src="<%= send_data[i].user_image %>"></p>
-				<p style="padding:15px 0;"><%= send_data[i].userMessage %></p>
-				<div id="log_image_<%= i %>">
-				<% if(send_data[i].image_src){ %>
-					<p><img src="<%= send_data[i].image_src %>"></p>
-				<% } %>
+
+
+
+
+
+
+
+<div id="contents_wrapp">
+<div id="contents_wrapp_inside">
+
+
+<section id="thread">
+			<div id="thread_wrapp">
+			
+				<h3 id="thread_h3"><%= suc_detail.title %></h3>
+				<div class="thread_txt">
+					<%= suc_detail.detail %>
+					<br><br>
+					<!-- div class="time">チャット期間: 
+						<% if (!(typeof suc_detail.start_date == 'undefined')) { %>
+							<%= suc_detail.start_date %>
+						<% } %>
+						<% if (!(typeof suc_detail.end_date == 'undefined')) { %>
+							 ～ <%= suc_detail.end_date %>
+						<% } %>
+					</div -->
+					<!-- span class="member-count"><%= suc_detail.supporter_num %>人参加</span -->
 				</div>
-				<p style="text-align:right;color:#999;font-size:12px;"><%= send_data[i].message_time %></p>
 				
-				<script type="text/javascript">
-				$().ready(function(){
+			</div>
+</section>
 
-					var str = "<%= send_data[i].userMessage %>";
-					var ext_image_path = "<%= send_data[i].ext_image_path %>";
-					var ext_image_domain = "<%= send_data[i].ext_image_domain %>";
-					var rex = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?/g;
 
-					if (str.indexOf('youtube.com') !== -1) {
-						if(str.match(rex)){
+
+		
+<section id="section_thread_left">
+			<article>
+				<div class="thread_article_box_left fltl">
+					<div class="thread_article_box_wrapp_left">
+						<div class="thread_article_txt">
+							<img src="/images/blog_dummy.jpg" width="400">
+						</div>
+					</div>
+				</div>
+			</article>
+</section><!--/section_thread_left-->
+
+
+
+<section id="section_thread_right">
+	
+	
+	<div class="details-left">
+	<% send_data.reverse(); %>
+	<% for(var i=0; i<200; i++){ %>
+		<% if (!send_data[i]) {break;} %>
+		
+		<article>
+		<div class="thread_article_thumb fltl"><img src="<%= send_data[i].user_image %>" width="40" height="40"></div><div class="thread_article_box_arrowl"></div>
+		<div class="thread_article_box magl22 fltl">
+			<div class="thread_article_box_wrapp"><!-- img src="/images/article_close.gif" width="18" height="18" alt="閉じる" class="thread_article_date" -->
+				<h4>[<%= i+1 %>] <%= send_data[i].userName %></h4>
+				<div class="thread_article_date"><%= send_data[i].message_time %></div>
+				<div class="thread_article_txt">
+					<%= send_data[i].userMessage %><br>
+					
+					
+					
+					<div id="log_image_<%= i %>">
+					<% if(send_data[i].image_src){ %>
+						<p><img src="<%= send_data[i].image_src %>"></p>
+					<% } %>
+					</div>
+	
+	
+					
+					<script type="text/javascript">
+					$().ready(function(){
+	
+						var str = "<%= send_data[i].userMessage %>";
+						var ext_image_path = "<%= send_data[i].ext_image_path %>";
+						var ext_image_domain = "<%= send_data[i].ext_image_domain %>";
+						var rex = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w-.\/?%&=]*)?/g;
+	
+						if (str.indexOf('youtube.com') !== -1) {
+							if(str.match(rex)){
+								var matchUrl = str.match(rex);
+								var youtube_vid = str.match(/[&\?]v=([\d\w]+)/);
+								if (youtube_vid && youtube_vid[1]) {
+									var y_embed_url = 'http://www.youtube.com/embed/'+youtube_vid[1];
+									var showStr = '<iframe src="' + y_embed_url + '?wmode=transparent" frameborder="0" allowfullscreen></iframe>';
+									var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">youtube.com</a>';
+									$("#log_image_<%= i %>").append(showStr);
+									$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
+								}
+	
+							}
+							
+						} else if (ext_image_path && ext_image_domain) {
 							var matchUrl = str.match(rex);
-							var youtube_vid = str.match(/[&\?]v=([\d\w]+)/);
-							if (youtube_vid && youtube_vid[1]) {
-								var y_embed_url = 'http://www.youtube.com/embed/'+youtube_vid[1];
-								var showStr = '<iframe width="420" height="315" src="' + y_embed_url + '" frameborder="0" allowfullscreen></iframe>';
-								var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">youtube.com</a>';
-								$("#log_image_<%= i %>").append(showStr);
+							if (matchUrl) {
+								var showObj = $('<img>').attr('src', ext_image_path);
+								
+								var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">'+ext_image_domain+'</a>';
+	
+								$("#log_image_<%= i %>").append(showObj);
 								$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
 							}
-
 						}
-						
-					} else if (ext_image_path && ext_image_domain) {
-						var matchUrl = str.match(rex);
-						if (matchUrl) {
-							var showObj = $('<img>').attr('src', ext_image_path);
-							
-							var domain_txt = '引用元：<a href="'+matchUrl+'" target="_blank">'+ext_image_domain+'</a>';
-
-							$("#log_image_<%= i %>").append(showObj);
-							$("#log_image_<%= i %>").append($('<p>').html(domain_txt));
-						}
-					}
-
-				});
-				
-				</script>
-
-				<hr>
-			<% } %>
-		</div>
-		<div class="details-right">
-			<!--div class="view-counter">100,000<p>view</p></div-->
-			<div class="content">
-				<%= suc_detail.detail %>
+	
+					});
+					
+					</script>
+	
+	
+	
+				</div>
 			</div>
 		</div>
-		<div class="clear"></div>
+		</article>
+		
+		
+	<% } %>
 	</div>
+
+</section><!--/section_thread_right-->
+
+
+</div><!--/#contents_wrapp_inside-->
+</div><!--/#contents_wrapp-->
+
+
+
+
+
+
+
+
+
+<%- partial('footer') %>
+<%- partial('footer-script') %>
+
+</body>
+</html>

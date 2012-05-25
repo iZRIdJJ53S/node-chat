@@ -1,24 +1,71 @@
 <header>
- <div class="header">
- <div class="header-content">
-	<a href="/"><div class="logo" name="SYABERI-HOUSE"></div></a>
-	<nav>
-	<div class="menu">
-		<ul>
-			<li><a href="/dec">チャット部屋</a></li>
-			<li><a href="/suc">まとめログ</a></li>
-			<!--li><a href="/about">ABOUT</a></li-->
-		</ul>
-	</div>
-	<div class="menu-right">
-		<ul>
+	<div id="header_wrapp">
+		<div id="header_left">
+			<h1><a href="/"><img src="/images/common/logo.gif" width="133" height="60" alt="SYABERI HOUSE"></a></h1>
+		</div><!--/header_left-->
+		<div id="header_center">
+			<table id="header_center_table">
+				<tr>
+					<td>
+						<a href="javascript:void(0);" id="fukidashi">5</a>
+						<div id="fukidashi_notification_wrapp">
+							<div id="oshirase_top"></div>
+							<div id="oshirase_midl">
+								<div class="fukidashi_nortification_txt">AAAコミュニティに ○×チャットルームができました。</div>
+								<div class="fukidashi_nortification_txt">AAAコミュニティに □□□□さん 他150人参加しました□□□□さん 他150人参加しました。</div>
+								<div class="fukidashi_nortification_txt">AAAコミュニティの ○×チャットルームに□□□□さん </div>
+							</div>
+							<div id="oshirase_bott"><a href="#">他10人がいます。</a></div>
+						</div><!--/fukidashi_notification_wrapp-->
+					</td>
+					<td>
+						<form id="serch_box" method="post" action="/search">
+							<input type="text" id="input_area" value="コミュニティを探す" name="search_str" onfocus="if(this.value=='コミュニティを探す'){this.value='';}" onblur="if(this.value==''){this.value='コミュニティを探す';}" />
+							<input type="image" name="submit" src="/images/common/serchbox_submit_s.gif" id="serch_submit" />
+						</form>
+						<div id="tag_word">
+							<a href="javascript:void(0);"><img src="/images/common/tag.png" width="71" height="26" alt="TAG" id="header_tag"></a>
+							<a href="/search">Apple</a>
+							<a href="/search">ライオン</a>
+							<a href="/search">iPad</a>
+							<a href="/search">iOS</a>
+							<a href="/search">iPhone</a>
+						</div>
+						<div id="tag_notification_wrapp">
+							<div class="pad10 fontb bg_g">注目タグ</div>
+							<div class="tag_nortification_txt bdtp">■□□□□□□□□□■□□□□□□□□□■□□□□■□□□□□□■□□□□□□□■□□□■□□□□□■□□□□□□□□□□</div>
+							<div class="tag_nortification_txt bdtp">■□□□□□□□□□■□□□□□□□■□□□■□□□□□■□□□□□□□□□□■□□□□□□□■□□□■□□□□□■□□□□□□</div>
+							<div class="tag_nortification_txt bdtp">■□□□□□□□□□■□□□■□□□□□□□□□■□□□□■□□□□□□□■□□□■□□□□□■□□□□□□□□□□□□</div>
+						</div><!--/tag_notification_wrapp-->
+					</td>
+					<td>
+					</td>
+				</tr>
+			</table>
+		</div><!--/header_center-->
+		<div id="header_right">
+		
+		
+		<!--ul>
 			<li id="auth-login-twitter"><a href="/auth/twitter">新規登録・ログイン</a></li>
 			<li id="mypage-href" style="display:none;"><a href="/mypage">マイページ</a></li>
 			<li id="auth-icon-img" style="display:none;" class="icon"><img src=""></li>
-		</ul>
+		</ul-->
+		
+		
+			<table id="header_right_table">
+				<tr>
+					<td id="header_mypage_thumb"><div><img id="header_mypage_thumb_img" src="" width="40" height="40"></div></td>
+					<td id="header_mypage_name"><h2 id="header_mypage_name_h2"></h2></td>
+					<td id="header_mypage_pull"><a href="#"><img src="/images/common/pull.png" width="26" height="26" id="mypage_pull"></a></td>
+				</tr>
+			</table>
+			<div id="mypage_notification_wrapp">
+				<a href="/mypage" class="mypage_nortification_txt"><div>マイページ</div></a>
+				<a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a>
+				<a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a>
+				<a href="/logout" class="mypage_nortification_txt"><div>ログアウト</div></a>
+			</div><!--/mypage_notification_wrapp-->
+		</div><!--/header_right-->
 	</div>
-	</nav>
-	<div class="clear"></div>
- </div>
- </div>
 </header>

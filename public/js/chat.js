@@ -8,6 +8,11 @@ var chat = {
     this.submitter   = this.section.find( '#submit_1' );
     this.sendMessage = this.section.find( '#send-message1' );
     this.iframeArea = this.section.find( '#disparea' );
+    this.stmp = this.section.find('#emoji_wrapp_in a img');
+
+
+
+
 
     if ( options ) {
       this.user_id = options.user_id || 1;
@@ -33,6 +38,52 @@ var chat = {
         'click_id': star_id, 'user_id': that.user_id
       });
     });
+
+
+    this.stmp.click(function (event) {
+//	alert(location.protocol+"//"+location.host + "/" + $(this).attr("src"));
+//    this.submitter.click(function (event) {
+      var userMessage = location.protocol+"//"+location.host + "/" + $(this).attr("src")
+        , image_src   = ""
+        , iframeURL   = ''
+        , flg_owner   = true
+        ;
+
+      if (userMessage || image_src) {
+
+        // image_src が優先
+        if (image_src) {
+//          //that._setIframeArea(image_src, flg_owner);
+        } else {
+          if (isURL(userMessage)) {
+            if (getURL(userMessage)) {
+//              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
+               iframeURL = getURL(userMessage);
+//               that._setIframeArea(iframeURL, flg_owner);
+            }
+          }
+        }
+
+        // 自分自身(クライアント)へ描画
+        var message_time = that._getCurrentTime();
+//        that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
+        // サーバーへpush して全クライアントへ配信してもらう
+//alert(userMessage);
+//return false;
+        $.publish( 'user:message-sent', {
+          'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
+          'userMessage': userMessage, 'iframeURL': iframeURL, 'image_src': image_src,
+          'message_time': message_time
+        });
+
+        that._clearInputUserMessage();
+      }
+      return false;
+    });
+
+
+
+
 
 
     this.userMessage.keydown(function (event) {
@@ -113,6 +164,8 @@ var chat = {
         var message_time = that._getCurrentTime();
 //        that._addMessage('', that.userName, that.user_image, userMessage, image_src, message_time);
         // サーバーへpush して全クライアントへ配信してもらう
+//alert(userMessage);
+//return false;
         $.publish( 'user:message-sent', {
           'user_id': that.user_id, 'userName': that.userName, 'user_image': that.user_image,
           'userMessage': userMessage, 'iframeURL': iframeURL, 'image_src': image_src,
@@ -124,6 +177,10 @@ var chat = {
       return false;
     });
   },
+
+
+
+
 
   _bindSubscribers: function () {
     var that = this;
@@ -207,6 +264,11 @@ var chat = {
 
 
 
+
+
+
+
+
   _addMessage: function (comment_id, userName, user_image, userMessage,
       image_src, message_time, is_owner, ext_image_path, ext_image_domain) {
     var text_node = $('<div id="text_node"></div>');
@@ -217,11 +279,16 @@ var chat = {
     //console.log('message_time: ');console.log(message_time);
 
 
+
     // URL 変換
     if (isURL(userMessage)) {
-      if (getURL(userMessage)) {
-        userMessage = replaceURL(userMessage);
-      }
+	//スタンプの場合
+	var stamp_flag = 0;
+	if(userMessage.indexOf('/kuma/') != -1){
+		var stamp_flag = 1;
+	}else if (getURL(userMessage)) {
+		userMessage = replaceURL(userMessage);
+	}
     }
 
     // ユーザーさんが独自にアップした画像があれば
@@ -233,36 +300,80 @@ var chat = {
       image_node.attr('src', image_src);
       //console.log('image_node_html: '+image_node);console.log(image_node);
     }
-
+	
+	
+	
+	
+	
+/* 	
     // チャットメッセージ部分
-    var voice_node = $('<div class="voice">');
-    var icon_node  = $('<div class="icon">');
+    var voice_node = $('<div class="thread_article_box magl22 fltl">');
+	var voice_node_inner = $('<div class="thread_article_box_wrapp">');
+    var icon_node  = $('<div class="thread_article_thumb fltl">');
     var utc_time   = this._changeTimeStamp(message_time);
     var easy_time  = this._changeEasyTimeStamp(message_time);
-    var time_node  = $('<abbr class="time">').attr('title', utc_time);
-    var chat_content_node = $('<div class="chat-content" id="chat-content-'+comment_id+'">');
+    var time_node  = $('<abbr class="thread_article_date">').attr('title', utc_time);//var time_node  = $('<abbr class="time">').attr('title', utc_time);
+    var chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">');
 
 //    var star_node = $('<a href="#" id="'+comment_id+'" class="star">').text('★');
-    var delete_cmt_node = $('<a href="#" name="delete_cmt" id="del_cmt_'+comment_id+'">').text('×削除');
+    var delete_cmt_node = $('<img src="/images/article_close.gif" width="18" height="18" alt="閉じる" class="thread_article_date" href="#" name="delete_cmt" id="del_cmt_'+comment_id+'">').text('×削除');
 
 //    if (userName == 'me') {
-      voice_node.prepend($('<div class="name">').text(userName));
-      voice_node.append($('<div class="message">').html(userMessage));
-      voice_node.append(image_node);
-      voice_node.append(time_node.text(easy_time));
+     voice_node_inner.prepend($('<h4>').text(userName));
+	  voice_node_inner.append(time_node.text(easy_time));
+      voice_node_inner.append($('<div class="thread_article_txt">').html(userMessage));
+      voice_node_inner.append(image_node);
+      
 //      voice_node.append($('<div id="star_'+comment_id+'">').html(star_node));
+
       if (is_owner) {
-        voice_node.append($('<div class="delete_cmt">').html(delete_cmt_node));
+        voice_node_inner.append($('<div class="delete_cmt">').html(delete_cmt_node));
       }
 
       chat_content_node.prepend(voice_node);
-      chat_content_node.prepend(icon_node.html('<img src="'+user_image+'">'));
-      this.messageList.prepend(chat_content_node);
+	  voice_node.prepend(voice_node_inner);
+      chat_content_node.prepend(icon_node.html('<img src="'+user_image+'" width="40" height="40"><div class="thread_article_box_arrowl"></div>'));
+*/  
 
-      this.messageList2.empty();
-      this.messageList2.prepend(chat_content_node);
 
-      $('#lines1 abbr.time').timeago();
+		/*
+		<article>
+			<div class="thread_article_thumb fltl"><img src="/images/thumb_s3.jpg" width="40" height="40"></div><div class="thread_article_box_arrowl"></div>
+			<div class="thread_article_box magl22 fltl">
+				<div class="thread_article_box_wrapp"><img src="/images/article_close.gif" width="18" height="18" alt="閉じる" class="thread_article_date">
+					<h4>Kunshiro Murayama</h4>
+					<div class="thread_article_date">2012/00/00 MON 09:34:07.85</div>
+					<div class="thread_article_txt">http://livedoor.blogimg.jp/chihhylove/imgs/4/c/4ca5eeac.jpg<br><img src="/images/community_thumb.jpg"></div>
+				</div>
+			</div>
+		</article>
+		*/
+
+//node split
+
+
+	if(stamp_flag == 1){
+		if (!is_owner) {
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
+		}else{
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
+		}
+	}else{
+		if (!is_owner) {
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowl"></div><div class="thread_article_box magl22 fltl"><div class="thread_article_box_wrapp"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
+		}else{
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowr"></div><div class="thread_article_box magr22 fltr"><div class="thread_article_box_wrapp"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
+		}
+	}
+		//this.messageList.prepend(chat_content_node); article上
+		this.messageList.append(chat_content_node); //article下
+		this.messageList2.empty();
+		this.messageList2.html(chat_content_node);
+		
+		$('#lines1 abbr.time').timeago();
+		CommentBox_func('chat-content-' + comment_id);
+
+
 
 //    } else {
 //      this.messageList.prepend($('<dl>').append($('<dt>').html(userMessage).append(image_node))
@@ -287,18 +398,18 @@ var chat = {
       if (youtube_vid[1]) {
 
         // player-ctrl の部品組立
-        var video_start = $('<a href="javascript:void(0);" id="video-start">Start</a>');
-        var video_play  = $('<a href="javascript:void(0);" id="video-play">Play</a>');
-        var video_pause = $('<a href="javascript:void(0);" id="video-pause">Pause</a>');
+        var video_start = $('<a href="javascript:void(0);" id="video-start"><img src="/images/common/yt_restart.png"></a>');
+        var video_play  = $('<a href="javascript:void(0);" id="video-play"><img src="/images/common/yt_play.png"></a>');
+        var video_pause = $('<a href="javascript:void(0);" id="video-pause"><img src="/images/common/yt_pause.png"></a>');
 
         // player-ctrl の親要素
         var player_ctrl = $('<div id="player-ctrl">');
         // 部品をappend していく
-        player_ctrl.append(video_start);
-        player_ctrl.append($('<span>').text(' | '));
-        player_ctrl.append(video_play);
-        player_ctrl.append($('<span>').text(' | '));
-        player_ctrl.append(video_pause);
+	player_ctrl.append(video_play);
+	player_ctrl.append(video_pause);
+	player_ctrl.append(video_start);
+        //player_ctrl.append($('<span>').text(' | '));
+        //player_ctrl.append($('<span>').text(' | '));
 
         this.iframeArea.append($('<div id="ytapiplayer">'));
         // オーナーのみコントロール権限有り
@@ -314,7 +425,7 @@ var chat = {
 
         //var youtube_api = 'http://www.youtube.com/apiplayer?'
         //youtube_api += 'version=3&enablejsapi=1&playerapiid=ytplayer';
-        swfobject.embedSWF(youtube_api, "ytapiplayer", "500", "300", "8", null, null, params, atts);
+        swfobject.embedSWF(youtube_api, "ytapiplayer", "400", "230", "8", null, null, params, atts);
 
         // videoid を書きだす
         this.iframeArea.append($('<input type="hidden" id="play_video_id" value="'+youtube_vid[1]+'">'));
@@ -329,13 +440,13 @@ var chat = {
         //
       }
 
-
     // 画像あり
     } else if (ext_image_path && ext_image_domain) {
-      this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
+      this.iframeArea.prepend($('<img class="img" style="max-width:430px;">').attr('src', iframeURL));
+      //this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
 
       // ドメイン取得
-      var domain_txt = '引用元：<a href="'+iframeURL+'" target="_blank">'+ext_image_domain+'</a>';
+      var domain_txt = '引用元：<a href="'+iframeURL+'?wmode=transparent" target="_blank">'+ext_image_domain+'</a>';
       this.iframeArea.append($('<p>').html(domain_txt));
 
     // nicovideo 有り
@@ -372,7 +483,7 @@ var chat = {
     $('#html_image_preview').remove();
     $('#user_up_img').remove();
     $('#drop_message').show();
-    $('#message1').height(50).css({minHeight:50}); // textarea の高さを初期化
+    //$('#message1').height(50).css({minHeight:50}); // textarea の高さを初期化
   },
 
 

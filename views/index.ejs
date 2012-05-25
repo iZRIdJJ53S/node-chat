@@ -1,100 +1,254 @@
-<script type="text/javascript">
-<!--
-$().ready(function(){
-	var last_id = 0;
-	var write_data = '';
-	<% for (var i in dec_list) { %>
-		var event_list = Object;
-		event_list.id = <%= dec_list[i].id %>;
-		event_list.title = "<%= dec_list[i].title %>";
-		event_list.user_name = "<%= dec_list[i].user_name %>";
-		event_list.user_image = "<%= dec_list[i].user_image %>";
-		event_list.deadline = "<%= dec_list[i].deadline %>";
-		event_list.target_num = <%= dec_list[i].target_num %>;
-		event_list.supporter_num = <%= dec_list[i].supporter_num %>;
-		write_data += makeEventListParts(event_list);
-		last_id = <%= dec_list[i].id %>;
-	<% } %>
-	$('#ul-events').append(write_data);
-	$('#last_id').html(last_id);
-});
--->
-</script>
-
-	<div class="main-img">
-		<img src="/img/main01.png" alt="Twitterの仲間とリアルタイムに動画を楽しむ・情報をまとめるチャットルーム">
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+<title>シャベリハウス</title>
+<meta charset="UTF-8">
+<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
+<meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
+<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
+<script src="/js/jquery.easing.1.3.js" type="text/javascript" charset="UTF-8"></script>
+<script src="/js/funcs.js" type="text/javascript" charset="UTF-8"></script>
+<link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
+<link rel="stylesheet" href="/css/index.css" />
+</head>
+<body>
+<header>
+	<div class="header_left">
+		<h1><img src="/images/header_logo.gif" width="234" height="106" alt="SYABERI HOUSE" ></h1>
+		<p>友人やちょっとした知り合い、<br>共通の仲間と部屋(コミュニティ)を<br>作り、楽しくシャベリあおう！</p>
 	</div>
-	<div class="left-content">
-		<h2 class="title">新しいチャット部屋<h2>
+	<div class="header_center">
+		<a href="/create-dec"><img src="/images/header_make_commu.gif" width="143" height="150" alt="コミュニティを作る"></a>
+		<a href="/search" class="padl40"><img src="/images/header_serch_commu.gif" width="143" height="150" alt="コミュニティを探す"></a>
+	</div>
+	<div class="header_right">
+		<div id="member">
+			<ul>
+				<li><a href="/auth/twitter"><img src="/images/header_login.gif" width="75" height="13" alt="ログイン"></a></li>
+				<li><a href="/auth/twitter"><img src="/images/header_register_s.gif" width="73" height="13" alt="会員情報"></a></li>
+			</ul>
+		</div>
+		<div id="register">
+			<ul>
+				<li><a href="/about"><img src="/images/header_about.gif" width="215" height="52" alt="シャベリハウスとは？"></a></li>
+				<li><a href="/auth/twitter"><img src="/images/header_register.gif" width="215" height="52" alt="会員登録"></a></li>
+			</ul>
+
+			<div id="fb-root"></div>
+			<div id="user-info" style="display:none;"></div>
+			<div><button id="fb-auth">...</button>
+<!--a id="fb-auth" href="https://www.facebook.com/login.php?api_key=351823408214501&skip_api_login=1&display=popup&cancel_url=http%3A%2F%2Fec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%2Foauth%2Ffacebook%3Ferror_reason%3Duser_denied%26error%3Daccess_denied%26error_description%3DThe%2Buser%2Bdenied%2Byour%2Brequest.&fbconnect=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Fpermissions.request%3F_path%3Dpermissions.request%26app_id%3D351823408214501%26redirect_uri%3Dhttp%253A%252F%252Fec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%252Foauth%252Ffacebook%26sdk%3Djoey%26display%3Dpopup%26response_type%3Dtoken%252Csigned_request%26domain%3Dec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%26perms%3Demail,publish_stream,read_friendlists,friends_activities%26fbconnect%3D1%26from_login%3D1%26client_id%3D351823408214501&rcount=1"></a--></div>
+
+		</div>
+	</div>
+<!-- facebook oauth -->
+<script>
+
+ 
+window.fbAsyncInit = function() {
+    FB.init({ appId: '351823408214501',
+	status: true, 
+        cookie: true,
+        xfbml: true,
+        oauth: true
+    });
+ 
+    function updateButton(response) {
+        var button = document.getElementById('fb-auth');
+        var userInfo = document.getElementById('user-info');
+        if (response.authResponse) {
+            //user is already logged in and connected
+            FB.api('/me', function(response) {
+                userInfo.innerHTML = '<img src="https://graph.facebook.com/'
+                  + response.id + '/picture" style="margin-right:5px" />'
+                  + response.name;
+                button.innerHTML = 'Logout';
+            });
+            button.onclick = function() {
+                FB.logout(function(response) {
+                    userInfo.innerHTML="";
+                });
+            };
+        } else {
+            //user is not connected to your app or logged out
+            button.innerHTML = 'Login';
+            button.onclick = function() {
+                FB.login(function(response) {
+                    if (response.authResponse) {
+                        FB.api('/me', function(response) {
+                            userInfo.innerHTML = 
+                              '<img src="https://graph.facebook.com/' 
+                              + response.id + '/picture" style="margin-right:5px" />'
+                              + response.name;
+                        });
+                    } else {
+                        //user cancelled login or did not grant authorization
+                    }
+                }, {scope:'email',redirect_uri:"http://ec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com/oauth/facebook"});
+            }
+        }
+    }
+    // run once with current status and whenever the status changes
+    FB.getLoginStatus(updateButton);
+    FB.Event.subscribe('auth.statusChange', updateButton);
+};
+
+(function() {
+  var e = document.createElement('script'); e.async = true;
+  e.src = document.location.protocol + '//connect.facebook.net/ja_JP/all.js';
+  document.getElementById('fb-root').appendChild(e);
+}());
+
+</script>
+<!-- /facebook oauth -->
+
+</header>
+<section id="top_banner">
+	<a href="#"><img src="/images/top_banner.jpg" width="960" height="130" alt=""></a>
+</section>
+<section id="top_h2">
+	<h2><img src="/images/top_featured.gif" width="331" height="52" alt="注目のコミュニティ / Featured Communith"></h2>
+</section>
+
+
+
+
+
+
+
+
+<section id="top_contents">
+	<div id="grid-content">
+
+	
+			<script type="text/javascript">
+			<!--
+			var last_id2=0;
+			-->
+			</script>	
+
+
+
+
+			<% for (var i in dec_list) { %>
+
+			<article<% if(i == 0 || i == 7) { %> class="widever"<% } %>>
+			<div class="live<% if(i == 0 || i == 7) { %>_b<% } %>">LIVE</div>
+			<div class="topthumb<% if(i == 0 || i == 7) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 7) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 7) { %>457<% } else { %>215<% } %>" onerror='this.src="/images/common/nowprinting_<% if(i == 0 || i == 7) { %>m<% } else { %>s<% } %>.jpg"' width="<% if(i == 0 || i == 7) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 7) { %>247<% } else { %>111<% } %>"></a></div>
+			<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
+			<p><%= dec_list[i].detail %></p>
+			<table class="table_<% if(i == 0 || i == 7) { %>b<% } else { %>s<% } %>">
+				<tr>
+				<td>
+					<ul class="article_ul<% if(i == 0 || i == 7) { %>_b<% } %>" id="dec-supporters-<%= dec_list[i].id %>">
+					</ul>
+				</td>
+				<td class="join<% if(i == 0 || i == 7) { %>_b<% } %>"><%= dec_list[i].supporter_num %><span>人<br>参加</span></td>
+				</tr>
+			</table>
+			<div class="to_detail<% if(i == 0 || i == 7) { %>b<% } %> padt5 padl10">
+				<a href="/dec/<%= dec_list[i].id %>"><img src="/images/top_to_detail<% if(i == 0 || i == 7) { %>_b<% } %>.gif" alt="詳細"></a>
+			</div>
+			</article>
+
+
+
+			<script type="text/javascript">
+			<!--
+			last_id2 = <%= dec_list[i].id %>;
+			-->
+			</script>	
+
+				<% } %>
+
+
+
+
+<
+
+
+
+
+
+
+
+
+
+	</div>
+
+<script src="/js/jquery.vgrid.0.1.8.min.js" type="text/javascript" charset="UTF-8"></script>
+</section>
+
+
+
+<div class="left-content">
+		<h2 class="title"><h2>
 			<ul id="ul-events">
 			<!-- $()ready() -->
 			</ul>
 			<ul>
-				<li>
+				<li> 
 					<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
 					<a id="view-more-events"><div class="btn">もっと見る</div></a>
-					<div id="last_id" style="display:none;"><!-- $()ready() --></div>
+					<div id="last_id" style="display:none;"><!--$()ready() --></div>
 				</li>
 			</ul>
 		</div>
-
-	<div class="right-content">
-		<h2 class="title-sub">お知らせ</h2>
-		<ul>
-			<li class="btn-sub">4/25 オープンβ公開</li>
-		</ul>
-		<h2 class="title-sub">TWITTER</h2>
-		<ul>
-			<li style="margin:10px;text-align:center;">
-<a href="https://twitter.com/syaberihouse" class="twitter-follow-button" data-show-count="false" data-lang="ja">@syaberihouseをフォロー</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-            </li>
-            <li>
-<script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js"></script>
-<script>
-new TWTR.Widget({
-  version: 2,
-  type: 'search',
-  search: 'シャベリハウス',
-  interval: 30000,
-  title: '趣味や興味でつながるチャットルーム',
-  subject: 'シャベリハウス',
-  width: 350,
-  height: 300,
-  theme: {
-    shell: {
-      background: '#00A0C6',
-      color: '#ffffff'
-    },
-    tweets: {
-      background: '#ffffff',
-      color: '#444444',
-      links: '#1985b5'
-    }
-  },
-  features: {
-    scrollbar: false,
-    loop: true,
-    live: true,
-    behavior: 'default'
-  }
-}).render().start();
-</script>
-			</li>
-		</ul>
-		<h2 class="title-sub">楽しみかた</h2>
-		<ul>
-			<li><img src="/img/howto.png"></li>
-		</ul>
-		<!-- 
-		<h2 class="title-sub">FACEBOOK</h2>
-		<ul>
-			<li>
-<iframe src="//www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FSyaberi-House%2F374958809181094&amp;width=350&amp;height=590&amp;colorscheme=light&amp;show_faces=true&amp;border_color&amp;stream=true&amp;header=true&amp;pageId=374958809181094" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:350px; height:590px;" allowTransparency="true"></iframe>
-			</li>
-		</ul>
-		 -->
-		<!--div class="AD"><img src="/img/AD_350x240.gif"></div-->
-	</div>
-
 	<div class="clear"></div>
+
+
+
+<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
+
+<div id="last_id" style="display:none;"><!-- $()ready() --></div>					
+
+<section id="roadmore">
+	<div>SHOW MORE CONTENTS</div>
+</section>
+
+
+
+
+
+
+
+<script type="text/javascript">
+<!--
+$('#roadmore').click(function() {
+	$('#grid-content').appendTo('aaaaa');
+});
+
+
+
+
+-->
+</script>
+
+
+
+
+
+
+
+
+<footer>
+<p><img src="/images/footer_copy.gif" width="140" height="11" alt="2012 syaberi-house.com"></p>
+<ul>
+	<li><a href="#"><img src="/images/footer_top.gif" width="93" height="11" alt="トップページ"></a></li>
+	<li><a href="#"><img src="/images/footer_makeroom.gif" width="94" height="11" alt="部屋をつくる"></a></li>
+	<li><a href="#"><img src="/images/footer_serchroom.gif" width="82" height="11" alt="部屋を探す"></a></li>
+	<li><a href="#"><img src="/images/footer_mypage.gif" width="82" height="11" alt="マイページ"></a></li>
+</ul>
+</footer>
+
+
+
+
+
+
+<%- partial('footer-script') %>
+</body>
+</html>
+
+

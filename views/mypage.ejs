@@ -1,3 +1,265 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+<title>マイページ｜シャベリハウス</title>
+<meta charset="UTF-8">
+<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
+<meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
+<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
+<script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
+<link rel="stylesheet" href="/css/common.css" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div id="wrapper">
+
+<%- partial('header') %>
+
+
+<div id="contents_wrapp">
+	<div id="contents_wrapp_inside">
+	<section id="section_left">
+		<div id="left_column">
+			<div id="make_community"><a href="/create-dec"><img src="/images/common/make_community.jpg" width="195" height="72" alt="コミュニティを作る"></a></div>
+			<div id="community_list" class="clearfix">
+				<h3 id="community_list_h3"><img src="/images/common/community_list.gif" alt="コミュニティリスト"></h3>
+				<a href="javascript:void(0)" id="hakunetsu" class="community_tab active_thing top1px">白熱中！</a>
+				<a href="javascript:void(0)" id="joinning" class="community_tab">参加中の部屋</a>
+			</div>
+<!--左カラム　コミュニティリスト　白熱中！-->
+			<div id="hakunetsu_area" class="shownot">
+			
+	<% for (var i in dec_list) { %>
+		
+		<article class="community_room">
+			<a href="/dec/<%= dec_list[i].id %>"><h4><%= dec_list[i].title %></h4></a>
+			<table class="table_s">
+				<tr>
+				<td>
+					<ul class="article_ul">
+						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+					</ul>
+				</td>
+				<td class="join"><%= dec_list[i].supporter_num %><span>人<br>参加</span></td>
+				</tr>
+			</table>
+		</article>
+		<!--article class="community_room bg_g"-->
+		
+		
+		
+	<% } %>
+			</div><!--/hakunetsu-->
+<!--/左カラム　コミュニティリスト　白熱中！-->
+<!--左カラム　コミュニティリスト　参加中の部屋-->
+			<div id="joinning_area" class="shownot none">
+			<article class="community_room">
+				<h4>iOS5.1の部屋</h4>
+				<table class="table_s">
+					<tr>
+					<td>
+						<ul class="article_ul">
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						</ul>
+					</td>
+					<td class="join">120<span>人<br>参加</span></td>
+					</tr>
+				</table>
+			</article>
+			<article class="community_room bg_g">
+				<h4>iOS5.1の部屋</h4>
+				<table class="table_s">
+					<tr>
+					<td>
+						<ul class="article_ul">
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						</ul>
+					</td>
+					<td class="join">120<span>人<br>参加</span></td>
+					</tr>
+				</table>
+			</article>
+			</div><!--/joinning-->
+<!--/左カラム　コミュニティリスト　参加中の部屋-->
+		</div><!--/contents_wrapp_inside-->
+	</section>
+	<section id="section_center">
+		<div id="center_column">
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd><img src="/images/community_thumb.jpg"></dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd><iframe width="399" height="203" src="http://www.youtube.com/embed/_RXs2y8AtBQ?wmode=transparent" frameborder="0" style="z-index:1;" allowfullscreen></iframe></dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<dl class="timeline_dl">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline">
+				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
+				<dl class="timeline_dl">
+					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
+					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
+					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
+				</dl>
+			</article>
+			<article class="timeline txtc padt15">
+				<a href="#"><img src="/images/common/show_morecontents.jpg" width="428" height="31" alt="SHOW MORE CONTENTS"></a>
+			</article>
+		</div><!--/center_column-->
+	</section>
+	<section id="section_right">
+		<div class="right_column">
+			<h3 id="community_recommend">オススメのコミュニティ</h3>
+			<article class="community_room">
+				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
+				<h4>iOS5.1の部屋</h4>
+				<p>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</p>
+				<table class="table_s">
+					<tr>
+					<td>
+						<ul class="article_ul">
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						</ul>
+					</td>
+					<td class="join">120<span>人<br>参加</span></td>
+					</tr>
+				</table>
+			</article>
+			<article class="community_room bg_g">
+				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
+				<h4>iOS5.1の部屋</h4>
+				<p>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</p>
+				<table class="table_s">
+					<tr>
+					<td>
+						<ul class="article_ul">
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+						</ul>
+					</td>
+					<td class="join">120<span>人<br>参加</span></td>
+					</tr>
+				</table>
+			</article>
+		</div><!--/.right_column-->
+		<div class="right_column magt20">
+			<h3 id="community_joined">友達の参加しているコミュニティ</h3>
+			<article class="community_room">
+				<table class="friends_joind">
+					<tr>
+					<td><a href="#"><img src="/images/thumb_s2.jpg" width="40" height="40"></a></td>
+					<td>山口　ゆうすけ</td>
+					</tr>
+				</table>
+				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
+				<h4>iOS5.1の部屋</h4>
+			</article>
+			<article class="community_room bg_g">
+				<table class="friends_joind">
+					<tr>
+					<td><a href="#"><img src="/images/thumb_s2.jpg" width="40" height="40"></a></td>
+					<td>山口　ゆうすけ</td>
+					</tr>
+				</table>
+				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
+				<h4>iOS5.1の部屋</h4>
+			</article>
+		</div><!--/.right_column-->
+	</section>
+	</div><!--/#contents_wrapp_inside-->
+</div><!--/#contents_wrapp-->
+
 
 	<div class="main-img"></div>
 
@@ -40,3 +302,9 @@ $().ready(function(){
 });
 -->
 </script>
+
+<%- partial('footer') %>
+<%- partial('footer-script') %>
+</div><!--/#wrapper-->
+</body>
+</html>

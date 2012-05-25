@@ -23,11 +23,13 @@ $('#view-more-events').click(function() {
   $('#view-more-loader').show();
   
   var last_id = $('#last_id').text();
-  
+
+alert(last_id);  
+
   $.ajax({
     type: "GET",
     url: "/get-events",
-    data: {last_id: last_id, limit: 5, dec_status: 2},
+    data: {last_id: last_id2, limit: 5, dec_status: 2},
     success: function(data){
     	console.log(data);
 	  if(data.text=="no result"){
@@ -63,6 +65,7 @@ $('#view-more-events').click(function() {
  * @param {object} event_data	イベントデータ
  */
 function makeEventListParts(event_data) {
+
     var write_data = '';
     write_data += '<li id="event-first-li-area-'+event_data.id+'">';
     write_data += '<div class="ticket-wrapper" id="ticket-wrapper-'+event_data.id+'">';
@@ -120,6 +123,9 @@ function makeEventListParts(event_data) {
  * @param {object} event_data	イベントデータ
  */
 function makeSuccessListParts(event_data) {
+
+
+
     var write_data = '';
     write_data += '<li>';
     write_data += '<div class="ticket-wrapper">';
@@ -190,8 +196,11 @@ function makeCountDownParts(deadline,id){
 }
 
 function makeMemberParts(event_id, target_num, supporter_num){
-	var write_data = '<span class="member-count" id="member-counter-'+event_id+'">';
-	write_data += supporter_num+'人参加</span>';
+
+
+	var write_data = '';
+	//var write_data = '<span class="member-count" id="member-counter-'+event_id+'">';
+	//write_data += supporter_num+'人参加</span>';
 	/*
 	 * 参加者最大値の削除 4.11 km
 	if (target_num === supporter_num) {
@@ -226,7 +235,15 @@ function makeParticipantParts(id){
 //	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'">\';';
 	write_data += 'var img_id = '+id+';';
 	write_data += 'img_id += \'__\'+data.supporter_data[j].id;';
-	write_data += 'img_tag += \'<img src="\'+data.supporter_data[j].image+\'" id="sup-icon-\'+img_id+\'">\';';
+	
+	if(location.pathname == "/"){
+		write_data += 'img_tag += \'<li><img src="\'+data.supporter_data[j].image+\'" id="sup-icon-\'+img_id+\'" width="40"></li>\';';
+	}else if(location.pathname.search(/dec/) == 1){
+		write_data += 'img_tag += \'<div class="joined_thumbs"><img src="\'+data.supporter_data[j].image+\'" id="sup-icon-\'+img_id+\'" width="40"></div>\';';
+	}else{
+		write_data += 'img_tag += \'<li><img src="\'+data.supporter_data[j].image+\'" id="sup-icon-\'+img_id+\'" width="22"></li>\';';
+	}
+	
 	write_data += '}';
 	write_data += '$("#dec-supporters-'+id+'").append(img_tag);';
 	write_data += '},';
@@ -305,6 +322,9 @@ function makeCheckStatusJoinParts(event_id, target_num, supporter_num) {
 
 
 $('a[name="join-button-right"], a[name="join-button-bottom"]').live('click', function() {
+
+
+
   var obj = $(this);
   var event_obj = obj.find('li');
   var event_id  = event_obj.attr('id');
@@ -319,6 +339,9 @@ $('a[name="join-button-right"], a[name="join-button-bottom"]').live('click', fun
     data: {id: event_id},
     success: function(data){
       if (data.join_flg === 'ok') {
+      
+      
+      
         // 参加した
 //        $('#join-button-right-'+event_id).parent().parent().html('<a href="/ch/'+event_id+'"><div class="btn2">会場</div></a><a href="/dec/'+event_id+'"><div class="btn">詳細</div></a>');
         $('#join-button-right-'+event_id).hide();
@@ -448,12 +471,14 @@ function __isLogin() {
     url: '/get-is-login',
     data: {},
     success: function(data){
-      if (data.login_flg) {
+      if (data.login_flg) {	//ログイン済
+      	//alert("ログイン済");
         $('#auth-login-twitter').hide();
         $('#auth-logout').show();
         $('#mypage-href').show();
-        $('#auth-icon-img img').attr('src', data.user_image);
-        $('#auth-icon-img').show();
+        $('#header_right_table #header_mypage_thumb_img').attr('src', data.user_image);
+        document.getElementById('header_mypage_name_h2').innerHTML = data.user_name;
+        $('#header_right_table').show();
       }
     },
     error: function(data){
