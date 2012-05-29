@@ -5,7 +5,6 @@
  */
 
 var express = require('express') // フレームワーク(cakePHP 的な感じ)
-//  , RedisStore = require('connect-redis')
   , stylus  = require('stylus')  // CSSフレームワーク
   , ejs     = require('ejs')     // テンプレートエンジン
   , nib     = require('nib')     // coffeescript ライブラリ？よく分からん
@@ -397,7 +396,7 @@ var httpProxyServer = httpProxy.createServer(
 //    }
 );
 //httpProxyServer.listen(80);
-//httpProxyServer.listen(8125);
+httpProxyServer.listen(8125);
 
 
 /**
@@ -419,12 +418,7 @@ app.configure(function () {
   // basic認証
 //  app.use(express.basicAuth(conf.basicAuth.user, conf.basicAuth.password));
 
-
-
-
-
   app.use(express.cookieParser()); // クッキー操作
-//  app.use(express.session({secret: 'team0110',store: new RedisStore(),cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }}));
   app.use(express.session({ secret: 'team0110' }));
   app.use(express.bodyParser()); // POSTメソッド操作
 //  app.use(app.router); // app.get の優先順位を決めれる
@@ -539,7 +533,8 @@ app.get('/auth/complete', function(req, res) {
       //if (req.headers.referer) {
       //  res.redirect(req.headers.referer);
       //} else {
-        res.redirect('/mypage');
+      //res.redirect('/mypage');
+        res.redirect('/');
       //}
       return;
 
@@ -589,8 +584,8 @@ app.get('/', function (req, res) {
 			var dec_list = [];
 			var max_dec_num = results.length;
 			for (var i = 0; i < max_dec_num; i++) {
-				results[i].title = results[i].title.slice(0,13);
-				results[i].detail = results[i].detail.slice(0,36);
+			//	results[i].title = results[i].title.slice(0,13);
+			//	results[i].detail = results[i].detail.slice(0,36);
 			//	logger.info(results);
 				dec_list[i] = results[i];
 			};
@@ -684,30 +679,58 @@ app.get('/oauth/facebook', function (req, res) {
  */
 app.post('/oauth/facebook-login', function (req, res) {
 
+  var me_id = req.body.me_id
+    , me_email = req.body.me_email
+    , me_name = req.body.me_name
+    , me_image = req.body.me_image
+    , me_bio = req.body.me_bio
+    , me_sex = req.body.me_sex
+    , friend_list = req.body.friend_list
+    , accessToken = req.body.accessToken
+    , oauth_service_name = 'facebook'
+    ;
+
+    me_id = (me_id) ? me_id : '';
+    me_email = (me_email) ? me_email : '';
+    me_name = (me_name) ? me_name : '';
+    me_image = (me_image) ? me_image : '';
+    me_bio = (me_bio) ? me_bio : '';
+    me_sex = (me_sex) ? me_sex : 0;
+    friend_list = (friend_list) ? friend_list : '';
+
   //logger.debug(req.body.me_name);
 
   // DB に値があるかチェック
   client.query(
-    'SELECT id FROM '+TABLE_USERS+' WHERE oauth_service_id = "'+req.body.me_id+'" AND oauth_service = "facebook"',
+    'SELECT id FROM '+TABLE_USERS+
+    ' WHERE oauth_service_id = ? AND oauth_service = ?',
+    [me_id,oauth_service_name],
     function(err, results, fields) {
       if (err) {throw err;}
-      //logger.debug('----- oauth-sql:results ');logger.debug(results);
+      //logger.debug('----- oauth-sql:results ');
       if (!results[0]) {
         //logger.debug('----- oauth-sql-mode:insert ');
         // DB に無し。INSERT
         client.query(
-	      'INSERT INTO '+TABLE_USERS+' (created_at, oauth_service_id, mail_addr, name, image, description, sex, oauth_service)'+
-	      ' VALUES (NOW(),"'+req.body.me_id+'","'+req.body.me_email+'","'+req.body.me_name+'","'+req.body.me_image+'","'+req.body.me_bio+'",'+req.body.me_sex+',"facebook")',
-		function(err) {
-			if (err) {throw err;}
-		}
+          'INSERT INTO '+TABLE_USERS+' ('+
+          ' created_at, name, oauth_service, oauth_service_id,'+
+          ' sex, image, description, mail_addr, friend_list'+
+          ') VALUES ( NOW() , ? , ? , ? , ? , ? , ? , ? , ? )',
+          [me_name, oauth_service_name, me_id, me_sex, me_image, me_bio, me_email, friend_list],
+          function(err) {
+             if (err) {throw err;}
+          }
         );
       } else {
         //logger.debug('----- oauth-sql-mode:update ');
-        // DB に有り。UPDATE
+	//logger.debug(results);
+        //logger.info(req.body.friend_list);
+	// DB に有り。UPDATE
         client.query(
           'UPDATE '+TABLE_USERS+
-          ' SET updated_at = NOW(), name = "'+req.body.me_name+'", image = "'+req.body.me_image+'", description = "'+req.body.me_bio+'" WHERE oauth_service_id = "'+req.body.me_id+'" AND oauth_service = "facebook"',
+          ' SET updated_at = NOW(), name = ?, image = ?, description = ?, friend_list = ?'+
+	  ' WHERE oauth_service_id = ? AND oauth_service = ?',
+	  [me_name,me_image,me_bio,friend_list,me_id,oauth_service_name],
           function(err) {
             if (err) {throw err;}
           }
@@ -715,6 +738,7 @@ app.post('/oauth/facebook-login', function (req, res) {
       }
     }
   );
+
 	// セッションの配列を確認
 	if(req.session && req.session.auth){
 		//sessionのチェック
@@ -724,21 +748,97 @@ app.post('/oauth/facebook-login', function (req, res) {
 	}
 	
 	// セッションにログイン状態を格納
-	req.session.auth.oauth_service_id = req.body.me_id; // facebook が管理しているユニークなID
-	req.session.auth.user_name = req.body.me_name;
-	req.session.auth.user_image = req.body.me_image;
+	req.session.auth.oauth_service_id = me_id; // facebook が管理しているユニークなID
+	req.session.auth.user_name = me_name;
+	req.session.auth.user_image = me_image;
+	req.session.auth.accessToken = accessToken;
 	req.session.auth.service = 'facebook';
 
 
-	res.render('facebook-login', {
-	'meta_title': 'facebook｜'
-	});
-	return;
+	  // user_id, メルアド情報を取得(あれば)
+	  client.query(
+	    'SELECT id, mail_addr'+
+	    ' FROM '+TABLE_USERS+
+	    ' WHERE oauth_service_id = ? AND oauth_service = "facebook"',
+	    [me_id],
+	    function(err, results) {
+	      if (err) {throw err;}
+	      if (results[0]) {
+		//logger.debug("user_id=="+results[0].id);
+	        req.session.auth.user_id = results[0].id;
+
+	        if (results[0].mail_addr) {
+		//logger.debug("mail=="+results[0].mail_addr);
+	          req.session.auth.mail_addr = results[0].mail_addr;
+	        } else {
+	          // メルアドを登録するフォームへ
+	          res.redirect('/firstset');
+	          return;
+	        }
+	      }
+
+		res.render('facebook-login', {
+		'meta_title': 'facebook｜'
+		});
+		return;
+
+	    }
+	  );
 
 });
 
+/**
+ * --------------------------------------------------------
+ * GET: facebook 友達取得
+ * --------------------------------------------------------
+ */
+app.get('/facebook-get-friends', function (req, res) {
 
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+		//logger.debug("false1");
+    res.json({login_flg: false}, 200);
+  } else {
+    client.query(
+      'SELECT id, friend_list FROM '+TABLE_USERS+' WHERE id = ? AND oauth_service = "facebook"',
+      [req.session.auth.user_id],
+         function(err, results, fields) {
+		//logger.debug("userid=="+req.session.auth.user_id);
+		//logger.debug("res=="+results[0]);
+	      if (err) {throw err;}
+	      if (results[0]) {
+		//logger.debug(results[0].friend_list);
+		res.json(results[0].friend_list, 200);
 
+	      } else {
+		//logger.debug("false2");
+	        res.json({login_flg: false}, 200);
+	        return;
+	      }
+         }
+     );
+  }
+  return;
+});
+
+// ----------------------------------------------
+// (facebook oauth)
+// ----------------------------------------------
+
+app.get('/get-session', function (req, res) {
+
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+//    logger.debug("false1");
+    res.json({login_flg: false}, 200);
+  } else {
+//    logger.debug(req.session.auth);
+    res.json(req.session.auth, 200);
+  }
+  return;
+});
 
 
 
@@ -1034,7 +1134,8 @@ app.get('/mypage', function (req, res) {
 
   if (!__isAuthLogin(req)) {
     // ログインしていないので、リダイレクト
-    res.redirect('/auth/twitter');
+    //res.redirect('/auth/twitter');
+    res.redirect('/');
     return;
   }
 
@@ -1223,11 +1324,24 @@ app.get('/my-setting', function (req, res) {
 // --------------------------------------------------------
 // コミュニティ検索のフォーム
 // --------------------------------------------------------
-app.post('/search', function (req, res) {
+app.get('/search', function (req, res) {
+
+
+
+	var next_num = 0;	if(req.query.next_num){ next_num = req.query.next_num };
+	var ajax_flag=false;    if(req.query.ajax_flag){ ajax_flag = true };
+
+	//logger.info("req.query.search_str = "+req.query.search_str+"      next_num = "+next_num+"       ajax_flag = "+ajax_flag);
+	
 
 	var onetime_token = '';
 	if (req.session && req.session.auth) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
+	}
+
+	var where="";
+	if(req.query.search_str&&req.query.search_str!="undefined"){
+		where=' WHERE d.title like "%'+req.query.search_str+'%" OR d.detail like "%'+req.query.search_str+'%"';
 	}
 
 	client.query(
@@ -1239,13 +1353,13 @@ app.post('/search', function (req, res) {
 		' FROM '+TABLE_DECLARATIONS+' AS d'+
 		' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
 		' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-		' WHERE d.title like "%'+req.body.search_str+'%" OR d.detail like "%'+req.body.search_str+'%"'+
+		where+
 		' GROUP BY d.id'+
 		' ORDER BY d.created_at DESC'+
-		' LIMIT 10',
+		' LIMIT '+next_num+',11',
 //		[FLG_SUPPORTER_WANT_STAT],
 		function(err, results, fields) {
-		logger.info(results);
+		//logger.info(results);
 			if (err) {throw err;}
 			if (results.length === 0) {
 				res.render('search', {
@@ -1255,24 +1369,42 @@ app.post('/search', function (req, res) {
 			});
 			return;
 		} else {
-				
+			
+
+	
 			var dec_list = [];
 			var max_dec_num = results.length;
 			for (var i = 0; i < max_dec_num; i++) {
-				results[i].title = results[i].title.slice(0,13);
-				results[i].detail = results[i].detail.slice(0,36);
+				//results[i].title = results[i].title.slice(0,13);
+				//results[i].detail = results[i].detail.slice(0,36);
+				results[0].search_str = req.query.search_str;
 				dec_list[i] = results[i];
 			};
-			res.render('search', {'locals':
-				{'title': 'SHABERI-HOUSE index'
-					, 'dec_list': dec_list
-					, 'onetime_token': onetime_token
-				}
-			});
-			return;
+			
+			
+			
+			if(ajax_flag == false){
+
+				//デフォルト
+				res.render('search', {'locals':
+					{'title': 'SHABERI-HOUSE index'
+						, 'dec_list': dec_list
+						, 'onetime_token': onetime_token
+					}
+				});
+				return;
+			}else{
+				//ajaxでSHOW MORE CONTENTSを押したとき
+				
+				res.json({ event_data: dec_list}, 200);
+				return;
+				
+			}
+			
 		}
 	});
 });
+
 
 
 /**
@@ -1281,7 +1413,7 @@ app.post('/search', function (req, res) {
  * --------------------------------------------------------
  */
 app.get('/get-supporters', function (req, res) {
-
+logger.info(res);
   // リクエストチェック
   // id
   try {
@@ -1318,10 +1450,11 @@ app.get('/get-supporters', function (req, res) {
 
         var max_sup_num = results.length;
         for (var i = 0; i < max_sup_num; i++) {
-          sup_list[i] = results[i];
-          // xss 対策
-          sup_list[i].name = sanitize(sup_list[i].name).xss();
-          sup_list[i].image = sanitize(sup_list[i].image).xss();
+		sup_list[i] = results[i];
+		sup_list[i].c_id=req.query.id;
+		// xss 対策
+		sup_list[i].name = sanitize(sup_list[i].name).xss();
+		sup_list[i].image = sanitize(sup_list[i].image).xss();
         };
         res.json({supporter_data: sup_list}, 200);
         return;
@@ -1487,7 +1620,7 @@ app.get('/get-events', function (req, res) {
 
   // 条件に合うリストを取得
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.user_id'+
+    'SELECT d.id, d.created_at, d.title, d.user_id , d.detail'+
     '  , d.target_num, d.deadline, d.status, d.image'+
     '  , COUNT( spt.declaration_id ) AS supporter_num'+
     '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -1603,7 +1736,8 @@ app.get('/ch/:id', function (req, res) {
     user_image = req.session.auth.user_image;
   } else {
     // ログインしていない
-    res.redirect('/auth/twitter');
+    //res.redirect('/auth/twitter');
+    res.redirect('/');
     return;
   }
 
@@ -1868,6 +2002,8 @@ app.post('/create-event', function (req, res) {
     return;
   }
 
+logger.error(req.files);
+
   // リクエストチェック
   logger.debug('----- app.post/create-event: ');logger.info(req.body);
   var title = ''
@@ -1893,7 +2029,47 @@ app.post('/create-event', function (req, res) {
     res.json({text: '不正なリクエストです'}, 400);
     return;
   }
-
+  
+  if(req.files){
+  
+  logger.debug("11--"+req.files.dec_image.path);
+  logger.debug("22--"+req.files.path);
+  
+  logger.debug('field--files--------------');
+  
+    var form = new formidable.IncomingForm()
+    , files = []
+    , fields = []
+    ;
+  
+  fs.rename(req.files.dec_image.path, 'test.jpg');
+  
+  /*
+  form
+    .on('field', function(field, value) {
+      logger.debug('field----------------');logger.debug(field, value);
+      fields.push([field, value]);
+    })
+    .on('file', function(field, file) {
+      logger.debug('file-----------------');logger.debug(field, file);
+      fs.rename(file.path, file.path+'.jpg');
+      files.push([field, file]);
+    })
+    .on('end', function() {
+      logger.debug('---> upload done');
+      logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
+//      var tmp_arr = files[0];
+//      logger.debug(tmp_arr[1].path);
+      var tmp_path = files[0][1].path.split('/');
+      res.send({'status': 'File was uploaded successfuly!',
+        'filename': '/uploads/'+tmp_path[8]+'.jpg'
+      });
+      //res.end('received files:\n\n '+util.inspect(files));
+    });  
+    */
+  }
+  
+  
   title = req.body.title;
   //description = req.body.description;
   detail      = req.body.detail;
@@ -2544,6 +2720,49 @@ app.post('/upload', function (req, res) {
     , files = []
     , fields = []
     ;
+
+
+//////////////////////////////////////////////////////
+logger.debug('----- app.post/upload: ');
+var  dec_image2 = '';
+
+logger.info(req.body);
+logger.info(req.files);
+
+	dec_image2   = req.body.dec_image2;
+
+	//ファイル保存場所
+	var uploadDir=__dirname+'/public/uploads';
+
+if(req.files){
+
+	//logger.debug("00--"+uploadDir);
+	//logger.debug("11--"+req.files.dec_image2.path);
+
+	var form = new formidable.IncomingForm()
+	, files = []
+	, fields = []
+	;
+
+	//logger.debug("22--"+req.files.dec_image2.name);
+	//logger.debug("33--"+files);
+
+	//ファイル名をtmpのままにする
+	var uploadDir_two =req.files.dec_image2.path.split('/');
+	//logger.debug("44--"+uploadDir_two[2]);
+	//logger.debug("55--"+req.files.dec_image2.path, uploadDir + uploadDir_two[2] + '.jpg');
+	var filename_Perse = uploadDir + '/' +uploadDir_two[2] + '.jpg';
+	var filename_Return = uploadDir_two[2] + '.jpg';
+
+	fs.rename(req.files.dec_image2.path, filename_Perse);
+
+//logger.debug(filename_Perse);
+//logger.debug(filename_Return);
+
+	res.json({filename:filename_Return},200)
+}
+//////////////////////////////////////////////////////
+
 
   form.uploadDir = __dirname+'/public/uploads';
 

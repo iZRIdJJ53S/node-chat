@@ -7,7 +7,7 @@
 			<table id="header_center_table">
 				<tr>
 					<td>
-						<a href="javascript:void(0);" id="fukidashi">5</a>
+						<a href="javascript:void(0);" id="fukidashi" style="display:none;">5</a>
 						<div id="fukidashi_notification_wrapp">
 							<div id="oshirase_top"></div>
 							<div id="oshirase_midl">
@@ -19,17 +19,17 @@
 						</div><!--/fukidashi_notification_wrapp-->
 					</td>
 					<td>
-						<form id="serch_box" method="post" action="/search">
+						<form id="serch_box" method="get" action="/search">
 							<input type="text" id="input_area" value="コミュニティを探す" name="search_str" onfocus="if(this.value=='コミュニティを探す'){this.value='';}" onblur="if(this.value==''){this.value='コミュニティを探す';}" />
 							<input type="image" name="submit" src="/images/common/serchbox_submit_s.gif" id="serch_submit" />
 						</form>
 						<div id="tag_word">
 							<a href="javascript:void(0);"><img src="/images/common/tag.png" width="71" height="26" alt="TAG" id="header_tag"></a>
-							<a href="/search">Apple</a>
-							<a href="/search">ライオン</a>
-							<a href="/search">iPad</a>
-							<a href="/search">iOS</a>
-							<a href="/search">iPhone</a>
+							<a href="/search?search_str=iphone">iphone</a>
+							<a href="/search?search_str=test">test</a>
+							<a href="/search?search_str=foo">foo</a>
+							<a href="/search?search_str=bar">bar</a>
+							<a href="/search?search_str=MOCO'S">MOCO'S</a>
 						</div>
 						<div id="tag_notification_wrapp">
 							<div class="pad10 fontb bg_g">注目タグ</div>
@@ -43,15 +43,22 @@
 				</tr>
 			</table>
 		</div><!--/header_center-->
-		<div id="header_right">
-		
-		
-		<!--ul>
-			<li id="auth-login-twitter"><a href="/auth/twitter">新規登録・ログイン</a></li>
-			<li id="mypage-href" style="display:none;"><a href="/mypage">マイページ</a></li>
-			<li id="auth-icon-img" style="display:none;" class="icon"><img src=""></li>
-		</ul-->
-		
+
+
+
+		<div id="header_register" style="display:none;">
+			<ul>
+				<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/header_login_facebook.gif" width="80" height="26" alt="facebookログイン"></a></li>
+				<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/header_login_twetter.gif" width="80" height="26" alt="twetterログイン"></a></li>
+			</ul>
+
+			<div id="fb-root"></div>
+		</div>
+
+
+
+
+		<div id="header_right" style="display:none;">
 		
 			<table id="header_right_table">
 				<tr>
@@ -66,6 +73,82 @@
 				<a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a>
 				<a href="/logout" class="mypage_nortification_txt"><div>ログアウト</div></a>
 			</div><!--/mypage_notification_wrapp-->
+
 		</div><!--/header_right-->
 	</div>
+
+
+
+
+<!-- facebook oauth -->
+<script>
+
+ 
+window.fbAsyncInit = function() {
+
+	FB.init({ appId: '351823408214501',
+		status: true, 
+		cookie: true,
+		xfbml: true,
+		oauth: true
+	});
+
+
+	
+	function updateButton(response) {
+		var loginButton_facebook = document.getElementById('login_button_facebook');	
+		//しゃべりハウスのfacebookログイン
+		if ((response.authResponse) && (syaberi_login_flag == true)) {
+
+			//alert("ログイン済/"+syaberi_login_flag);
+			$('#fukidashi').css('display', 'block');
+			$('#header_register').css('display', 'none');
+			$('#header_right').css('display', 'block');
+			var logoutButton = document.getElementById('logout_button');
+			//しゃべりハウスのログアウト
+			logout_button.onclick = function() {
+				location.href = "/logout"
+			};
+
+
+		}else{
+
+			//alert("ログイン前/"+syaberi_login_flag);
+			$('#fukidashi').css('display', 'none');
+			$('#header_register').css('display', 'block');
+			$('#header_right').css('display', 'none');
+
+			loginButton_facebook.onclick = function() {
+				FB.login(function(response) {
+				    if (response.authResponse) {
+				        FB.api('/me', function(response) {
+				            userInfo.innerHTML = 
+				              '<img src="https://graph.facebook.com/' 
+				              + response.id + '/picture" style="margin-right:5px" />'
+				              + response.name;
+				        });
+				    } else {
+				        //user cancelled login or did not grant authorization
+				    }
+				}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
+			}
+		}
+	}
+
+	FB.getLoginStatus(updateButton);
+	FB.Event.subscribe('auth.statusChange', updateButton);
+};
+
+(function() {
+  var e = document.createElement('script'); e.async = true;
+  e.src = document.location.protocol + '//connect.facebook.net/ja_JP/all.js';
+  document.getElementById('fb-root').appendChild(e);
+}());
+
+</script>
+<!-- /facebook oauth -->
+
+
+
+
 </header>

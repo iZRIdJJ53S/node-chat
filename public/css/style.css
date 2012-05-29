@@ -834,11 +834,19 @@ section#make_community{
 	height:30px;
 	opacity: 0;
 	z-index:999999999;
+	display:block;
+	cursor: pointer;
+}
+#uploadings:hover{
+	filter: alpha(opacity=80);
+	opacity: 0.8;
 }
 
-
-
-
+/*CH submit*/
+#submit_1:hover{
+	filter: alpha(opacity=80);
+	opacity: 0.8;
+}
 
 /*MAKE ROOM*/
 section.section_makeroome{
@@ -869,6 +877,16 @@ section.section_makeroome2{
 		position:relative;
 	}
 		div.joined_thumbs{
+			width:44px;
+			height:44px;
+			border:solid 1px #c2c2c2;
+			padding:4px 1px 0px 2px;
+			float:left;
+			display:block;
+			margin-top:-1px;
+			margin-left:-1px;
+		}
+		li.joined_thumbs{
 			width:44px;
 			height:44px;
 			border:solid 1px #c2c2c2;
@@ -958,7 +976,7 @@ section#make_community_invite{
 		background:#C9E78F;
 		border-left:solid 1px #c2c2c2;
 		border-right:solid 1px #c2c2c2;
-		border-bottom:solid 1px #c2c2c2;
+		/*border-bottom:solid 1px #c2c2c2;*/
 	}
 		#makecommunity_invite_tab #tab_ul{
 			width:691px;
@@ -1036,6 +1054,11 @@ section#make_community_invite{
 				float:left;
 				color:#333333;
 			}
+
+#inv_submit:hover{
+	filter: alpha(opacity=80);
+	opacity: 0.8;
+}
 
 /*SEARCH COMMUNITY*/
 section#section_searchcommu{
@@ -1164,6 +1187,14 @@ section#section_searchcommu{
 		a.community_tab:hover{
 			background:url('/images/commutab_on.gif') no-repeat;
 		}
+
+
+
+#roadmore #view-more-no-entry{
+	font-size:16px;
+	color:#fff;
+	padding:70px 100px 100px 100px;
+}
 
 
 

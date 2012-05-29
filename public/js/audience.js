@@ -44,6 +44,8 @@ var audience = {
 
       var current_flg = false;
       var max_loop = user.audience_members.length;
+	//チャットルームに参加人数表示
+	$('#peaple').text(max_loop);
       for (var i = 0; i < max_loop; i++) {
         //console.log('audi-sessionid---'+user.audience_members[i].session_id);
         if (user.currentUserId == user.audience_members[i].session_id) {

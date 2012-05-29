@@ -16,45 +16,37 @@
  * 
  */
 $('#view-more-events').click(function() {
+	insert_contents();
+});
 
-  var obj = $(this);
+
+function insert_contents(){
   
   $('#view-more-events').hide();
   $('#view-more-loader').show();
   
-  var last_id = $('#last_id').text();
-
-alert(last_id);  
 
   $.ajax({
     type: "GET",
     url: "/get-events",
-    data: {last_id: last_id2, limit: 5, dec_status: 2},
+    data: {last_id: last_id, limit:10 , dec_status: 2},
     success: function(data){
-    	console.log(data);
-	  if(data.text=="no result"){
-	  	  $('#view-more-loader').hide();
-	      $('#view-more-events').hide();
-	      $('#last_id').html(last_id);
-	      $('#view-more-events').hide();
-	  }else{
-	      var write_data = '';
-	      for (var j = 0; j < data.event_data.length; j++){
-	        var event_data = data.event_data[j];
-	        write_data += makeEventListParts(event_data);
-	        last_id = data.event_data[j].id;
-	      }
-	      $('#ul-events').append(write_data);
-	      $('#view-more-loader').hide();
-	      $('#view-more-events').show();
-	      $('#last_id').html(last_id);
-	  }
+    	//console.log(data);
+
+	if(data.text=="no result"){
+		alert("no result");
+		$('#roadmore').hide();
+	}else{
+		$('#grid-content').append( makeEventListParts(data) );
+		$('#view-more-loader').hide();
+		$('#view-more-events').show();
+	}
     },
     error: function(data){
       // error
     }
   });
-});
+}
 
 /**
  * EVENTを１件リスト用に生成します。
@@ -64,55 +56,150 @@ alert(last_id);
  * 
  * @param {object} event_data	イベントデータ
  */
-function makeEventListParts(event_data) {
+function makeEventListParts(data) {
 
-    var write_data = '';
-    write_data += '<li id="event-first-li-area-'+event_data.id+'">';
-    write_data += '<div class="ticket-wrapper" id="ticket-wrapper-'+event_data.id+'">';
-    write_data += '<div class="left">';
-    write_data += '<div class="icon"><img src="'+event_data.user_image+'"></div>';
-    write_data += '<h3 class="title">';
-    write_data += event_data.title+'<br><span class="username">by '+event_data.user_name+'</span><br>';
-    /*
-     * 募集中タグの削除 4.11 km
-    write_data += event_data.title+'<br><span class="username">by '+event_data.user_name+'</span><br><span class="tag">一緒に楽しむメンバ</span>';
-    if (event_data.status === 2) {
-      write_data += '<span class="status-a">参加者募集中</span>';
-    } else {
-      write_data += '<span class="status-b">オーディエンス募集中</span>';
-    }
-    */
-    write_data += '</h3>';
-    /*
-	 *
-    write_data += '<div class="time" id="deadline_time_'+event_data.id+'">';
-    write_data += 'スタートまで:<span class="counter" id="deadline_'+event_data.id+'"></span>';
-    write_data += '</div>';
-	write_data += makeCountDownParts(event_data.deadline,event_data.id);	//deadline script
+	var write_data = '';
+
+	//サイズ違いのarticleに対応するための変数
+	var widever;
+	var topthumb;
+	var thumb;
+	var nowprinting;
+	var thumbWidth;
+	var thumbHeight;
+	var table;
+	var article_ul;
+	var join;
+	var top_to_detail;
+	var live;
+	var supporter_image_limit;
+
+	for( var i=0; i<10; i++ ){
+
+		//表示するものがあるかどうか
+		if(data.event_data[i]){
+			
+			//表示するものがある場合
+
+			last_id =data.event_data[i].id;
+			
+
+			if(i==0 || i==9){
+				//サイズの大きいarticleの場合
+			 	widever = "widever";
+				topthumb = "topthumb_b";
+				thumb="thumb_m";
+				nowprinting="nowprinting_m";
+				thumbWidth = 457;
+				thumbHeight = 247;
+				table="table_b";
+				article_ul='article_ul_b';
+				join="join_b";
+				top_to_detail = "top_to_detail_b";
+				live = "live_b";
+				supporter_image_limit = 18;
+
+				data.event_data[i].title = data.event_data[i].title.slice(0,50);  if( data.event_data[i].title.length == 50 ){ data.event_data[i].title = data.event_data[i].title+"…"; };
+				data.event_data[i].detail = data.event_data[i].detail.slice(0,100); if( data.event_data[i].detail.length == 100 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
+
+			}else{
+				//サイズの小さいarticleの場合
+				widever = "";
+				topthumb = "topthumb";
+				thumb = "thumb_s";
+				nowprinting = "nowprinting_s";
+				thumbWidth = 215;
+				thumbHeight = 111;
+				table="table_s";
+				article_ul='article_ul';
+				join="join";
+				top_to_detail = "top_to_detail";
+				live = "live";
+				supporter_image_limit = 12;
+
+				data.event_data[i].title = data.event_data[i].title.slice(0,13);  if( data.event_data[i].title.length == 13 ){ data.event_data[i].title = data.event_data[i].title+"…"; };
+				data.event_data[i].detail = data.event_data[i].detail.slice(0,35); if( data.event_data[i].detail.length == 35 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
+			}
+
+
+			if( i==1 || i==5 ){
+				//サイズの小さいarticle4個をdivに格納
+				write_data += '<div style="width:480px; float:left;">';
+			};
+
+
+			write_data += '<article class="'+widever+'">';
+			write_data += '<div class="'+live+'">LIVE</div>';
+			write_data += '<div class="'+topthumb+'"><a href="/dec/'+last_id+'"><img src="/data/'+last_id+'/images/'+thumb+'.jpg" onerror=\'this.src="/images/common/'+nowprinting+'.jpg"\' width="'+thumbWidth+'" height="'+thumbHeight+'"></a></div>'
+			write_data += '<h3><a href="/dec/'+last_id+'">'+data.event_data[i].title+'</a></h3>';
+			write_data += '<p>'+data.event_data[i].detail+'</p>';
+			write_data += '<table class="'+table+'">';
+				write_data += '<tr>';
+				write_data += '<td>';
+					write_data += '<ul class="'+article_ul+'" id="dec-supporters-'+last_id+'">';
+					write_data += '</ul>';
+				write_data += '</td>';
+				write_data += '<td class="'+join+'">'+data.event_data[i].supporter_num+'<span>人<br>参加</span></td>';
+				write_data += '</tr>';
+			write_data += '</table>';
+			write_data += '<div class="to_detail padt5 padl10">';
+				write_data += '<a href="/dec/'+last_id+'"><img src="/images/'+top_to_detail+'.gif" alt="詳細"></a>';
+			write_data += '</div>';
+			write_data += '</article>';
+				
+		
+
+
+
+			$().ready(function(){
+				$.ajax({
+					type: "GET",
+					url: "/get-supporters",
+					data: {id: data.event_data[i].id , limit:supporter_image_limit},
+					success: function(data){
+					console.log(data);
+						var img_tag = '';
+						for (var j = 0; j < data.supporter_data.length; j++){
+						// imgタグを作成
+						img_tag += '<li><a herf="/"><img src="'+data.supporter_data[j].image+'"></a></li>';
+					}
+						$('#dec-supporters-'+data.supporter_data[0].c_id).append(img_tag);
+					},
+						error: function(data){
+						// error
+					}
+				});
+			});
+
+
+
+			if(i==4 || i==8){
+				//サイズの小さいarticle4個をdivに格納 閉じ
+				write_data += '</div>';
+			}
+
+
+
+
+
+		}else{
+			//表示するものがない場合「SHOW MORE CONTENTS」消す
+			$('#roadmore').hide();
+		}
+	}
+
+
+	/**
+	* イベントリスト
+	* @return {String}
 	*/
-	write_data += '</div>';
-	write_data += '<div class="right"><ul>';
-	write_data += ' <a href="#" name="cancel-join-button-right">';
-	write_data += ' <li class="btn3" id="cancel-join-button-right-'+event_data.id+'" style="display:none;">×参加取消</li></a>';
-	write_data += ' <a href="#" name="delete-button-right">';
-	write_data += ' <li class="btn3" id="delete-button-right-'+event_data.id+'" style="display:none;">×部屋削除</li></a>';
-	write_data += ' <a href="/dec/'+event_data.id+'"><li class="btn">詳細</li></a>';
-	write_data += ' <a href="/ch/'+event_data.id+'">';
-	write_data += ' <li class="btn2" id="room-button-right-'+event_data.id+'" style="display:none;">会場</li></a>';
-	write_data += ' <a href="#" name="join-button-right">';
-	write_data += ' <li class="btn" id="join-button-right-'+event_data.id+'" style="display:none;">参加</li></a>';
-	write_data += '</ul></div>';
-    write_data += '<div class="participant" id="dec-supporters-'+event_data.id+'">'+makeMemberParts(event_data.id, event_data.target_num, event_data.supporter_num)+'</div>';
-    write_data += makeParticipantParts(event_data.id);	//participant script
-    write_data += makeCheckStatusJoinParts(event_data.id, event_data.target_num, event_data.supporter_num);	//checkStatusJoin script
-	write_data += makeDeleteChatRoomParts(event_data.id);
-    write_data += '</li>';
-    /**
-     * イベントリスト
-     * @return {String}
-     */
-    return write_data;
+	return write_data;
 }
+
+
+
+
+
 
 /**
  * HouseLogを１件リスト用に生成します。
@@ -464,6 +551,7 @@ $('a[name="cancel-join-button-right"]').live('click', function() {
 });
 
 
+// DOMがロードされて操作・解析が可能になったタイミングで関数を実行
 function __isLogin() {
 
   $.ajax({
@@ -487,11 +575,13 @@ function __isLogin() {
   });
 }
 
-// DOMがロードされて操作・解析が可能になったタイミングで関数を実行
-$().ready(function(){
-  // ログインチェック実行
-  __isLogin();
-});
+if(window.addEventListener) {
+	window.addEventListener("load", __isLogin, false);
+}
+else if(window.attachEvent) {
+	window.attachEvent("onload", __isLogin);
+}
+
 //-->
 
 </script>

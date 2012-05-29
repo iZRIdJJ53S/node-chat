@@ -140,16 +140,38 @@ var chat = {
 
     this.submitter.click(function (event) {
       var userMessage = that.userMessage.val()
-        , image_src   = $('#user_up_img').attr('src')
+//        , image_src   = $('#user_up_img').attr('src')
+        , image_src   = $('#uploadings_input').val()
         , iframeURL   = ''
         , flg_owner   = true
         ;
+
+///////////////////////////////////
+	if(image_src != ''){
+		//alert(location.protocol+'//'+location.host+'/uploads/'+$('#realUpfile').val());
+		userMessage = location.protocol+'//'+location.host+'/uploads/'+$('#realUpfile').val();
+		//input file clear
+		$('input#uploadings_input').val('');
+		image_src = '';
+	}
+
+///////////////////////////////////
 
       if (userMessage || image_src) {
 
         // image_src が優先
         if (image_src) {
-//          that._setIframeArea(image_src, flg_owner);
+///////////////////////////////////
+          //that._setIframeArea(image_src, flg_owner);
+
+          if (isURL(userMessage)) {
+            if (getURL(userMessage)) {
+//              $.publish( 'user:iframe-url-sent', { userName: that.userName, iframeURL: getURL(userMessage)} );
+               iframeURL = getURL(userMessage);
+//               that._setIframeArea(iframeURL, flg_owner);
+            }
+          }
+///////////////////////////////////
         } else {
           if (isURL(userMessage)) {
             if (getURL(userMessage)) {

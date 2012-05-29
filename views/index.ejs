@@ -5,12 +5,55 @@
 <meta charset="UTF-8">
 <meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
+<script src="/js/globalcommon.js" charset="UTF-8"></script>
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/jquery.easing.1.3.js" type="text/javascript" charset="UTF-8"></script>
 <script src="/js/funcs.js" type="text/javascript" charset="UTF-8"></script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <link rel="stylesheet" href="/css/index.css" />
+
+<!-- twitter oauth -->
+<script>
+function tw_get(){
+	if(syaberi_login_flag){
+		var tim = new Date();
+		var parameters = "tim=" + tim.getSeconds()+tim.getMilliseconds();
+		var request = "/twitter-friends-list?"+parameters;
+	//	alert(request);
+		var httpoj = createHttpRequest()
+		httpoj.open( "GET" , request , true )
+		httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
+		httpoj.onreadystatechange = function(){ 
+			if ((httpoj.readyState==4) && (httpoj.status == 200)){
+				var args = {};
+				var arr = httpoj.responseText;
+				args = eval("(" + arr + ")");
+	/*			
+				alert(args["login_flg"]);
+				if(args["login_flg"]){
+					alert(args["user_id"]);
+					alert(args["user_image"]);
+					alert(args["user_name"]);
+				}
+	*/
+				alert(args[0]);
+
+			}
+		}
+		httpoj.send();
+	}
+}
+if(window.addEventListener) {
+	window.addEventListener("load", tw_get, false);
+}
+else if(window.attachEvent) {
+	window.attachEvent("onload", tw_get);
+}
+
+</script>
+<!-- /twitter oauth -->
+
 </head>
 <body>
 <header>
@@ -19,79 +62,82 @@
 		<p>友人やちょっとした知り合い、<br>共通の仲間と部屋(コミュニティ)を<br>作り、楽しくシャベリあおう！</p>
 	</div>
 	<div class="header_center">
-		<a href="/create-dec"><img src="/images/header_make_commu.gif" width="143" height="150" alt="コミュニティを作る"></a>
+		<a href="/create-dec" id="create_dec_button" style="display:none;"><img src="/images/header_make_commu.gif" width="143" height="150" alt="コミュニティを作る"></a>
 		<a href="/search" class="padl40"><img src="/images/header_serch_commu.gif" width="143" height="150" alt="コミュニティを探す"></a>
 	</div>
 	<div class="header_right">
-		<div id="member">
+    
+    	<div id="logout" style="display:none;"><a  href="javascript:void(0);" id="logout_button"><img  src="/images/header_logout.gif" width="110" height="36" alt="ログアウト"></a></div>
+   
+		<div id="register" style="display:none;">
 			<ul>
-				<li><a href="/auth/twitter"><img src="/images/header_login.gif" width="75" height="13" alt="ログイン"></a></li>
-				<li><a href="/auth/twitter"><img src="/images/header_register_s.gif" width="73" height="13" alt="会員情報"></a></li>
-			</ul>
-		</div>
-		<div id="register">
-			<ul>
-				<li><a href="/about"><img src="/images/header_about.gif" width="215" height="52" alt="シャベリハウスとは？"></a></li>
-				<li><a href="/auth/twitter"><img src="/images/header_register.gif" width="215" height="52" alt="会員登録"></a></li>
+				<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/top_login_facebook.gif" width="215" height="52" alt="facebookログイン"></a></li>
+				<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/top_login_twetter.gif" width="215" height="52" alt="twetterログイン"></a></li>
 			</ul>
 
 			<div id="fb-root"></div>
-			<div id="user-info" style="display:none;"></div>
-			<div><button id="fb-auth">...</button>
-<!--a id="fb-auth" href="https://www.facebook.com/login.php?api_key=351823408214501&skip_api_login=1&display=popup&cancel_url=http%3A%2F%2Fec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%2Foauth%2Ffacebook%3Ferror_reason%3Duser_denied%26error%3Daccess_denied%26error_description%3DThe%2Buser%2Bdenied%2Byour%2Brequest.&fbconnect=1&next=https%3A%2F%2Fwww.facebook.com%2Fdialog%2Fpermissions.request%3F_path%3Dpermissions.request%26app_id%3D351823408214501%26redirect_uri%3Dhttp%253A%252F%252Fec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%252Foauth%252Ffacebook%26sdk%3Djoey%26display%3Dpopup%26response_type%3Dtoken%252Csigned_request%26domain%3Dec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com%26perms%3Demail,publish_stream,read_friendlists,friends_activities%26fbconnect%3D1%26from_login%3D1%26client_id%3D351823408214501&rcount=1"></a--></div>
+	</div>
 
 		</div>
 	</div>
+
 <!-- facebook oauth -->
 <script>
 
  
 window.fbAsyncInit = function() {
-    FB.init({ appId: '351823408214501',
-	status: true, 
-        cookie: true,
-        xfbml: true,
-        oauth: true
-    });
- 
-    function updateButton(response) {
-        var button = document.getElementById('fb-auth');
-        var userInfo = document.getElementById('user-info');
-        if (response.authResponse) {
-            //user is already logged in and connected
-            FB.api('/me', function(response) {
-                userInfo.innerHTML = '<img src="https://graph.facebook.com/'
-                  + response.id + '/picture" style="margin-right:5px" />'
-                  + response.name;
-                button.innerHTML = 'Logout';
-            });
-            button.onclick = function() {
-                FB.logout(function(response) {
-                    userInfo.innerHTML="";
-                });
-            };
-        } else {
-            //user is not connected to your app or logged out
-            button.innerHTML = 'Login';
-            button.onclick = function() {
-                FB.login(function(response) {
-                    if (response.authResponse) {
-                        FB.api('/me', function(response) {
-                            userInfo.innerHTML = 
-                              '<img src="https://graph.facebook.com/' 
-                              + response.id + '/picture" style="margin-right:5px" />'
-                              + response.name;
-                        });
-                    } else {
-                        //user cancelled login or did not grant authorization
-                    }
-                }, {scope:'email',redirect_uri:"http://ec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com/oauth/facebook"});
-            }
-        }
-    }
-    // run once with current status and whenever the status changes
-    FB.getLoginStatus(updateButton);
-    FB.Event.subscribe('auth.statusChange', updateButton);
+
+	FB.init({ appId: fb_appId,
+		status: true, 
+		cookie: true,
+		xfbml: true,
+		oauth: true
+	});
+
+
+	
+	function updateButton2(response) {
+		var loginButton_facebook = document.getElementById('login_button_facebook');	
+		//しゃべりハウスのfacebookログイン
+		if ((response.authResponse) && (syaberi_login_flag == true)) {
+
+			//alert("ログイン済/"+syaberi_login_flag);
+			$('#create_dec_button').css('display', 'inline');
+			$('#logout').css('display', 'block');
+			$('#register').css('display', 'none');
+
+			var logoutButton = document.getElementById('logout_button');
+			//しゃべりハウスのログアウト
+			logout_button.onclick = function() {
+				location.href = "/logout"
+			};
+
+
+		}else{
+			//alert("ログイン前/"+syaberi_login_flag);
+			$('#create_dec_button').css('display', 'none');
+			$('#logout').css('display', 'none');
+			$('#register').css('display', 'block');
+
+			loginButton_facebook.onclick = function() {
+				FB.login(function(response) {
+				    if (response.authResponse) {
+				        FB.api('/me', function(response) {
+				            userInfo.innerHTML = 
+				              '<img src="https://graph.facebook.com/' 
+				              + response.id + '/picture" style="margin-right:5px" />'
+				              + response.name;
+				        });
+				    } else {
+				        //user cancelled login or did not grant authorization
+				    }
+				}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
+			}
+		}
+	}
+
+	FB.getLoginStatus(updateButton2);
+	FB.Event.subscribe('auth.statusChange', updateButton2);
 };
 
 (function() {
@@ -118,94 +164,85 @@ window.fbAsyncInit = function() {
 
 
 
-<section id="top_contents">
-	<div id="grid-content">
+	<section id="top_contents">
+		<div id="grid-content">
 
-	
-			<script type="text/javascript">
-			<!--
-			var last_id2=0;
-			-->
-			</script>	
-
-
+		
+				<script type="text/javascript">
+				<!--
+				var last_id;
+				-->
+				</script>
 
 
-			<% for (var i in dec_list) { %>
+				<% for (var i in dec_list) {
+					if(i == 0 || i == 9) {
+						dec_list[i].title = dec_list[i].title.slice(0,50);  if( dec_list[i].title.length == 50 ){ dec_list[i].title = dec_list[i].title+"…"; };
+						dec_list[i].detail = dec_list[i].detail.slice(0,100); if( dec_list[i].detail.length == 100 ){ dec_list[i].detail = dec_list[i].detail+"…"; };
+					}else{
+						dec_list[i].title = dec_list[i].title.slice(0,13);  if( dec_list[i].title.length == 13 ){ dec_list[i].title = dec_list[i].title+"…"; };
+						dec_list[i].detail = dec_list[i].detail.slice(0,35); if( dec_list[i].detail.length == 35 ){ dec_list[i].detail = dec_list[i].detail+"…"; };
+					}
+				%>
+	<% if(i == 1 || i == 5) { %><div style="width:480px; float:left;"><% } %>
+				<article<% if(i == 0 || i == 9) { %> class="widever"<% } %>>
+				<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>
+				<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" onerror='this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"' width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 9) { %>247<% } else { %>111<% } %>"></a></div>
+				<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
+				<p><%= dec_list[i].detail %></p>
+				<table class="table_<% if(i == 0 || i == 9) { %>b<% } else { %>s<% } %>">
+					<tr>
+					<td>
+						<ul class="article_ul<% if(i == 0 || i == 9) { %>_b<% } %>" id="dec-supporters-<%= dec_list[i].id %>">
+						</ul>
+					</td>
+					<td class="join<% if(i == 0 || i == 9) { %>_b<% } %>"><%= dec_list[i].supporter_num %><span>人<br>参加</span></td>
+					</tr>
+				</table>
+				<div class="to_detail<% if(i == 0 || i == 9) { %>b<% } %> padt5 padl10">
+					<a href="/dec/<%= dec_list[i].id %>"><img src="/images/top_to_detail<% if(i == 0 || i == 9) { %>_b<% } %>.gif" alt="詳細"></a>
+				</div>
+				</article>
 
-			<article<% if(i == 0 || i == 7) { %> class="widever"<% } %>>
-			<div class="live<% if(i == 0 || i == 7) { %>_b<% } %>">LIVE</div>
-			<div class="topthumb<% if(i == 0 || i == 7) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 7) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 7) { %>457<% } else { %>215<% } %>" onerror='this.src="/images/common/nowprinting_<% if(i == 0 || i == 7) { %>m<% } else { %>s<% } %>.jpg"' width="<% if(i == 0 || i == 7) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 7) { %>247<% } else { %>111<% } %>"></a></div>
-			<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
-			<p><%= dec_list[i].detail %></p>
-			<table class="table_<% if(i == 0 || i == 7) { %>b<% } else { %>s<% } %>">
-				<tr>
-				<td>
-					<ul class="article_ul<% if(i == 0 || i == 7) { %>_b<% } %>" id="dec-supporters-<%= dec_list[i].id %>">
-					</ul>
-				</td>
-				<td class="join<% if(i == 0 || i == 7) { %>_b<% } %>"><%= dec_list[i].supporter_num %><span>人<br>参加</span></td>
-				</tr>
-			</table>
-			<div class="to_detail<% if(i == 0 || i == 7) { %>b<% } %> padt5 padl10">
-				<a href="/dec/<%= dec_list[i].id %>"><img src="/images/top_to_detail<% if(i == 0 || i == 7) { %>_b<% } %>.gif" alt="詳細"></a>
-			</div>
-			</article>
+				<script type="text/javascript">
+				<!--
+				$().ready(function(){
+				  $.ajax({
+				    type: "GET",
+				    url: "/get-supporters",
+				    data: {id: <%= dec_list[i].id %>, limit: 20},
+				    success: function(data){
+
+				      var img_tag = '';
+				      for (var j = 0; j < data.supporter_data.length; j++){
+				        // imgタグを作成
+				        img_tag += '<li><a herf="/"><img src="'+data.supporter_data[j].image+'"></a></li>';
+				      }
+				      $('#dec-supporters-<%= dec_list[i].id %>').append(img_tag);
+				    },
+				    error: function(data){
+				      // error
+				    }
+				  });
+				});
+				
+				//-->
+				</script>
 
 
+				<script type="text/javascript">
+				<!--
+				last_id= <%= dec_list[i].id %>;
+				-->
+				</script>
 
-			<script type="text/javascript">
-			<!--
-			last_id2 = <%= dec_list[i].id %>;
-			-->
-			</script>	
-
-				<% } %>
-
-
-
-
-<
+		
+	<% if(i == 4 || i == 8) { %></div><% } %>
+					<% } %>
 
 
-
-
-
-
-
-
-
-	</div>
-
-<script src="/js/jquery.vgrid.0.1.8.min.js" type="text/javascript" charset="UTF-8"></script>
-</section>
-
-
-
-<div class="left-content">
-		<h2 class="title"><h2>
-			<ul id="ul-events">
-			<!-- $()ready() -->
-			</ul>
-			<ul>
-				<li> 
-					<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
-					<a id="view-more-events"><div class="btn">もっと見る</div></a>
-					<div id="last_id" style="display:none;"><!--$()ready() --></div>
-				</li>
-			</ul>
 		</div>
-	<div class="clear"></div>
-
-
-
-<div id="view-more-loader" class="btn" style="text-align:center;padding:20px;display:none;"><img src="/img/loader.gif" /></div>
-
-<div id="last_id" style="display:none;"><!-- $()ready() --></div>					
-
-<section id="roadmore">
-	<div>SHOW MORE CONTENTS</div>
-</section>
+	</section>
 
 
 
@@ -213,19 +250,14 @@ window.fbAsyncInit = function() {
 
 
 
-<script type="text/javascript">
-<!--
-$('#roadmore').click(function() {
-	$('#grid-content').appendTo('aaaaa');
-});
+<div class="clear"></div>
 
+<section id="roadmore"><div id="roadmore_border">
+	<div id="view-more-loader" style="text-align:center;display:none;"><img src="/img/loader.gif" /></div>
+	<a href="javascript:void(0);" id="view-more-events"><div id="roadmore_inner">SHOW MORE CONTENTS</div></a>
+</div></section>
 
-
-
--->
-</script>
-
-
+</div>
 
 
 
@@ -248,6 +280,13 @@ $('#roadmore').click(function() {
 
 
 <%- partial('footer-script') %>
+
+<!--
+<script type="text/javascript">
+insert_contents();
+</script>
+-->
+
 </body>
 </html>
 
