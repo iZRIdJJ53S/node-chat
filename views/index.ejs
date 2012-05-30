@@ -13,46 +13,6 @@
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <link rel="stylesheet" href="/css/index.css" />
 
-<!-- twitter oauth -->
-<script>
-function tw_get(){
-	if(syaberi_login_flag){
-		var tim = new Date();
-		var parameters = "tim=" + tim.getSeconds()+tim.getMilliseconds();
-		var request = "/twitter-friends-list?"+parameters;
-	//	alert(request);
-		var httpoj = createHttpRequest()
-		httpoj.open( "GET" , request , true )
-		httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
-		httpoj.onreadystatechange = function(){ 
-			if ((httpoj.readyState==4) && (httpoj.status == 200)){
-				var args = {};
-				var arr = httpoj.responseText;
-				args = eval("(" + arr + ")");
-	/*			
-				alert(args["login_flg"]);
-				if(args["login_flg"]){
-					alert(args["user_id"]);
-					alert(args["user_image"]);
-					alert(args["user_name"]);
-				}
-	*/
-				alert(args[0]);
-
-			}
-		}
-		httpoj.send();
-	}
-}
-if(window.addEventListener) {
-	window.addEventListener("load", tw_get, false);
-}
-else if(window.attachEvent) {
-	window.attachEvent("onload", tw_get);
-}
-
-</script>
-<!-- /twitter oauth -->
 
 </head>
 <body>

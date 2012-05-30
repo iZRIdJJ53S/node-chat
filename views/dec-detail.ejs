@@ -189,13 +189,15 @@ FB.init({ appId: fb_appId,
 				<p><%= dec_detail.detail %></p>
 			</div>
 			<div id="joinedthumbs_wrapp" class="clearfix">
-				<div id="joined_details">120</div>
+				<div id="joined_details"><span class="member-count" id="member-counter-<%= dec_detail.id %>"><%= dec_detail.supporter_num %></span></div>
 				 <div id="dec-supporters-<%= dec_detail.id %>">
 				</div>
 			</div><!--/joinedthumbs_wrapp-->
-			<div class="magt15 magb15" id="inv_friendsbtn"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/section_makeroome_invitefriends.gif" width="260" height="39" alt="このコミュニティに友達を招待する"></a></div>
+		<a href="#" name="join-button-right-join"><img id="join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/section_makeroome_join.gif" width="260" height="39" alt="フォローする"></a>
+		<a href="#" name="cancel-join-button-right-join"><img id="cancel-join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/cancel-join.gif" width="77" height="20" alt="×参加取消"></a>
+		<div class="magt15_magb15" style="display:none;"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/section_makeroome_invitefriends.gif" width="260" height="39" alt="このコミュニティに友達を招待する"></a></div>
 		</section>
-		<section id="section_make_chatroom">
+		<section id="section_make_chatroom" style="display:none;">
 			<div class="bg_r bdbt padt10 padb10"><a href="#likebox_wrapp_form" class="nyroModal" rel="lightboxform"><img src="/images/section_makeroome_makechatroom.gif" width="942" height="39" alt="新しいチャットルームをつくる"></a></div>
 
 <% for(var i in suc_obj){ %>
@@ -364,6 +366,174 @@ $(function() {
 <script type="text/javascript">
 <!--
   $().ready(function(){
+
+  	var date_state = 0;
+    var event_id = <%= dec_detail.id %>;
+    
+    // 読み込まれた時のアクション
+	$.ajax({
+		type: 'GET',
+		url: '/get-is-supporters',
+		data: {dec_id: <%= dec_detail.id %>},
+		success: function(data){
+			if (data.res_flg) {
+				// 取り消しボタンの表示
+				$('#cancel-join-button-right-join-'+event_id).show();
+				// 参加ボタンの非表示
+				$('#join-button-right-join-'+event_id).hide();
+				// 参加しているから表示
+				$('#section_make_chatroom').show();
+				$('.magt15_magb15').show();
+			} else {
+				// 参加ボタンの表示
+				$('#join-button-right-join-'+event_id).show();
+				// 取り消しボタンの非表示
+				$('#cancel-join-button-right-join-'+event_id).hide();
+				// 参加していないから非表示
+				$('#section_make_chatroom').hide();
+				$('.magt15_magb15').hide();
+			}
+		},
+		error: function(data){
+			if (data.status === 401) {
+				$('#join-button-right-join-'+event_id).show();
+				// ログインしていないから非表示
+				$('#section_make_chatroom').hide();
+				$('.magt15_magb15').hide();
+				// ローカル変数にステータスを入れておく
+				date_state = data.status;
+			}
+		}
+	});
+
+    // 読み込まれた時のアクション
+	$.ajax({
+		type: "GET",
+		url: "/get-supporters",
+		data: {id: event_id, limit: 20},
+		success: function(data)
+		{
+			var img_tag = "";
+			if (!data.supporter_data) {return false;}
+			for (var j = 0; j < data.supporter_data.length; j++)
+			{
+				var img_id = event_id;
+				img_id += '__'+data.supporter_data[j].id;
+				img_tag += '<img src="' + data.supporter_data[j].image + '" id="dec-supporters-' + img_id + '">';
+			}
+			$("#dec-supporters-"+event_id).prepend(img_tag);
+		},
+		error: function(data)
+		{
+		}
+	});
+
+	// 参加クリック時
+	$('a[name="join-button-right-join"]').live('click', function()
+	{
+		if( date_state === 401 )
+		{
+			alert( 'ログインしてください。' );
+			return false;
+		}
+
+		var obj = $(this);
+		var event_obj = obj.find('img');
+		var event_id  = event_obj.attr('id');
+		event_id = parseInt(event_id.match(/[0-9]+/));
+		var loader_img = $('<img src="/img/loader-mini.gif">');
+		event_obj.html(loader_img);
+
+		$.ajax({
+			type: 'POST',
+			url: '/join-commit',
+			data: {id: event_id},
+			success: function(data)
+			{
+				if (data.join_flg === 'ok')
+				{
+					$('.magt15_magb15').show();
+					// 参加取消ボタンは表示
+					$('#cancel-join-button-right-join-'+<%= dec_detail.id %>).show();
+					// 参加ボタンは隠す
+					$('#join-button-right-join-'+event_id).hide();
+					// 参加しているから表示
+					$('#section_make_chatroom').animate({height:'show', opacity:'show'}, "slow");
+
+					// 人数も変更
+					var sup_cnt = $('#member-counter-'+event_id).text();
+					sup_cnt = parseInt(sup_cnt.match(/[0-9]+/)) + 1;
+					if (sup_cnt > 0)
+					{
+						$('#member-counter-'+event_id).text(sup_cnt);
+						var user_icon = '<img src="' + data.user_image + '" id="dec-supporters-' +event_id + '__' + data.user_id + '">';
+						$('#dec-supporters-'+event_id).prepend(user_icon).hide().animate({height:'show', opacity:'show'}, "slow");
+					}
+				}
+				event_obj.empty();
+			},
+			error: function(data)
+			{
+				// error
+			}
+		});
+		return false;
+	});
+
+	// 参加取消クリック処理
+	$('a[name="cancel-join-button-right-join"]').live('click', function()
+	{
+		if (window.confirm('本当に参加取り消しますか？')){}
+		else{
+			return false;
+		}
+
+		// ローディング画像
+		var obj = $(this);
+		var event_obj = obj.find('img');
+		var event_id  = event_obj.attr('id');
+		event_id = parseInt(event_id.match(/[0-9]+/));
+		var loader_img = $('<img src="/img/loader-mini.gif">');
+		event_obj.html(loader_img);
+
+		$.ajax({
+			type: 'GET',
+			url: '/cancel-join',
+			data: {dec_id: <%= dec_detail.id %>},
+			success: function(data)
+			{
+				if (data.flg_cancel_join === 'ok')
+				{
+					$('#dec-supporters-'+event_id+'__'+data.auth_user_id).animate({height:'hide', opacity:'hide'}, "slow",
+					function()
+					{
+						$('#dec-supporters-'+event_id+'__'+data.auth_user_id).remove();
+						var sup_cnt = $('#member-counter-'+event_id).text();
+						member_counter = parseInt(sup_cnt.match(/[0-9]+/));
+						if (member_counter > 0)
+						{
+							sup_cnt--;
+							// 参加取り消しを非表示
+							$('#cancel-join-button-right-join-'+event_id).hide();
+							// 参加を表示
+							$('#join-button-right-join-'+event_id).show();
+							// 参加していないから非表示
+							$('#section_make_chatroom').animate({height:'hide', opacity:'hide'}, "slow");
+							$('#member-counter-'+event_id).text(sup_cnt);
+							$('.magt15_magb15').hide();
+						}
+						// ローディング終了
+						event_obj.empty();
+					});
+				}
+			},
+			error: function(data)
+			{
+				// error
+			}
+		});
+	});
+
     //$('#deadline').datetimepicker({
     //  //addSliderAccess: true
     //  //sliderAccessArgs: { touchonly: false }

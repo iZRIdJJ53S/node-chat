@@ -214,6 +214,11 @@ FB.init({ appId: fb_appId,
 							<div class="main-view"><!-- main-view -->
 								<div id="disparea">
 									<div id="view_frame" class="view"><!-- HINT --></div>
+<!-----------デバッグ用(；´∀｀)--
+<div id="aaaaaa"></div>
+<div id="bbbbbb"></div>
+<div id="cccccc"></div>
+---------------------(；´∀｀)-->
 								</div>		
 							</div><!-- /main-view -->
 
@@ -253,9 +258,9 @@ FB.init({ appId: fb_appId,
 								<input type="hidden" id="realUpfile" value="">
 							</div>
 						</td>
-						<td width="50"><input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_fx" value=""><label for="comment_radio_fx"><img src="/images/room_radio_fb.gif" width="19" height="19"></label></td>
-						<td width="50"><input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_tw" value=""><label for="comment_radio_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label></td>
-						<td width="50"><input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label></td>
+						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_fx" value=""><label for="comment_radio_fx"><img src="/images/room_radio_fb.gif" width="19" height="19"></label--></td>
+						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_tw" value=""><label for="comment_radio_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label--></td>
+						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label--></td>
 						<td>
 							<div class="buttonContainer">
 								<!--div id="dropbox" style="float:left;">
@@ -338,6 +343,7 @@ $(function() {
 							<a href="javascript:void(0)"><img src="/images/kuma/kuma18.png" ></a>
 						</div>
 					</div><!--/emoji_wrapp-->
+				</table><div id="scrl_top"><a href="javascript:void(0);" title="ページTOP">▲</a></div>
 				</table>
 			</div>
 		</section><!--/section_thread_bottom-->
@@ -577,7 +583,9 @@ var ashina;
   // コメント削除
   $('img[name="delete_cmt"]').live('click', function() {
     if (window.confirm('本当に削除しますか？')) {
-
+	<!---------------------(；´∀｀)-->
+	height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
+	<!---------------------(；´∀｀)-->
     } else {
       return false;
     }
@@ -716,38 +724,78 @@ $(function() {
 	$('.nyroModal').nyroModal();
 });
 </script>
+
+<!-------------------------------------------------------------------------------------(；´∀｀)-->
 <script type="text/javascript">
+//画像ボックスfixed
 $(function(){
-	var contscrol_elm = $('.thread_article_box_left');
-	var distance_of_top = $('.thread_article_box_left').offset().top - 101;
+	var contscrol_elm_imgbox = $('.thread_article_box_left');
+	var distance_of_top_imgbox = contscrol_elm_imgbox.offset().top - 101;
 	$(window).scroll(function(){
-		if($(window).scrollTop() > distance_of_top){
-			contscrol_elm.css({'position':'fixed','top':'101px'});
+		if($(window).scrollTop() > distance_of_top_imgbox){
+			contscrol_elm_imgbox.css({'position':'fixed','top':'101px'});
 		}else{
-			contscrol_elm.css('position','static');
+			contscrol_elm_imgbox.css('position','static');
 		}
 	});
 });
-//-------------------------------------------------------------------------------------(；´∀｀)
 </script>
-<script type="text/javascript">
-function CommentBox_func(last_appned_id){
-	//alert(last_appned_id);
-	var howscroll = $('#'+last_appned_id).offset().top + $('#'+last_appned_id).height();
-	var contentbox_elm = $('#thread_comment_box');
-	var height_from_contentbox = contentbox_elm.offset().top - $(window).height();
 
+<script>
+var contentbox_elm = $('#thread_comment_box');
+var height_from_contentbox = "";
+var howscroll = "";
+
+//コメントボックスfixed
+function getEventOfscroll(){
 	$(window).scroll(function(){
+	
+		//$('#aaaaaa').text($(window).scrollTop());
+		//$('#bbbbbb').text(height_from_contentbox);
+		//$('#cccccc').text(howscroll);
 		if($(window).scrollTop() > height_from_contentbox ){
 			contentbox_elm.css('position','relative').removeClass('shasowing');
 		}else{
 			contentbox_elm.css({'position':'fixed','bottom':'0px'}).addClass('shasowing');
 		}
 	});
-	$('html,body').stop().animate({scrollTop: howscroll}, 2100);
 }
-//-------------------------------------------------------------------------------------(；´∀｀)
 </script>
+
+<script>
+//スクロールダウン
+function CommentBox_func(last_appned_id){
+	
+	howscroll = $('#'+last_appned_id).offset().top + $('#'+last_appned_id).height();
+	
+	$('html,body').stop().animate({scrollTop: howscroll}, 2100,function(){
+		height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
+		getEventOfscroll();
+	});
+}
+
+</script>
+
+<script>
+//スクロールアップ
+$('#scrl_top a').click(function(){
+	height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
+	$('html,body').stop().animate({scrollTop: 0}, 900,function(){
+		getEventOfscroll();
+	});
+});
+
+</script>
+
+<script>
+//ウィンドウリサイズ
+$(document).ready(function(){
+	$(window).resize(function(){
+		height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
+	});
+});
+</script>
+<!-------------------------------------------------------------------------------------(；´∀｀)-->
 
 <script type="text/javascript">
 $(function(){

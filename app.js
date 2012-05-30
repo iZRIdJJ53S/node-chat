@@ -1345,7 +1345,7 @@ app.get('/search', function (req, res) {
 	}
 
 	client.query(
-		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id'+
+		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.word_tag'+
 		'  , d.target_num, d.deadline, d.status, d.image'+
 		'  , COUNT( spt.declaration_id ) AS supporter_num'+
 		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
@@ -1406,7 +1406,6 @@ app.get('/search', function (req, res) {
 });
 
 
-
 /**
  * --------------------------------------------------------
  * サポーターリストを取得するAPI
@@ -1438,6 +1437,7 @@ logger.info(res);
     ' FROM '+TABLE_SUPPORTERS+' AS s'+
     ' INNER JOIN '+TABLE_USERS+' AS u ON s.user_id = u.id'+
     ' WHERE s.declaration_id = ?'+
+    ' ORDER BY s.id DESC'+
     ' LIMIT ?',
     [req.query.id, req.query.limit],
     function(err, results) {
@@ -1567,9 +1567,9 @@ app.get('/get-is-supporters', function (req, res) {
 
   // データ取得
   client.query(
-    'SELECT id'+
-    ' FROM '+TABLE_SUPPORTERS+
-    ' WHERE declaration_id = ? AND user_id = ?'+
+    'SELECT s.id, u.image as image'+
+    ' FROM '+TABLE_SUPPORTERS+' AS s, '+TABLE_USERS+' AS u'+
+    ' WHERE s.declaration_id = ? AND s.user_id = ? AND s.user_id = u.id'+
     ' LIMIT 1',
     [req.query.dec_id, req.session.auth.user_id],
     function(err, results) {
@@ -1577,7 +1577,7 @@ app.get('/get-is-supporters', function (req, res) {
       if (results.length === 0) {
         res.json({res_flg: false}, 200);
       } else {
-        res.json({res_flg: true}, 200);
+        res.json({res_flg: true, res_image:results[0].image}, 200);
       }
       return;
     }
@@ -1674,7 +1674,7 @@ app.get('/dec/:id', function (req, res) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
 	}
 	
-	client.query('SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ' + dec_id, function (err, results) {
+	client.query('SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ' + dec_id +' ORDER BY id DESC', function (err, results) {
 	suc_obj = results;
 	});
 	
@@ -1996,25 +1996,25 @@ app.post('/profile-change', function (req, res) {
  * --------------------------------------------------------
  */
 app.post('/create-event', function (req, res) {
-  // ログインチェック
-  if (!__isAuthLogin(req)) {
-    res.json({ text: 'ログインして下さい' }, 401);
-    return;
-  }
+	// ログインチェック
+	if (!__isAuthLogin(req)) {
+		res.json({ text: 'ログインして下さい' }, 401);
+		return;
+	}
 
-logger.error(req.files);
-
-  // リクエストチェック
-  logger.debug('----- app.post/create-event: ');logger.info(req.body);
-  var title = ''
-    , description = ''
-    , detail      = ''
-    , target_num  = 0
-    , deadline    = ''
-    , rental_time = ''
-    , dec_image   = ''
-    , user_id     = req.session.auth.user_id
-    ;
+  	// リクエストチェック
+	logger.debug('----- app.post/create-event: ');logger.info(req.body);
+	
+	var title = ''
+	, description = ''
+	, detail      = ''
+	, target_num  = 0
+	, deadline    = ''
+	, rental_time = ''
+	, dec_image   = ''
+	, word_tag    = ''
+	, user_id     = req.session.auth.user_id
+	;
 
   // validate
   try {
@@ -2037,12 +2037,7 @@ logger.error(req.files);
   
   logger.debug('field--files--------------');
   
-    var form = new formidable.IncomingForm()
-    , files = []
-    , fields = []
-    ;
-  
-  fs.rename(req.files.dec_image.path, 'test.jpg');
+  fs.rename(req.files.dec_image.path, 'test11.jpg');
   
   /*
   form
@@ -2070,32 +2065,54 @@ logger.error(req.files);
   }
   
   
-  title = req.body.title;
-  //description = req.body.description;
-  detail      = req.body.detail;
-  //target_num  = req.body.target_num;
-  //deadline    = req.body.deadline;
-  //rental_time = req.body.rental_time;
-  dec_image   = req.body.dec_image;
+	title = req.body.title;
+	//description = req.body.description;
+	detail      = req.body.detail;
+	//target_num  = req.body.target_num;
+	//deadline    = req.body.deadline;
+	//rental_time = req.body.rental_time;
+	//dec_image   = req.body.dec_image;
+
+
+	for( var i = 0; i <= req.body.word_tag_num; i++ ){
+		if(req.body["word_tag_"+i]){
+			var str = req.body["word_tag_"+i];
+			word_tag += str;
+			//最後以外はカンマで区切る
+			if(i <= req.body.word_tag_num-1){word_tag +=","};
+		}
+	}
+logger.info(word_tag);
 
   client.query(
     'INSERT INTO '+TABLE_DECLARATIONS+' ('+
-    '  created_at, title, description, detail, user_id, target_num, deadline'+
+    '  created_at, title, description, detail, user_id, target_num, deadline, word_tag '+
     '  , rental_time, status, image'+
     ') VALUES ('+
-    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?'+
+    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
     ')',
-    [title, description, detail, user_id, target_num, deadline
-      , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image
+    [title, description, detail, user_id, target_num, deadline, word_tag
+      , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image 
     ],
     function(err) {
       if (err) {throw err;}
+      /*
       res.json({flg_create: true}, 200);
       return;
+      */
     }
   );
+  
+        client.query(
+          'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_DECLARATIONS,
+          function(err, results) {
+            if (err) {throw err;}
+	    res.redirect('/dec/'+results[0].last_id);
+            return;
+          }
+        );    
+  
 });
-
 
 
 /**
@@ -2339,7 +2356,7 @@ app.post('/end-proc', function (req, res) {
  * 参加取り消し対応(update)
  * --------------------------------------------------------
  */
-app.post('/cancel-join', function (req, res) {
+app.get('/cancel-join', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
     res.json({ text: 'ログインして下さい' }, 401);
@@ -2349,7 +2366,7 @@ app.post('/cancel-join', function (req, res) {
   // リクエストチェック
   // id
   try {
-    check(req.body.dec_id).isInt();
+    check(req.query.dec_id).isInt();
   } catch (e) {
     logger.error(e.message); //Invalid
     res.json({text: '不正なIDです'}, 400);
@@ -2361,7 +2378,7 @@ app.post('/cancel-join', function (req, res) {
     'SELECT id'+
     ' FROM '+TABLE_SUPPORTERS+
     ' WHERE declaration_id = ? AND user_id = ?',
-    [req.body.dec_id, req.session.auth.user_id],
+    [req.query.dec_id, req.session.auth.user_id],
     function(err, results) {
       if (err) {throw err;}
       if (results.length === 0) {
@@ -2373,7 +2390,7 @@ app.post('/cancel-join', function (req, res) {
         client.query(
           'DELETE FROM '+TABLE_SUPPORTERS+
           ' WHERE declaration_id = ? AND user_id = ?',
-          [req.body.dec_id, req.session.auth.user_id],
+          [req.query.dec_id, req.session.auth.user_id],
           function(err2, results2) {
             if (err2) {throw err2;}
             res.json({flg_cancel_join: 'ok', auth_user_id: req.session.auth.user_id}, 200);
