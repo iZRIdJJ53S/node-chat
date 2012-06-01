@@ -111,7 +111,7 @@ window.fbAsyncInit = function() {
 
 </header>
 <section id="top_banner">
-	<a href="#"><img src="/images/top_banner.jpg" width="960" height="130" alt=""></a>
+	<!--a href="#"><img src="/images/top_banner.jpg" width="960" height="130" alt=""></a-->
 </section>
 <section id="top_h2">
 	<h2><img src="/images/top_featured.gif" width="331" height="52" alt="注目のコミュニティ / Featured Communith"></h2>
@@ -170,7 +170,7 @@ window.fbAsyncInit = function() {
 				  $.ajax({
 				    type: "GET",
 				    url: "/get-supporters",
-				    data: {id: <%= dec_list[i].id %>, limit: 20},
+				    data: {id: <%= dec_list[i].id %>, limit:<% if(i == 0 || i == 9) { %><%=18 %><% }else{ %><%=12 %><% } %>},
 				    success: function(data){
 
 				      var img_tag = '';
@@ -226,11 +226,12 @@ window.fbAsyncInit = function() {
 
 <footer>
 <p><img src="/images/footer_copy.gif" width="140" height="11" alt="2012 syaberi-house.com"></p>
-<ul>
-	<li><a href="#"><img src="/images/footer_top.gif" width="93" height="11" alt="トップページ"></a></li>
+<ul>	
+	<li><a href="/terms"><img src="/images/footer_terms.gif" width="70" height="11" alt="利用規約"></a></li>
+	<!--li><a href="#"><img src="/images/footer_top.gif" width="93" height="11" alt="トップページ"></a></li>
 	<li><a href="#"><img src="/images/footer_makeroom.gif" width="94" height="11" alt="部屋をつくる"></a></li>
 	<li><a href="#"><img src="/images/footer_serchroom.gif" width="82" height="11" alt="部屋を探す"></a></li>
-	<li><a href="#"><img src="/images/footer_mypage.gif" width="82" height="11" alt="マイページ"></a></li>
+	<li><a href="#"><img src="/images/footer_mypage.gif" width="82" height="11" alt="マイページ"></a></li-->
 </ul>
 </footer>
 

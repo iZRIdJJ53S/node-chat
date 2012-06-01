@@ -378,7 +378,7 @@ var chat = {
 		if (!is_owner) {
 			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
 		}else{
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp txtr"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" style="top:20px;" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
 		}
 	}else{
 		if (!is_owner) {

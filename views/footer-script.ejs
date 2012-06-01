@@ -566,7 +566,7 @@ function __isLogin() {
         $('#mypage-href').show();
         $('#header_right_table #header_mypage_thumb_img').attr('src', data.user_image);
         document.getElementById('header_mypage_name_h2').innerHTML = data.user_name;
-        $('#header_right_table').show();
+        //$('#header_right_table').show();
       }
     },
     error: function(data){
@@ -581,6 +581,7 @@ if(window.addEventListener) {
 else if(window.attachEvent) {
 	window.attachEvent("onload", __isLogin);
 }
+
 
 //-->
 

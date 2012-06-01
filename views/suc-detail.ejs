@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="ja">
 <head>
-	<title>マイページ｜シャベリハウス</title>
+	<title>シャベリハウス</title>
 <meta charset="UTF-8">
 <meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
@@ -9,8 +9,26 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
-<link rel="stylesheet" href="/css/common.css" />
-<link rel="stylesheet" href="/css/style.css" />
+<script type="text/javascript">
+var uaiph = 0;
+var uaand = 0;
+var uaetc = 0;
+	if(navigator.userAgent.indexOf('iPhone') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaiph = 1;
+	}else if(navigator.userAgent.indexOf('Android') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaand = 1;
+	}else{
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style.css">');
+		document.write('<link rel="stylesheet" href="/css/common.css" />');
+		uaetc = 1;
+	}
+</script>
 <script>
 $(function(){
 	var contscrol_elm = $('.thread_article_box_left');

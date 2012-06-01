@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="ja">
 <head>
-<title>マイページ｜シャベリハウス</title>
+<title>シャベリハウス</title>
 <meta charset="UTF-8">
 <meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
@@ -10,8 +10,26 @@
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
-<link rel="stylesheet" href="/css/common.css" />
-<link rel="stylesheet" href="/css/style.css" />
+<script type="text/javascript">
+var uaiph = 0;
+var uaand = 0;
+var uaetc = 0;
+	if(navigator.userAgent.indexOf('iPhone') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaiph = 1;
+	}else if(navigator.userAgent.indexOf('Android') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaand = 1;
+	}else{
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style.css">');
+		document.write('<link rel="stylesheet" href="/css/common.css" />');
+		uaetc = 1;
+	}
+</script>
 <link rel="stylesheet" href="/css/nyroModal.css">
 <script src="/js/jquery.tinyscrollbar.min.js" charset="UTF-8"></script>
 <script type="text/javascript">
@@ -26,12 +44,11 @@ function forscrol(){
 <script>
 <!--
 
-
-
-// facebookトークン取得
-var facebook_token = "";
-var facebook_user_name = "";
-var facebook_service = "";
+// snsトークン取得
+var sns_token = "";
+var sns_user_name = "";
+var sns_service = "";
+var sns_service_id = "";
 (function() {
 	var tim = new Date();
 	var parameters = "tim=" + tim.getSeconds()+tim.getMilliseconds();
@@ -46,19 +63,206 @@ var facebook_service = "";
 			var getSessionJson = eval("(" + arr + ")");
 			
 			//alert(getSessionJson["accessToken"]);
-			facebook_token = getSessionJson["accessToken"];
-			facebook_user_name = getSessionJson["user_name"];
-			facebook_service = getSessionJson["service"];
+			sns_token = getSessionJson["accessToken"];
+			sns_user_name = getSessionJson["user_name"];
+			sns_service = getSessionJson["service"];
+			sns_service_id = getSessionJson["oauth_service_id"];;
+
+			if(sns_service == "facebook"){
+				getfbFriend();
+
+				if(window.addEventListener) {
+					window.addEventListener("load", fbDisplay, false);
+				}
+				else if(window.attachEvent) {
+					window.attachEvent("onload", fbDisplay);
+				}
+
+			}else if(sns_service == "twitter"){
+				gettwFriend(sns_service_id);
+
+				if(window.addEventListener) {
+					window.addEventListener("load", twDisplay, false);
+				}
+				else if(window.attachEvent) {
+					window.attachEvent("onload", twDisplay);
+				}
+			}
 		}
 	}
 	httpoj.send();
 }());
-// facebookトークン取得
+// snsトークン取得
+function fbDisplay(){
+	document.getElementById("tab_1").style.display = "block";
+	document.getElementById("tab_1_area").style.display = "block";
+}
+function twDisplay(){
+	document.getElementById("tab_2").style.display = "block";
+	document.getElementById("tab_2_area").style.display = "block";
+}
 
+/*****************  twitter ****************************************************/
+(function($) {
+
+	$.extend({
+		_jsonp : {
+			scripts: {},
+			charset: 'utf-8',
+			counter: 1,
+			head: document.getElementsByTagName("head")[0],
+			name: function( callback ) {
+				var name = '_jsonp_' +  (new Date).getTime()
+					+ '_' + this.counter;
+				this.counter++;
+				var cb = function( json ) {
+					eval( 'delete ' + name );
+					callback( json );
+					$._jsonp.head.removeChild( $._jsonp.scripts[ name ] );
+					delete $._jsonp.scripts[ name ];
+				};
+				eval( name + ' = cb' );
+				return name;
+			},
+			load: function( url, name ) {
+				var script = document.createElement( 'script' );
+				script.type    = 'text/javascript';
+				script.charset = this.charset;
+				script.src     = url;
+				this.head.appendChild( script );
+				this.scripts[ name ] = script;
+			}
+		},
+
+		getJSONP : function ( url, callback ){
+			var name = $._jsonp.name( callback );
+			var url = url.replace( /{callback}/, name );
+			$._jsonp.load( url, name );
+			return this;
+		}
+	});
+
+})(jQuery);
+
+var cursor = "-1";
+var tw_friends = new Array();
+var tw_flag = true;
+var timerID;
+var tw_friendsJson = '{"data":[';
+
+
+function tw_make_json(sns_id){
+	var url="http://api.twitter.com/1/statuses/friends.json?id=" + sns_id + "&cursor=" + cursor + "&callback={callback}";
+	$.getJSONP(url, function(obj){
+	  if(cursor != obj["next_cursor"]){
+	    cursor = obj["next_cursor"];
+	    if(obj["users"].length != 0){
+			
+		    for(var i=0;i<obj["users"].length;i++){
+	    	        //tw_friends.push(obj["users"][i]["name"]);
+			tw_friendsJson += '{"id":"'+ obj["users"][i]["id"] +'","name":"'+ obj["users"][i]["name"] +'","screen_name":"'+ obj["users"][i]["screen_name"] +'"}';
+			//alert(tw_friends[i]);
+			if((cursor == "0") && (obj["users"].length == ( i + 1 ))){
+		    		tw_friendsJson += ']}';
+		    	}else{
+		    		tw_friendsJson += ',';
+			}
+		    }
+		if(cursor == "0"){
+			clearInterval(timerID);
+			print_tw();
+		}
+	    }else{
+		clearInterval(timerID);
+		tw_friendsJson += ']}';
+		print_tw();
+	    }
+	  }
+	});
+}
+
+function gettwFriend(sns_id){
+	timerID = setInterval(function(){
+	        tw_make_json(sns_id);
+	},500);
+}
+
+function print_tw(){
+	var tw_friendsArr = eval('('+tw_friendsJson+')');
+//	alert(tw_friendsArr["data"].length);
+	var str = ""
+	for( var i = 0 ; i < tw_friendsArr["data"].length ; i++ ){
+		str += '<li>';
+		str += '	<div class="invite_li_input"><input type="checkbox" name="tw_'+tw_friendsArr["data"][i]["id"]+'" id="tw_'+tw_friendsArr["data"][i]["id"]+'" value="'+tw_friendsArr["data"][i]["screen_name"]+'" class="invite_table_td_tumnb_checkbox"></div>';
+		str += '	<div class="invite_li_tumnb"><img src="http://img.tweetimag.es/i/'+tw_friendsArr["data"][i]["screen_name"]+'_o" width="40" height="40"></div>';
+		str += '	<div class="invite_li_name">'+tw_friendsArr["data"][i]["name"]+'</div>';
+		str += '</li>';
+	}
+	document.getElementById("tab_2_area").innerHTML = str;
+	$('#scrollbar1').tinyscrollbar();
+
+}
+
+function tw_sendMessage(){
+	var message_text = sns_user_name + 'さんがチャットに誘ってます！';
+	var check_count = document.getElementById("tab_2_area").getElementsByTagName("input").length;
+	var check_obj = document.getElementById("tab_2_area").getElementsByTagName("input");
+	var check_num = 0;
+
+//	alert(message_text);
+//	alert(check_count);
+	var check_num = 0;
+
+	for(var i = 0;i < check_count ; i++ ){
+		if(check_obj[i].checked){
+			var for_account = "@"+check_obj[i].value;
+			var tim = new Date();
+			var parameters = "message="+ for_account + " " + message_text + " " + location.href +"&tim=" + tim.getSeconds()+tim.getMilliseconds();
+			var request = "/send-twitter";
+		//	alert(request);
+			var httpoj = createHttpRequest()
+			httpoj.open( "POST" , request , true )
+			httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
+			httpoj.onreadystatechange = function(){ 
+				if ((httpoj.readyState==4) && (httpoj.status == 200)){
+					var args = {};
+					var arr = httpoj.responseText;
+					var send_return = eval("(" + arr + ")");
+					//alert(send_return["return"]);
+				}
+			}
+			httpoj.send(parameters);
+
+			check_num++;
+		}
+	}
+//	alert(check_num);
+	if(check_num == 0){
+		alert("招待する友達を選択してください。");
+		return false;
+	}
+	chg_inv_disp();
+}
+
+
+/*****************  /twitter ****************************************************/
+
+function sendMessage(){
+	if(sns_service == "facebook"){
+
+		fb_sendMessage();
+
+	}else if(sns_service == "twitter"){
+
+		tw_sendMessage();
+
+	}
+}
+/*****************  facebook ****************************************************/
 
 //function getFacebookFriends(){
 function getfbFriend(){
-	if(facebook_service == "facebook"){
+	if(sns_service == "facebook"){
 		var tim = new Date();
 		var parameters = "tim=" + tim.getSeconds()+tim.getMilliseconds();
 		var request = "/facebook-get-friends?"+parameters;
@@ -82,10 +286,8 @@ function getfbFriend(){
 	}
 }
 
-
-function sendMessage(){
-//	alert(facebook_token);
-	var message_text = facebook_user_name+'さんがチャットに誘ってます！';
+function fb_sendMessage(){
+	var message_text = sns_user_name + 'さんがチャットに誘ってます！';
 
 //	alert(document.getElementById("tab_1_area").getElementsByTagName("input").length);
 	var check_count = document.getElementById("tab_1_area").getElementsByTagName("input").length;
@@ -97,7 +299,7 @@ function sendMessage(){
 			check_num++;
 //			alert(check_obj[i].value);
 			
-			FB.api('/'+check_obj[i].value+'/feed','post', { access_token: facebook_token , message: message_text , picture: location.protocol+'//'+ location.host +'/images/common/logo.gif', link: location.href},
+			FB.api('/'+check_obj[i].value+'/feed','post', { access_token: sns_token , message: message_text , picture: location.protocol+'//'+ location.host +'/images/common/logo.gif', link: location.href},
 				function(response) {
 					// コールバック
 					//alert('ID: ' + response.id);
@@ -113,6 +315,25 @@ function sendMessage(){
 	}
 	chg_inv_disp();
 }
+
+
+
+function fbFriendList(arr){
+	var str = ""
+	for( var i = 0 ; i < arr.length ; i++ ){
+		str += '<li>';
+		str += '	<div class="invite_li_input"><input type="checkbox" name="fb_'+arr[i]["id"]+'" id="fb_'+arr[i]["id"]+'" value="'+arr[i]["id"]+'" class="invite_table_td_tumnb_checkbox"></div>';
+		str += '	<div class="invite_li_tumnb"><img src="https://graph.facebook.com/'+arr[i]["id"]+'/picture" width="40" height="40"></div>';
+		str += '	<div class="invite_li_name">'+arr[i]["name"]+'</div>';
+		str += '</li>';
+
+	}
+	document.getElementById("tab_1_area").innerHTML = str;
+	$('#scrollbar1').tinyscrollbar();
+
+}
+/*****************  /facebook ****************************************************/
+
 
 //:::::切り替え:::::
 function chg_inv_disp(){
@@ -132,27 +353,6 @@ $(document).ready(function(){
 });
 //:::::切り替え:::::
 
-function fbFriendList(arr){
-	var str = ""
-	for( var i = 0 ; i < arr.length ; i++ ){
-		str += '<li>';
-		str += '	<div class="invite_li_input"><input type="checkbox" name="fb_'+arr[i]["id"]+'" id="fb_'+arr[i]["id"]+'" value="'+arr[i]["id"]+'" class="invite_table_td_tumnb_checkbox"></div>';
-		str += '	<div class="invite_li_tumnb"><img src="https://graph.facebook.com/'+arr[i]["id"]+'/picture" width="40" height="40"></div>';
-		str += '	<div class="invite_li_name">'+arr[i]["name"]+'</div>';
-		str += '</li>';
-
-	}
-	document.getElementById("tab_1_area").innerHTML = str;
-	$('#scrollbar1').tinyscrollbar();
-
-}
-
-if(window.addEventListener) {
-	window.addEventListener("load", getfbFriend, false);
-}
-else if(window.attachEvent) {
-	window.attachEvent("onload", getfbFriend);
-}
 // -->
 </script>
 </head>
@@ -178,32 +378,41 @@ FB.init({ appId: fb_appId,
 
 <div id="contents_wrapp">
 	<div id="contents_wrapp_inside">
-		<section id="thread">
+<script type="text/javascript">
+	if(uaiph == 1 || uaand == 1){
+		document.write('<section id="thread">');
+		document.write('<h3 id="thread_h3"><%= house_name %></h3>');
+		document.write('<div class="thread_txt"><%= house_desc %></div>');
+		document.write('<p class="fontb fltl padl10 padb10">今チャットルームにいる人：<span id="peaple"></span>人</p>');
+		document.write('<div class="participant bg_w magb5 thread_friends clearfix" id="audienceview"></div></section>');
+	}else{
+		document.write('<section id="thread">');
+		document.write('<div id="thread_wrapp">');
+		document.write('<h3 id="thread_h3"><%= house_name %></h3>');
+		document.write('<div class="thread_txt"><%= house_desc %></div>');
+		document.write('<div class="txtc magb13" id="inv_friendsbtn"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/common/invitefriends_b.png" id="invite_banner" alt="このチャットルームに友達を招待する"></a></div>');
+		document.write('<!--div class="participant" id="audienceview"></div-->');
+		document.write('<div class="txtc magb13">');
 
-			<div id="thread_wrapp">
-			<h3 id="thread_h3"><%= house_name %></h3>
-			<div class="thread_txt"><%= house_desc %></div>
-			<div class="txtc magb13" id="inv_friendsbtn"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/common/invitefriends_b.png" width="428" height="30" alt="このチャットルームに友達を招待する"></a></div>
-			<!--div class="participant" id="audienceview"></div-->
-			<div class="txtc magb13">
-			
-			<div id="owner_proc_area" class="right" style="display:none;">
-				<a id="event_all_mail" class="btn" style="display:none; width:230px;"><img src="/images/tread_btn.gif" width="230" height="39" alt=""></a>
-				<a id="event_end_proc" class="btn" style="width:230px;"><img src="/images/tread_btn.gif" width="230" height="39" alt=""></a>
-			</div>
-			
-			</div>
-			</div-->
-			<div id="pullarea" style="display:none;">
-				<div class="txtl bg_g padt10 clearfix">
-					<p class="fontb fltl padl10">今チャットルームにいる人</p><p class="fltr padr10 text16 fontb"><span id="peaple"></span>人</p>
-				</div>
-				<div class="participant thread_friends clearfix bg_g" id="audienceview">
-				</div>
-			</div>
-				<a href="#" id="pullpullpull"></a>
-			</div><!--/thread_wrapp-->
-		</section>
+		document.write('<!--div id="owner_proc_area" class="right" style="display:none;">');
+		document.write('<a id="event_all_mail" class="btn" style="display:none; width:230px;"><img src="/images/tread_btn.gif" width="230" height="39" alt=""></a>');
+		document.write('<a id="event_end_proc" class="btn" style="width:230px;"><img src="/images/tread_btn.gif" width="230" height="39" alt=""></a>');
+		document.write('</div-->');
+
+		document.write('</div>');
+		document.write('</div-->');
+		document.write('<div id="pullarea" style="display:none;">');
+		document.write('<div class="txtl bg_g padt10 clearfix">');
+		document.write('<p class="fontb fltl padl10">今チャットルームにいる人</p><p class="fltr padr10 text16 fontb"><span id="peaple"></span>人</p>');
+		document.write('</div>');
+		document.write('<div class="participant thread_friends clearfix bg_g" id="audienceview">');
+		document.write('</div>');
+		document.write('</div>');
+		document.write('<a href="#" id="pullpullpull"></a>');
+		document.write('</div><!--/thread_wrapp-->');
+		document.write('</section>');
+	}
+</script>
 		<section id="section_thread_left">
 			<article>
 				<div class="thread_article_box_left fltl">
@@ -244,33 +453,83 @@ FB.init({ appId: fb_appId,
 				<table id="comment_wrapp">
 				
 					<form id="send-message1">
-					<tr>
-						<td colspan="6">
-							<div id="comment_wrapp_inputarea"><textarea type="text" value="" id="message1" style="overflow:hidden; resize:none; max-height:20px; min-height:20px; height:20px; word-wrap:normal;" cols="60" wrap="off"></textarea></div>
-						</td>
-					</tr>
-					<tr>
-						<td width="77"><a href="javascript:void(0)" id="emoji_butt"><img src="/images/room_pull.gif" width="67" height="30"></a></td>
-						<!--td width="90"><a href="#"><img src="/images/room_attach.gif" width="67" height="30"></a></td-->
-						<td width="90" style="vertical-align:top;">
-							<div id="uploadings">
-								<input type="file" id="uploadings_input" name="dec_image2" value="">
-								<input type="hidden" id="realUpfile" value="">
-							</div>
-						</td>
-						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_fx" value=""><label for="comment_radio_fx"><img src="/images/room_radio_fb.gif" width="19" height="19"></label--></td>
-						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_tw" value=""><label for="comment_radio_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label--></td>
-						<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label--></td>
-						<td>
-							<div class="buttonContainer">
-								<!--div id="dropbox" style="float:left;">
-									<span id="drop_message" class="message"><このエリアに画像をドラック＆ドロップ></span>
-								</div-->
-							<label for="submit_1">
-								<input type="image" src="/images/room_toukou.gif" class="fltr" id="submit_1">
-								<!--input class="submitBtn" id="submit_1" type="submit" value="投稿"-->
-							</label>
-							</div>
+<script>
+if(uaiph == 1 || uaand == 1){
+	document.write('<tr>');
+	document.write('<td>');
+	document.write('<div id="comment_wrapp_inputarea"><textarea type="text" value="" id="message1" style="overflow:hidden; resize:none; max-height:20px; min-height:20px; height:20px; word-wrap:normal;" cols="15" wrap="off"></textarea></div>');
+	document.write('</td>');
+	document.write('<td><a href="javascript:void(0)" id="emoji_butt" style="margin:0px 5px 0px 5px;"><img src="/images/room_pull.gif" width="67" height="30"></a></td>');
+	document.write('<td style="vertical-align:top;">');
+	//document.write('<div id="uploadings" style="margin-right:1px;">');
+	document.write('<input type="hidden" id="uploadings_input" name="dec_image2" value="" style="">');
+	document.write('<input type="hidden" id="realUpfile" value="">');
+	//document.write('</div>');
+	document.write('</td>');
+	document.write('<td>');
+	document.write('<div class="buttonContainer">');
+	document.write('<label for="submit_1">');
+	document.write('<input type="image" src="/images/room_toukou.gif" class="" id="submit_1">');
+	document.write('</label>');
+	document.write('</div>');
+	document.write('</td>');
+	document.write('</tr>');
+}else{
+	document.write('<tr>');
+	document.write('<td colspan="6">');
+	document.write('<div id="comment_wrapp_inputarea"><textarea type="text" value="" id="message1" style="overflow:hidden; resize:none; max-height:20px; min-height:20px; height:20px; word-wrap:normal;" cols="60" wrap="off"></textarea></div>');
+	document.write('</td>');
+	document.write('</tr>');
+	document.write('<tr>');
+	document.write('<td width="77"><a href="javascript:void(0)" id="emoji_butt"><img src="/images/room_pull.gif" width="67" height="30"></a></td>');
+	document.write('<!--td width="90"><a href="#"><img src="/images/room_attach.gif" width="67" height="30"></a></td-->');
+	document.write('<td width="90" style="vertical-align:top;">');
+	document.write('<div id="uploadings">');
+	document.write('<input type="file" id="uploadings_input" name="dec_image2" value="">');
+	document.write('<input type="hidden" id="realUpfile" value="">');
+	document.write('</div>');
+	document.write('</td>');
+	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_fx" value=""><label for="comment_radio_fx"><img src="/images/room_radio_fb.gif" width="19" height="19"></label--></td>');
+	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_tw" value=""><label for="comment_radio_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label--></td>');
+	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label--></td>');
+	document.write('<td>');
+	document.write('<div class="buttonContainer">');
+	document.write('<!--div id="dropbox" style="float:left;">');
+	document.write('<span id="drop_message" class="message"><このエリアに画像をドラック＆ドロップ></span>');
+	document.write('</div-->');
+	document.write('<label for="submit_1">');
+	document.write('<!--input class="submitBtn" id="submit_1" type="submit" value="投稿"-->');
+	document.write('<input type="image" src="/images/room_toukou.gif" class="fltr" id="submit_1">');
+	document.write('</label>');
+	document.write('</div>');
+	document.write('</td>');
+	document.write('</tr>');
+}
+</script>
+					</form>
+					<div id="emoji_wrapp">
+						<div id="emoji_wrapp_in" class="clearfix">
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma01.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma02.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma03.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma04.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma05.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma06.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma07.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma08.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma09.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma10.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma11.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma12.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma13.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma14.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma15.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma16.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma17.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/kuma/kuma18.png" ></a>
+						</div>
+					</div><!--/emoji_wrapp-->
+				</table><div id="scrl_top"><a href="javascript:void(0);" title="ページTOP">▲</a></div>
 <!--//////////////////////////////////////-->
 <script src="/js/upload.js" charset="UTF-8"></script>
 <script>
@@ -318,33 +577,6 @@ $(function() {
 });
 </script>
 <!--//////////////////////////////////////-->
-						</td>
-					</tr>
-					</form>
-					<div id="emoji_wrapp">
-						<div id="emoji_wrapp_in" class="clearfix">
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma01.png" id="emoji01"></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma02.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma03.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma04.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma05.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma06.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma07.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma08.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma09.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma10.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma11.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma12.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma13.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma14.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma15.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma16.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma17.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma18.png" ></a>
-						</div>
-					</div><!--/emoji_wrapp-->
-				</table><div id="scrl_top"><a href="javascript:void(0);" title="ページTOP">▲</a></div>
-				</table>
 			</div>
 		</section><!--/section_thread_bottom-->
 	</div><!--/#contents_wrapp_inside-->
@@ -369,8 +601,19 @@ $().ready(function(){
 </style>
 
 <div class="main-img">
-	<div class="ticket-wrapper" style="width:969px;">
-		<div class="left">
+
+<script type="text/javascript">
+	if(uaiph == 1 || uaand == 1){
+		document.write('<div class="ticket-wrapper" style="width:device-width;">');
+		$('#emoji_wrapp_in a img').click(function(){
+			$('#emoji_wrapp').css('display','none');
+			return false;
+		});
+	}else{
+		document.write('<div class="ticket-wrapper" style="width:969px;">');
+	}
+</script>
+		<div class="left" style="display:none;">
 			<h1 style="font-size:26px;padding:20px;"></h1>
 		</div>
 		<!--div class="right" style="min-height:60px;">
@@ -660,35 +903,20 @@ var ashina;
 	<h3 id="makecommunity_invite_h3" class="padt10"><img src="/images/makecommunity_invite_h3.gif" width="98" height="15" alt="友達を招待する"></h3>
 	<div id="makecommunity_invite_tab">
 			<ul id="tab_ul">
-				<li id="tab_1" class="bg_ov top1px"><img src="/images/makecommunity_invite_fb.png" width="97" height="25" alt=""></li>
-				<li id="tab_2" style="display:none;"><img src="/images/makecommunity_invite_tw.png" width="98" height="25" alt=""></li>
-				<li id="tab_3" style="display:none;"><img src="/images/makecommunity_invite_mx.png" width="79" height="25" alt=""></li>
-				<li id="tab_4" style="display:none;"><img src="/images/makecommunity_invite_ml.png" width="41" height="25" alt=""></li>
+				<li id="tab_1" class="bg_ov top1px" style="display:none;"><img src="/images/makecommunity_invite_fb.png" width="97" height="25" alt=""></li>
+				<li id="tab_2" class="bg_ov top1px" style="display:none;"><img src="/images/makecommunity_invite_tw.png" width="98" height="25" alt=""></li>
+				<li id="tab_3" class="bg_ov top1px" style="display:none;"><img src="/images/makecommunity_invite_mx.png" width="79" height="25" alt=""></li>
+				<li id="tab_4" class="bg_ov top1px" style="display:none;"><img src="/images/makecommunity_invite_ml.png" width="41" height="25" alt=""></li>
 			</ul>
 				<div id="scrollbar1">
 					<div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
 					<div class="viewport">
 						 <div class="overview">
 
-						<ul id="tab_1_area" class="tab_wrapp"></ul>
+						<ul id="tab_1_area" class="tab_wrapp none"></ul>
 
-						<ul id="tab_2_area" class="tab_wrapp none">
-							<li>
-								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
-								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
-								<div class="invite_li_name">2飯島　おさむ</div>
-							</li>
-							<li>
-								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
-								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
-								<div class="invite_li_name">2飯島　おさむ</div>
-							</li>
-							<li>
-								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
-								<div class="invite_li_tumnb"><img src="/images/top_thumb_s.jpg" width="40" height="40"></div>
-								<div class="invite_li_name">2飯島　おさむ</div>
-							</li>
-						</ul>
+						<ul id="tab_2_area" class="tab_wrapp none"></ul>
+
 						<ul id="tab_3_area" class="tab_wrapp none">
 							<li>
 								<div class="invite_li_input"><input type="checkbox" name="" id="" value="" class="invite_table_td_tumnb_checkbox"></div>
@@ -724,78 +952,13 @@ $(function() {
 	$('.nyroModal').nyroModal();
 });
 </script>
-
-<!-------------------------------------------------------------------------------------(；´∀｀)-->
-<script type="text/javascript">
-//画像ボックスfixed
-$(function(){
-	var contscrol_elm_imgbox = $('.thread_article_box_left');
-	var distance_of_top_imgbox = contscrol_elm_imgbox.offset().top - 101;
-	$(window).scroll(function(){
-		if($(window).scrollTop() > distance_of_top_imgbox){
-			contscrol_elm_imgbox.css({'position':'fixed','top':'101px'});
-		}else{
-			contscrol_elm_imgbox.css('position','static');
-		}
-	});
-});
-</script>
-
 <script>
-var contentbox_elm = $('#thread_comment_box');
-var height_from_contentbox = "";
-var howscroll = "";
-
-//コメントボックスfixed
-function getEventOfscroll(){
-	$(window).scroll(function(){
-	
-		//$('#aaaaaa').text($(window).scrollTop());
-		//$('#bbbbbb').text(height_from_contentbox);
-		//$('#cccccc').text(howscroll);
-		if($(window).scrollTop() > height_from_contentbox ){
-			contentbox_elm.css('position','relative').removeClass('shasowing');
-		}else{
-			contentbox_elm.css({'position':'fixed','bottom':'0px'}).addClass('shasowing');
-		}
-	});
+if(uaiph == 1 || uaand == 1){
+	document.write('<scr'+'ipt src="/js/scrol_fixed_d.js" charset="UTF-8"></scr'+'ipt>');
+}else{
+	document.write('<sc'+'ript src="/js/scrol_fixed.js" charset="UTF-8"></sc'+'ript>');
 }
 </script>
-
-<script>
-//スクロールダウン
-function CommentBox_func(last_appned_id){
-	
-	howscroll = $('#'+last_appned_id).offset().top + $('#'+last_appned_id).height();
-	
-	$('html,body').stop().animate({scrollTop: howscroll}, 2100,function(){
-		height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
-		getEventOfscroll();
-	});
-}
-
-</script>
-
-<script>
-//スクロールアップ
-$('#scrl_top a').click(function(){
-	height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
-	$('html,body').stop().animate({scrollTop: 0}, 900,function(){
-		getEventOfscroll();
-	});
-});
-
-</script>
-
-<script>
-//ウィンドウリサイズ
-$(document).ready(function(){
-	$(window).resize(function(){
-		height_from_contentbox = contentbox_elm.offset().top - $(window).height() + 120;
-	});
-});
-</script>
-<!-------------------------------------------------------------------------------------(；´∀｀)-->
 
 <script type="text/javascript">
 $(function(){

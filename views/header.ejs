@@ -44,9 +44,16 @@
 			</table>
 		</div><!--/header_center-->
 
+<style> 
+#header_register{
+	display:none;
+}
+#header_right{
+	display:none;
+}
+</style>
 
-
-		<div id="header_register" style="display:none;">
+		<div id="header_register">
 			<ul>
 				<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/header_login_facebook.gif" width="80" height="26" alt="facebookログイン"></a></li>
 				<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/header_login_twetter.gif" width="80" height="26" alt="twetterログイン"></a></li>
@@ -58,7 +65,7 @@
 
 
 
-		<div id="header_right" style="display:none;">
+		<div id="header_right">
 		
 			<table id="header_right_table">
 				<tr>
@@ -70,8 +77,9 @@
 			<div id="mypage_notification_wrapp">
 				<a href="/mypage" class="mypage_nortification_txt"><div>マイページ</div></a>
 				<a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a>
-				<a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a>
-				<a href="/logout" class="mypage_nortification_txt"><div>ログアウト</div></a>
+				<!--a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a-->
+				<a href="/create-dec" class="mypage_nortification_txt"><div>コミュニティを作る</div></a>
+				<a href="/logout" id="logout_button" class="mypage_nortification_txt"><div>ログアウト</div></a>
 			</div><!--/mypage_notification_wrapp-->
 
 		</div><!--/header_right-->
@@ -93,8 +101,6 @@ window.fbAsyncInit = function() {
 		oauth: true
 	});
 
-
-	
 	function updateButton(response) {
 		var loginButton_facebook = document.getElementById('login_button_facebook');	
 		//しゃべりハウスのfacebookログイン
@@ -104,12 +110,6 @@ window.fbAsyncInit = function() {
 			$('#fukidashi').css('display', 'block');
 			$('#header_register').css('display', 'none');
 			$('#header_right').css('display', 'block');
-			var logoutButton = document.getElementById('logout_button');
-			//しゃべりハウスのログアウト
-			logout_button.onclick = function() {
-				location.href = "/logout"
-			};
-
 
 		}else{
 

@@ -343,6 +343,8 @@ everyauth
       sess.auth.oauth_service_id = twitUser.id; // twitter が管理しているユニークなID
       sess.auth.user_name = twitUser.screen_name;
       sess.auth.user_image = twitUser.profile_image_url;
+      sess.auth.accessToken = accessToken;
+      sess.auth.accessSecret = accessSecret;
       sess.auth.service = 'twitter';
 
       //if (!usersByTwitId[twitUser.id]) {
@@ -834,14 +836,22 @@ app.get('/get-session', function (req, res) {
 //    logger.debug("false1");
     res.json({login_flg: false}, 200);
   } else {
-//    logger.debug(req.session.auth);
-    res.json(req.session.auth, 200);
+    //logger.info('get-session');
+    //logger.debug(req.session.auth);
+    if(req.session.auth.service == "facebook"){
+       res.json(req.session.auth, 200);
+    } else {
+	//logger.info('session-twitter');
+       res.json({
+		service : 'twitter',
+		user_name : req.session.auth.user_name,
+		oauth_service_id : req.session.auth.oauth_service_id,
+		accessToken  :'',
+	}, 200);
+    }
   }
   return;
 });
-
-
-
 
 
 // ----------------------------------------------
@@ -1456,9 +1466,16 @@ logger.info(res);
 		sup_list[i].name = sanitize(sup_list[i].name).xss();
 		sup_list[i].image = sanitize(sup_list[i].image).xss();
         };
-        res.json({supporter_data: sup_list}, 200);
-        return;
 
+        if (!__isAuthLogin(req))
+        {
+          res.json({supporter_data: sup_list, supporter_login:false, supporter_image:'', supporter_name:''}, 200);
+        }
+        else
+        {
+          res.json({supporter_data: sup_list, supporter_login:true, supporter_image:req.session.auth.user_image, supporter_name:req.session.auth.user_name}, 200);
+        }
+        return;
       }
 
     }
@@ -2032,36 +2049,27 @@ app.post('/create-event', function (req, res) {
   
   if(req.files){
   
-  logger.debug("11--"+req.files.dec_image.path);
-  logger.debug("22--"+req.files.path);
   
   logger.debug('field--files--------------');
   
-  fs.rename(req.files.dec_image.path, 'test11.jpg');
   
-  /*
-  form
-    .on('field', function(field, value) {
-      logger.debug('field----------------');logger.debug(field, value);
-      fields.push([field, value]);
-    })
-    .on('file', function(field, file) {
-      logger.debug('file-----------------');logger.debug(field, file);
-      fs.rename(file.path, file.path+'.jpg');
-      files.push([field, file]);
-    })
-    .on('end', function() {
-      logger.debug('---> upload done');
-      logger.debug('received files-----');logger.debug(util.inspect(files, true, null));
-//      var tmp_arr = files[0];
-//      logger.debug(tmp_arr[1].path);
-      var tmp_path = files[0][1].path.split('/');
-      res.send({'status': 'File was uploaded successfuly!',
-        'filename': '/uploads/'+tmp_path[8]+'.jpg'
-      });
-      //res.end('received files:\n\n '+util.inspect(files));
-    });  
-    */
+  // ファイルをuploadし、場所や名前をDBに格納する
+  var form = new formidable.IncomingForm()
+    , files = []
+    , fields = []
+    ;
+  
+	// 格納場所(decupload)以下に格納
+    var uploadDir = __dirname+'/public/decupload';
+
+	//ファイル名をtmpのままにする
+	var uploadDir_two =req.files.dec_image.path.split('/');
+	var filename_Perse = uploadDir + '/' +uploadDir_two[2] + '.jpg';
+	var filename_Return = uploadDir_two[2] + '.jpg';
+	// リネーム
+	fs.rename(req.files.dec_image.path, filename_Perse);
+	
+	dec_image = filename_Return;
   }
   
   
@@ -2094,24 +2102,19 @@ logger.info(word_tag);
     [title, description, detail, user_id, target_num, deadline, word_tag
       , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image 
     ],
-    function(err) {
+    function(err,results) {
       if (err) {throw err;}
-      /*
-      res.json({flg_create: true}, 200);
-      return;
-      */
+      if (results.length === 0) {
+        res.json({text: 'コミュニティの作成を行えませんでした。'}, 400);
+        return;
+      }
+      else
+      {
+        res.redirect('/dec/'+results.insertId);
+        return;
+      }
     }
   );
-  
-        client.query(
-          'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_DECLARATIONS,
-          function(err, results) {
-            if (err) {throw err;}
-	    res.redirect('/dec/'+results[0].last_id);
-            return;
-          }
-        );    
-  
 });
 
 
@@ -2173,10 +2176,17 @@ app.post('/create-chat', function (req, res) {
     [title, description, detail, user_id, target_num, deadline
       , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image, dec_relation_id
     ],
-    function(err) {
+    function(err,results) {
       if (err) {throw err;}
-      res.json({flg_create: true}, 200);
-      return;
+      if (results.length === 0) {
+        res.json({text: 'チャットルームの作成を行えませんでした。'}, 400);
+        return;
+      }
+      else
+      {
+        res.json({flg_create: true, chat_create_id:results.insertId}, 200);
+        return;
+      }
     }
   );
 });
@@ -2288,6 +2298,8 @@ app.post('/join-commit', function (req, res) {
  * --------------------------------------------------------
  */
 app.post('/end-proc', function (req, res) {
+  logger.debug('/end-proc'+req);
+
   // ログインチェック
   if (!__isAuthLogin(req)) {
     res.json({ text: 'ログインして下さい' }, 401);
@@ -2316,7 +2328,7 @@ app.post('/end-proc', function (req, res) {
   // ログインID がイベントオーナーかどうかチェック
   client.query(
     'SELECT id, title'+
-    ' FROM '+TABLE_DECLARATIONS+
+    ' FROM '+TABLE_DECLARATIONS_CH+
     ' WHERE id = ? AND user_id = ?',
     [req.body.dec_id, req.session.auth.user_id],
     function(err, results) {
@@ -2332,7 +2344,7 @@ app.post('/end-proc', function (req, res) {
 
         // イベントのステータスを更新する
         client.query(
-          'UPDATE '+TABLE_DECLARATIONS+' SET'+
+          'UPDATE '+TABLE_DECLARATIONS_CH+' SET'+
           '  status = ?'+
           ' WHERE id = ?',
           [FLG_SUPPORTER_COMP_STAT, req.body.dec_id],
@@ -2404,6 +2416,42 @@ app.get('/cancel-join', function (req, res) {
 
 });
 
+/**
+ * --------------------------------------------------------
+ * twitter リツイート投稿(post)
+ * --------------------------------------------------------
+ */
+
+
+function twitter_update(message,token,secret) {
+  oa_obj.post(
+    'http://api.twitter.com/1/statuses/update.json',
+    token,
+    secret,
+    { status: message },
+    function(err, data) {
+      err && console.log(err);
+      logger.debug('---------- twitter_update: --------- ');logger.debug(err);
+	if (err) {throw err;}
+    }
+  );
+    return true;
+}
+
+app.post('/send-twitter', function (req, res) {
+	
+	var message = req.body.message
+	  , token = req.session.auth.accessToken
+	  , secret = req.session.auth.accessSecret
+	  ;
+	var flag = twitter_update(message,token,secret);
+      //logger.debug('---------- send_twitter: --------- ');logger.debug(flag);
+	if(flag){
+		res.json({return:true},200);
+	}else{
+		res.json({return:false},200);
+	}
+});
 
 /**
  * --------------------------------------------------------
