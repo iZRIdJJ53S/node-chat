@@ -362,7 +362,7 @@ FB.init({ appId: fb_appId,
 
 
 
-<div id="contents_wrapp">
+<div id="contents_wrapp" <% if ( dec_image ) { %>style="background-image:url('/decupload/<%= dec_image %>');"<% } %>>
 	<div id="contents_wrapp_inside">
 		<section class="section_makeroome" id="pnode">
 			<img src="/data/<%= dec_detail.id %>/images/thumb_l.jpg" onerror="document.getElementById('pnode').parentNode.removeChild(document.getElementById('pnode'));"/>

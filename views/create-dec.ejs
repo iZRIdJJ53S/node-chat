@@ -102,7 +102,7 @@ else if(window.attachEvent) {
 			<form action="" method="">
 			<table id="makecommunity_table">
 				<tr>
-					<th><img src="/images/makecommunity_name.gif" width="100" height="30" alt="コミュニティ名"></th>
+					<th><img src="/images/makecommunity_name.gif" width="100" height="30" alt="コミュニティ名"><br>※必須</th>
 					<td><div class="input_makecommunity_name_area"><input type="text" name="title" id="title" value=""></div></td>
 				</tr>
 				<tr>
@@ -113,15 +113,29 @@ else if(window.attachEvent) {
 					</td>
 				</tr>
 				<tr>
-					<th><img src="/images/makecommunity_explain.gif" width="100" height="32" alt="説明"></th>
+					<th><img src="/images/makecommunity_explain.gif" width="100" height="32" alt="説明"><br>※必須</th>
 					<!--td><div id="input_makecommunity_name_textarea"  id="detail" name="detail"><textarea></textarea></div></td-->
 					<td><div id="input_makecommunity_name_textarea" ><textarea id="detail" name="detail"></textarea></div></td>
 				</tr>
 				<tr>
-					<th><img src="/images/makecommunity_bg.gif" width="100" height="16" alt="背景画像"></th>
+					<th>コニュニティ画像</th>
+					<td>
+					
+					<input type="file" size="30" name="thumb_image" id="user_up_img" onchange="changeFile();">
+					
+						<div class="fileToImage" id="block">
+						
+							<!--input type="file" name="file" id="file" class="hide" value="" onchange="changeFile();" /-->
+						</div>
+					</td>
+				
+				</tr>
+				<tr>
+					<th>背景画像</th>
 					<td>
 					
 					<input type="file" size="30" name="dec_image" id="user_up_img" onchange="changeFile();">
+					
 					
 						<div class="fileToImage" id="block">
 						
@@ -131,7 +145,7 @@ else if(window.attachEvent) {
 				</tr>
 			</table>
 			<div id="makecommunity_detail">
-				<a href="javascript:void(0);"><img src="/images/makecommunity_details.gif" width="91" height="39" alt="詳細設定" id="detailsetting"></a>
+				<!--a href="javascript:void(0);"><img src="/images/makecommunity_details.gif" width="91" height="39" alt="詳細設定" id="detailsetting"></a-->
 				<div id="detail_box">
 					<div id="detail_box_top"></div>
 					<div id="detail_box_center">
@@ -651,6 +665,9 @@ else if(window.attachEvent) {
         //},
         detail: {
           required: true
+        },
+        user_up_img: {
+          accept: "gif|jpeg|jpg|png"
         }
         //target_num: {
         //  required: true,
@@ -664,7 +681,8 @@ else if(window.attachEvent) {
       messages: {
         title: "タイトルを入力してください。",
         //description: "概要を入力して下さい",
-        detail: "詳細な内容を入力して下さい"
+        detail: "詳細な内容を入力して下さい",
+        user_up_img:"ファイル形式が違います"
         //target_num: "有効な数字を入力して下さい",
         //deadline: "有効な日付を入力して下さい"
       },

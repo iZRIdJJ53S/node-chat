@@ -119,11 +119,6 @@ window.fbAsyncInit = function() {
 
 
 
-
-
-
-
-
 	<section id="top_contents">
 		<div id="grid-content">
 
@@ -146,6 +141,7 @@ window.fbAsyncInit = function() {
 				%>
 	<% if(i == 1 || i == 5) { %><div style="width:480px; float:left;"><% } %>
 				<article<% if(i == 0 || i == 9) { %> class="widever"<% } %>>
+				<%= dec_list[i].live %>
 				<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>
 				<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" onerror='this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"' width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 9) { %>247<% } else { %>111<% } %>"></a></div>
 				<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>

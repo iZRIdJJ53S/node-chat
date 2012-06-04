@@ -549,16 +549,135 @@ app.get('/auth/complete', function(req, res) {
 
 
 
+
 // ----------------------------------------------
 // トップページ
 // ----------------------------------------------
 app.get('/', function (req, res) {
 	logger.info('app.get: /');
 	var onetime_token = '';
+	var dec_list = [];
+	var dec_list_live = [];
+	var ans = 0;
 	if (req.session && req.session.auth) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
 	}
 	// 最新のリストを取得
+
+	client.query(
+		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
+		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
+		' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+		' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
+		[FLG_SUPPORTER_WANT_STAT],
+		function(err, results, fields) {
+			if (err) {throw err;}
+			if (results.length === 0) {
+					res.render('index', {
+						'title': ''
+						, 'dec_list': []
+				});
+				return;
+			} else {
+				var max_dec_num = results.length;
+				for (var i = 0; i < max_dec_num; i++) {
+					dec_list[i] = results[i];
+				}
+			}
+			logger.debug("ーーーーーーーーーーーーーーー１－－");
+			
+			
+			for(i = 0;i<dec_list.length;i++){
+			dec_list[i].live=3;
+				client.query('SELECT id FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ?',[dec_list[i].id], function (err, results) {
+					if(results.length != 0){
+						ans = 0;
+						for(ii = 0;ii<results.length;ii++){
+							if(house.manager.rooms['/houses/'+results[ii].id] != undefined){
+								dec_list[i].live=1;
+							}else{
+								dec_list[i].live=0;
+							}
+							logger.debug("ーーーーーーーーーーーーーーー2－－");
+						}
+						
+					}
+							logger.debug("ーーーーーーーーーーーーーーー4－－");
+				});
+			}
+			
+			
+			logger.debug(dec_list);
+			res.render('index', {'locals':
+				{'title': 'SHABERI-HOUSE index'
+					, 'dec_list': dec_list
+					, 'onetime_token': onetime_token
+				}
+			});
+
+			
+			
+			/*
+			logger.debug("ーーーーーーdーーーーーーーー１－－");
+			var iid = setInterval(function(){
+				logger.debug(dec_list[0]);
+				if(dec_list[dec_list.length-1].live !== 3){
+					clearInterval(iid);
+					logger.debug(dec_list);
+					res.render('index', {'locals':
+						{'title': 'SHABERI-HOUSE index'
+							, 'dec_list': dec_list
+							, 'onetime_token': onetime_token
+						}
+					});
+				}
+			}, 1000);
+			*/
+			
+			
+		});
+});
+
+
+
+/*
+app.get('/', function (req, res) {
+
+
+async.parallel([
+    function (callback) {
+        console.log('parallel 1');
+        setTimeout(function () {
+            console.log('parallel 1 done.');
+            callback(null, 1);
+        }, 500);
+    },
+    function (callback) {
+        console.log('parallel 2');
+        setTimeout(function () {
+            console.log('parallel 2 done.');
+            callback(null, 2);
+        }, 300);
+    },
+    function (callback) {
+        console.log('parallel 3');
+        setTimeout(function () {
+            console.log('parallel 3 done.');
+            callback(null, 3);
+        }, 100);
+    }
+], function (err, results) {
+    if (err) { throw err; }
+    console.log('parallel all done. ' + results);
+});
+
+console.log('done.');
+
+	logger.info('app.get: /');
+	var onetime_token = '';
+	if (req.session && req.session.auth) {
+		onetime_token = __getOnetimeToken(req.session.auth.user_id);
+	}
 	client.query(
 		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id'+
 		'  , d.target_num, d.deadline, d.status, d.image'+
@@ -586,27 +705,19 @@ app.get('/', function (req, res) {
 			var dec_list = [];
 			var max_dec_num = results.length;
 			for (var i = 0; i < max_dec_num; i++) {
-			//	results[i].title = results[i].title.slice(0,13);
-			//	results[i].detail = results[i].detail.slice(0,36);
-			//	logger.info(results);
 				dec_list[i] = results[i];
 			};
-
 			res.render('index', {'locals':
 				{'title': 'SHABERI-HOUSE index'
 					, 'dec_list': dec_list
 					, 'onetime_token': onetime_token
 				}
-				//,'user_name': req.session.auth.user_name
-				//,'user_image': req.session.auth.user_image
-				//,'user_id': req.session.auth.user_id
 			});
 			return;
 		}
 	});
 });
-
-
+*/
 
 
 
@@ -1422,7 +1533,7 @@ app.get('/search', function (req, res) {
  * --------------------------------------------------------
  */
 app.get('/get-supporters', function (req, res) {
-logger.info(res);
+//logger.info(res);
   // リクエストチェック
   // id
   try {
@@ -1698,7 +1809,7 @@ app.get('/dec/:id', function (req, res) {
 	// 正しいかDB に確認
 	client.query(
 		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id'+
-		'  , d.target_num, d.deadline, d.status, d.image'+
+		'  , d.target_num, d.deadline, d.status, d.image AS image'+
 		'  , COUNT( s.declaration_id ) AS supporter_num'+
 		'  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
 		'  , u.name AS user_name, u.image AS user_image'+
@@ -1721,7 +1832,7 @@ app.get('/dec/:id', function (req, res) {
 				
 					logger.info(suc_obj);
 				
-				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj});
+				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':results[0].image});
 				return;
 			}
 		}
@@ -1744,6 +1855,7 @@ app.get('/ch/:id', function (req, res) {
     , user_image = ''
     , user_id = '' 
     , is_owner = false
+    , dec_image = ''
     , is_supporter = false // サポーターかどうか？。チャットをさせるかどうかの判断で使う
     , is_mailsend  = true // メール送信機能の表示/非表示判断
     ;
@@ -1763,9 +1875,9 @@ app.get('/ch/:id', function (req, res) {
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
-    'SELECT id, title AS name, image, detail, user_id AS owner_id, status'+
-    '  , mailsend_status'+
-    ' FROM '+TABLE_DECLARATIONS_CH+' WHERE id = ?',
+    'SELECT c.id, c.title AS name, c.image AS image, c.detail, c.user_id AS owner_id, c.status'+
+    '  , c.mailsend_status AS mailsend_status, d.image AS dec_image '+
+    ' FROM '+TABLE_DECLARATIONS_CH+' AS c, '+ TABLE_DECLARATIONS + ' AS d WHERE d.id = c.dec_relation_id AND c.id = ?',
     [dec_id],
     function(err, results, fields) {
       if (err) {throw err;}
@@ -1788,6 +1900,11 @@ app.get('/ch/:id', function (req, res) {
           is_mailsend = false;
         }
 
+        if( results[0].dec_image != '' )
+        {
+        	dec_image = results[0].dec_image;
+        }
+
         // サポーターかどうかチェック
         client.query(
           'SELECT id FROM '+TABLE_SUPPORTERS+
@@ -1808,7 +1925,7 @@ app.get('/ch/:id', function (req, res) {
               'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter,
               'is_mailsend': is_mailsend,
-              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token
+              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token, 'dec_image':dec_image
             });
             return;
           }
@@ -2092,7 +2209,23 @@ app.post('/create-event', function (req, res) {
 	}
 logger.info(word_tag);
 
-  client.query(
+ // 背景用
+  if( '' == req.files.dec_image.name )
+  {
+  	// 何もしない
+  }
+  else
+  {
+		//ファイル名を取得する
+		var uploadDir_two =req.files.dec_image.path.split('/');
+		// チェックにひっかからないものに関しては、すべて.jpgでコンバート
+		var filename_Return = uploadDir_two[2] + '.jpg';
+		dec_image = filename_Return;
+	}
+
+
+
+ client.query(
     'INSERT INTO '+TABLE_DECLARATIONS+' ('+
     '  created_at, title, description, detail, user_id, target_num, deadline, word_tag '+
     '  , rental_time, status, image'+
@@ -2102,16 +2235,102 @@ logger.info(word_tag);
     [title, description, detail, user_id, target_num, deadline, word_tag
       , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image 
     ],
-    function(err,results) {
+    function(err, results) {
       if (err) {throw err;}
-      if (results.length === 0) {
+      if( results.length === 0 )
+      {
         res.json({text: 'コミュニティの作成を行えませんでした。'}, 400);
         return;
       }
       else
       {
-        res.redirect('/dec/'+results.insertId);
-        return;
+      	// コミュニティ登録成功
+		// ファイル格納場所(背景)
+		var uploadDir = __dirname+'/public/decupload/' + results.insertId;
+
+		try{
+			// ディレクトリチェック
+			fs.statSync( uploadDir );
+		}catch(e){
+			// 作成
+			fs.mkdirSync( uploadDir, 0777 );
+		}
+		var filename_Perse = uploadDir + '/' +dec_image;
+		// リネーム
+		fs.rename(req.files.dec_image.path, filename_Perse);
+
+
+	// サムネイル用
+	if( '' == req.files.thumb_image.name )
+	{
+  	// 何もしない
+	}
+	else
+	{
+		// 格納場所
+		var new_thumb_uploadDir = __dirname+'/public/data/' + results.insertId;
+
+		try{
+			// ディレクトリチェック
+			fs.statSync( new_thumb_uploadDir );
+		}catch(e) {
+			console.log(new_thumb_uploadDir);
+			// 作成
+			fs.mkdirSync( new_thumb_uploadDir, 0777 );
+		}
+
+		// 格納場所
+		var thumb_uploadDir = __dirname+'/public/data/' + results.insertId + '/images';
+		try{
+			// ディレクトリチェック
+			fs.statSync( thumb_uploadDir );
+		}catch(e) {
+			console.log(thumb_uploadDir);
+			// 作成
+			fs.mkdirSync( thumb_uploadDir, 0777 );
+		}
+
+		//ファイル名をtmpのままにする
+		var thumb_uploadDir_two =req.files.thumb_image.path.split('/');
+		var thumb_filename_Perse_l = thumb_uploadDir + '/thumb_l.jpg';
+		var thumb_filename_Perse_m = thumb_uploadDir + '/thumb_m.jpg';
+		var thumb_filename_Perse_s = thumb_uploadDir + '/thumb_s.jpg';
+		
+		
+		var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
+		  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
+		
+		oldFile_l.addListener( "data", function(chunk) {
+			newFile_l.write(chunk);
+		})
+		oldFile_l.addListener( "close",function() {
+			newFile_l.end();
+		});
+		
+
+		var oldFile_m = fs.createReadStream( req.files.thumb_image.path )
+		  , newFile_m = fs.createWriteStream( thumb_filename_Perse_m );
+		
+		oldFile_m.addListener( "data", function(chunk) {
+			newFile_m.write(chunk);
+		})
+		oldFile_m.addListener( "close",function() {
+			newFile_m.end();
+		});
+
+		var oldFile_s = fs.createReadStream( req.files.thumb_image.path )
+		  , newFile_s = fs.createWriteStream( thumb_filename_Perse_s );
+		
+		oldFile_s.addListener( "data", function(chunk) {
+			newFile_s.write(chunk);
+		})
+		oldFile_s.addListener( "close",function() {
+			newFile_s.end();
+		});
+	}
+		//res.json({flg_create: true,id:results.insertId}, 200);
+		res.redirect('/dec/'+results.insertId);
+	      return;
       }
     }
   );
