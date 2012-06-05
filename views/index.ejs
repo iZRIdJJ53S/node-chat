@@ -21,83 +21,64 @@
 		<h1><img src="/images/header_logo.gif" width="234" height="106" alt="SYABERI HOUSE" ></h1>
 		<p>友人やちょっとした知り合い、<br>共通の仲間と部屋(コミュニティ)を<br>作り、楽しくシャベリあおう！</p>
 	</div>
+
 	<div class="header_center">
-		<a href="/create-dec" id="create_dec_button" style="display:none;"><img src="/images/header_make_commu.gif" width="143" height="150" alt="コミュニティを作る"></a>
+		<% if( is_auth_login ){ %><a href="/create-dec" id="create_dec_button"><img src="/images/header_make_commu.gif" width="143" height="150" alt="コミュニティを作る"></a><% } %>
+  
 		<a href="/search" class="padl40"><img src="/images/header_serch_commu.gif" width="143" height="150" alt="コミュニティを探す"></a>
 	</div>
+
 	<div class="header_right">
     
-    	<div id="logout" style="display:none;"><a  href="javascript:void(0);" id="logout_button"><img  src="/images/header_logout.gif" width="110" height="36" alt="ログアウト"></a></div>
-   
-		<div id="register" style="display:none;">
-			<ul>
-				<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/top_login_facebook.gif" width="215" height="52" alt="facebookログイン"></a></li>
-				<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/top_login_twetter.gif" width="215" height="52" alt="twetterログイン"></a></li>
-			</ul>
+	    	<% if( is_auth_login ){ %>
+			<div id="logout"><a  href="javascript:logout( '/logout' , 'TW_FRIEND_FLAG' , '0' );"><img  src="/images/header_logout.gif" width="110" height="36" alt="ログアウト"></a></div>
+		<% }else{  %>
+			<div id="register">
+				<ul>
+					<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/top_login_facebook.gif" width="215" height="52" alt="facebookログイン"></a></li>
+					<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/top_login_twetter.gif" width="215" height="52" alt="twetterログイン"></a></li>
+				</ul>
 
-			<div id="fb-root"></div>
+				<div id="fb-root"></div>
+			</div>
+		<% }%>
 	</div>
 
-		</div>
-	</div>
 
 <!-- facebook oauth -->
 <script>
-
  
 window.fbAsyncInit = function() {
 
-	FB.init({ appId: fb_appId,
+	FB.init({ appId: '351823408214501',
 		status: true, 
 		cookie: true,
 		xfbml: true,
 		oauth: true
 	});
 
-
+	function updateButton(response) {
 	
-	function updateButton2(response) {
-		var loginButton_facebook = document.getElementById('login_button_facebook');	
-		//しゃべりハウスのfacebookログイン
-		if ((response.authResponse) && (syaberi_login_flag == true)) {
-
-			//alert("ログイン済/"+syaberi_login_flag);
-			$('#create_dec_button').css('display', 'inline');
-			$('#logout').css('display', 'block');
-			$('#register').css('display', 'none');
-
-			var logoutButton = document.getElementById('logout_button');
-			//しゃべりハウスのログアウト
-			logout_button.onclick = function() {
-				location.href = "/logout"
-			};
-
-
-		}else{
-			//alert("ログイン前/"+syaberi_login_flag);
-			$('#create_dec_button').css('display', 'none');
-			$('#logout').css('display', 'none');
-			$('#register').css('display', 'block');
-
-			loginButton_facebook.onclick = function() {
-				FB.login(function(response) {
-				    if (response.authResponse) {
-				        FB.api('/me', function(response) {
-				            userInfo.innerHTML = 
-				              '<img src="https://graph.facebook.com/' 
-				              + response.id + '/picture" style="margin-right:5px" />'
-				              + response.name;
-				        });
-				    } else {
-				        //user cancelled login or did not grant authorization
-				    }
-				}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
-			}
+		var loginButton_facebook = document.getElementById('login_button_facebook');
+		loginButton_facebook.onclick = function() {
+			FB.login(function(response) {
+			    if (response.authResponse) {
+			        FB.api('/me', function(response) {
+			            userInfo.innerHTML = 
+			              '<img src="https://graph.facebook.com/' 
+			              + response.id + '/picture" style="margin-right:5px" />'
+			              + response.name;
+			        });
+			    } else {
+			        //user cancelled login or did not grant authorization
+			    }
+			}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
 		}
+
 	}
 
-	FB.getLoginStatus(updateButton2);
-	FB.Event.subscribe('auth.statusChange', updateButton2);
+	FB.getLoginStatus(updateButton);
+	FB.Event.subscribe('auth.statusChange', updateButton);
 };
 
 (function() {

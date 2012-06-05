@@ -121,7 +121,7 @@ else if(window.attachEvent) {
 					<th>コニュニティ画像</th>
 					<td>
 					
-					<input type="file" size="30" name="thumb_image" id="user_up_img" onchange="changeFile();">
+					<input type="file" size="30" name="thumb_image" id="thumb_image" onchange="changeFile();">
 					
 						<div class="fileToImage" id="block">
 						
@@ -134,7 +134,7 @@ else if(window.attachEvent) {
 					<th>背景画像</th>
 					<td>
 					
-					<input type="file" size="30" name="dec_image" id="user_up_img" onchange="changeFile();">
+					<input type="file" size="30" name="dec_image" id="dec_image" onchange="changeFile();">
 					
 					
 						<div class="fileToImage" id="block">
@@ -666,7 +666,10 @@ else if(window.attachEvent) {
         detail: {
           required: true
         },
-        user_up_img: {
+        dec_image: {
+          accept: "gif|jpeg|jpg|png"
+        },
+        thumb_image: {
           accept: "gif|jpeg|jpg|png"
         }
         //target_num: {
@@ -682,7 +685,8 @@ else if(window.attachEvent) {
         title: "タイトルを入力してください。",
         //description: "概要を入力して下さい",
         detail: "詳細な内容を入力して下さい",
-        user_up_img:"ファイル形式が違います"
+        dec_image:"ファイル形式が違います",
+        thumb_image:"ファイル形式が違います"
         //target_num: "有効な数字を入力して下さい",
         //deadline: "有効な日付を入力して下さい"
       },
@@ -707,11 +711,15 @@ else if(window.attachEvent) {
       //, deadline    = $('#deadline').val()
       //, rental_time = $('input[name=rental-time]:checked').val()
       , dec_image   = ''
+      , thumb_image   = ''
       ;
 
     // 画像アップロードがあったら
-    if ($('#user_up_img').attr('src')) {
-      dec_image = $('#user_up_img').attr('src');
+    if ($('#dec_image').attr('src')) {
+      dec_image = $('#dec_image').attr('src');
+    }
+    if ($('#thumb_image').attr('src')) {
+      thumb_image = $('#thumb_image').attr('src');
     }
 
     // rental_time の計算
@@ -744,6 +752,7 @@ else if(window.attachEvent) {
     //  , deadline:    deadline
     //  , rental_time: date_rental
       , dec_image:   dec_image
+      , thumb_image:   thumb_image
     };
 
     $.ajax({

@@ -555,125 +555,8 @@ app.get('/auth/complete', function(req, res) {
 // ----------------------------------------------
 app.get('/', function (req, res) {
 	logger.info('app.get: /');
-	var onetime_token = '';
-	var dec_list = [];
-	var dec_list_live = [];
-	var ans = 0;
-	if (req.session && req.session.auth) {
-		onetime_token = __getOnetimeToken(req.session.auth.user_id);
-	}
-	// 最新のリストを取得
-
-	client.query(
-		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
-		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
-		' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-		' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
-		[FLG_SUPPORTER_WANT_STAT],
-		function(err, results, fields) {
-			if (err) {throw err;}
-			if (results.length === 0) {
-					res.render('index', {
-						'title': ''
-						, 'dec_list': []
-				});
-				return;
-			} else {
-				var max_dec_num = results.length;
-				for (var i = 0; i < max_dec_num; i++) {
-					dec_list[i] = results[i];
-				}
-			}
-			logger.debug("ーーーーーーーーーーーーーーー１－－");
-			
-			
-			for(i = 0;i<dec_list.length;i++){
-			dec_list[i].live=3;
-				client.query('SELECT id FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ?',[dec_list[i].id], function (err, results) {
-					if(results.length != 0){
-						ans = 0;
-						for(ii = 0;ii<results.length;ii++){
-							if(house.manager.rooms['/houses/'+results[ii].id] != undefined){
-								dec_list[i].live=1;
-							}else{
-								dec_list[i].live=0;
-							}
-							logger.debug("ーーーーーーーーーーーーーーー2－－");
-						}
-						
-					}
-							logger.debug("ーーーーーーーーーーーーーーー4－－");
-				});
-			}
-			
-			
-			logger.debug(dec_list);
-			res.render('index', {'locals':
-				{'title': 'SHABERI-HOUSE index'
-					, 'dec_list': dec_list
-					, 'onetime_token': onetime_token
-				}
-			});
-
-			
-			
-			/*
-			logger.debug("ーーーーーーdーーーーーーーー１－－");
-			var iid = setInterval(function(){
-				logger.debug(dec_list[0]);
-				if(dec_list[dec_list.length-1].live !== 3){
-					clearInterval(iid);
-					logger.debug(dec_list);
-					res.render('index', {'locals':
-						{'title': 'SHABERI-HOUSE index'
-							, 'dec_list': dec_list
-							, 'onetime_token': onetime_token
-						}
-					});
-				}
-			}, 1000);
-			*/
-			
-			
-		});
-});
-
-
-
-/*
-app.get('/', function (req, res) {
-
-
-async.parallel([
-    function (callback) {
-        console.log('parallel 1');
-        setTimeout(function () {
-            console.log('parallel 1 done.');
-            callback(null, 1);
-        }, 500);
-    },
-    function (callback) {
-        console.log('parallel 2');
-        setTimeout(function () {
-            console.log('parallel 2 done.');
-            callback(null, 2);
-        }, 300);
-    },
-    function (callback) {
-        console.log('parallel 3');
-        setTimeout(function () {
-            console.log('parallel 3 done.');
-            callback(null, 3);
-        }, 100);
-    }
-], function (err, results) {
-    if (err) { throw err; }
-    console.log('parallel all done. ' + results);
-});
-
-console.log('done.');
-
-	logger.info('app.get: /');
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
 	var onetime_token = '';
 	if (req.session && req.session.auth) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
@@ -711,13 +594,14 @@ console.log('done.');
 				{'title': 'SHABERI-HOUSE index'
 					, 'dec_list': dec_list
 					, 'onetime_token': onetime_token
+					, 'is_auth_login': is_auth_login
 				}
 			});
 			return;
 		}
 	});
 });
-*/
+
 
 
 
@@ -765,8 +649,13 @@ app.get('/about', function (req, res) {
 
 
 app.get('/terms', function (req, res) {
+	
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
+
   res.render('terms', {
-    'meta_title': '利用規約｜'
+    'meta_title': '利用規約｜',
+    'is_auth_login': is_auth_login
   });
   return;
 });
@@ -936,7 +825,7 @@ app.get('/facebook-get-friends', function (req, res) {
 });
 
 // ----------------------------------------------
-// (facebook oauth)
+// sessionを渡す
 // ----------------------------------------------
 
 app.get('/get-session', function (req, res) {
@@ -952,7 +841,8 @@ app.get('/get-session', function (req, res) {
     if(req.session.auth.service == "facebook"){
        res.json(req.session.auth, 200);
     } else {
-	//logger.info('session-twitter');
+	//logger.debug('---------- flag1 ------');
+	//logger.debug(req.session);
        res.json({
 		service : 'twitter',
 		user_name : req.session.auth.user_name,
@@ -1253,12 +1143,15 @@ app.get('/firstset', function (req, res) {
 app.get('/mypage', function (req, res) {
 
 
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    //res.redirect('/auth/twitter');
-    res.redirect('/');
-    return;
-  }
+	//ログインフラグ
+	var is_auth_login = true;
+
+	if (!__isAuthLogin(req)) {
+		// ログインしていないので、リダイレクト
+		res.redirect('/');
+		is_auth_login = false;
+		return;
+	}
 
   // onetime_token 取得
   var onetime_token = __getOnetimeToken(req.session.auth.user_id);
@@ -1297,6 +1190,7 @@ app.get('/mypage', function (req, res) {
           'dec_list': dec_list
         , 'onetime_token': onetime_token
         , 'meta_title': 'マイページ｜'
+	, 'is_auth_login': is_auth_login
       });
       return;
 
@@ -1379,11 +1273,15 @@ app.get('/mypage', function (req, res) {
 // --------------------------------------------------------
 app.get('/create-dec', function (req, res) {
 
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
+	//ログインフラグ
+	var is_auth_login = true;
+
+	if (!__isAuthLogin(req)) {
+		// ログインしていないので、リダイレクト
+		res.redirect('/');
+		is_auth_login = false;
+		return;
+	}
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
@@ -1398,6 +1296,7 @@ app.get('/create-dec', function (req, res) {
         res.render('create-dec', {
             'user_data': results
           , 'meta_title': 'チャット部屋作成｜'
+	  , 'is_auth_login': is_auth_login
         });
         return;
       }
@@ -1410,11 +1309,15 @@ app.get('/create-dec', function (req, res) {
 // --------------------------------------------------------
 app.get('/my-setting', function (req, res) {
 
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
+	//ログインフラグ
+	var is_auth_login = true;
+
+	if (!__isAuthLogin(req)) {
+		// ログインしていないので、リダイレクト
+		res.redirect('/');
+		is_auth_login = false;
+		return;
+	}
 
   // onetime_token 取得
   var onetime_token = __getOnetimeToken(req.session.auth.user_id);
@@ -1433,6 +1336,7 @@ app.get('/my-setting', function (req, res) {
             'user_data': results
           , 'onetime_token': onetime_token
           , 'meta_title': 'プロフィール設定｜'
+	  , 'is_auth_login': is_auth_login
         });
         return;
       }
@@ -1447,7 +1351,8 @@ app.get('/my-setting', function (req, res) {
 // --------------------------------------------------------
 app.get('/search', function (req, res) {
 
-
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
 
 	var next_num = 0;	if(req.query.next_num){ next_num = req.query.next_num };
 	var ajax_flag=false;    if(req.query.ajax_flag){ ajax_flag = true };
@@ -1486,7 +1391,8 @@ app.get('/search', function (req, res) {
 				res.render('search', {
 					'title': ''
 					, 'dec_list': []
-					, 'onetime_token': onetime_token 
+					, 'onetime_token': onetime_token
+					, 'is_auth_login': is_auth_login 
 			});
 			return;
 		} else {
@@ -1511,6 +1417,7 @@ app.get('/search', function (req, res) {
 					{'title': 'SHABERI-HOUSE index'
 						, 'dec_list': dec_list
 						, 'onetime_token': onetime_token
+						, 'is_auth_login': is_auth_login
 					}
 				});
 				return;
@@ -1793,6 +1700,10 @@ app.get('/get-events', function (req, res) {
 // dec detail (宣言詳細)
 // --------------------------------------------------------
 app.get('/dec/:id', function (req, res) {
+
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
+
 	// ID が正しいかチェックする
 	// 正しくなければ、一覧へリダイレクトする
 	var dec_id = (req.params.id) ? req.params.id : '';
@@ -1832,7 +1743,7 @@ app.get('/dec/:id', function (req, res) {
 				
 					logger.info(suc_obj);
 				
-				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':results[0].image});
+				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':results[0].image, 'is_auth_login': is_auth_login});
 				return;
 			}
 		}
@@ -1848,6 +1759,10 @@ app.get('/dec/:id', function (req, res) {
 // chat_room
 // --------------------------------------------------------
 app.get('/ch/:id', function (req, res) {
+
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
+
   // ID が正しいかチェックする
   var dec_id = (req.params.id) ? req.params.id : '';
 
@@ -1925,7 +1840,8 @@ app.get('/ch/:id', function (req, res) {
               'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter,
               'is_mailsend': is_mailsend,
-              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token, 'dec_image':dec_image
+              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token, 'dec_image':dec_image,
+              'is_auth_login': is_auth_login
             });
             return;
           }
@@ -2670,6 +2586,126 @@ app.post('/send-twitter', function (req, res) {
 	}else{
 		res.json({return:false},200);
 	}
+});
+
+/**
+ * --------------------------------------------------------
+ * twitter friend情報取得
+ * --------------------------------------------------------
+ */
+
+app.get('/get-twitter-friends', function (req, res) {
+	
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+    //logger.debug("false1");
+    res.json({login_flg: false, return: false }, 200);
+    return;
+  }
+
+　　//初回ログインはoauthで友達情報を取得
+    if(req.query.flag != "1"){
+      logger.debug('---------- flag-TW------- ');logger.debug(req.query.flag);
+	var token = req.session.auth.accessToken
+	  , secret = req.session.auth.accessSecret
+	  , service_id = req.session.auth.oauth_service_id
+	  , cursor = req.query.cursor
+	  ;
+	  oa_obj.get(
+	    'http://api.twitter.com/1/statuses/friends.json?id=' + service_id + '&cursor=' + cursor,
+	    token,
+	    secret,
+	    function(err, data) {
+		if (err) {throw err;}
+		if(data){
+			res.render('get-twitter-friends', {
+			'res_json': data
+			});
+		}else{
+			res.json({return:false},200);
+		}
+	   }
+	  );
+     } else {
+
+      //logger.debug('---------- flag-DB------- ');logger.debug(req.query.flag);
+
+	  // DB に値があるかチェック
+	  client.query(
+	    'SELECT id, friend_list FROM '+TABLE_USERS+
+	    ' WHERE oauth_service_id = ? AND oauth_service = "twitter"',
+	    [req.session.auth.oauth_service_id],
+	         function(err, results, fields) {
+			//logger.debug("userid=="+req.session.auth.user_id);
+			//logger.debug("res=="+results[0]);
+		      if (err) {throw err;}
+		      if (results[0]) {
+			//logger.debug(results[0].friend_list);
+			res.json(results[0].friend_list, 200);
+
+		      } else {
+			//logger.debug("false2");
+		        res.json({return:false}, 200);
+		        return;
+		      }
+	         }
+	  );
+
+	  return;
+
+     }
+});
+
+/**
+ * --------------------------------------------------------
+ * twitter friend情報登録
+ * --------------------------------------------------------
+ */
+
+app.post('/set-twitter-friends', function (req, res) {
+	
+  // ログインしてるかどうか？
+  if (!__isAuthLogin(req)) {
+    // ログインしていない
+    //logger.debug("false1");
+    res.json({login_flg: false, return: false }, 200);
+    return;
+  } else {
+	        logger.debug('---------- oauth_id ------');
+		logger.debug(req.session.auth.oauth_service_id);
+
+	  // DB に値があるかチェック
+	  client.query(
+	    'SELECT id, friend_list FROM '+TABLE_USERS+
+	    ' WHERE oauth_service_id = ? AND oauth_service = "twitter"',
+	    [req.session.auth.oauth_service_id],
+	    function(err, results, fields) {
+	      if (err) {throw err;}
+
+	      if (results[0]) {
+	        //logger.debug('---------- json ------');
+		//logger.debug(req.session.auth.oauth_service_id);
+		//logger.debug(req.body.friend_list);
+
+	        client.query(
+	          'UPDATE '+TABLE_USERS+
+	          ' SET friend_list = ?'+
+		  ' WHERE oauth_service_id = ? AND oauth_service = "twitter"',
+		  [ req.body.friend_list , req.session.auth.oauth_service_id ],
+	          function(err) {
+	            if (err) {throw err;}
+	          }
+	        );
+		    res.json({ return: true }, 200);
+		    return;
+
+	      }
+	    }
+	  );
+	return;
+  }
+
 });
 
 /**

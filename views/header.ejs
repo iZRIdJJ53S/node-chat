@@ -44,45 +44,46 @@
 			</table>
 		</div><!--/header_center-->
 
-<style> 
-#header_register{
-	display:none;
-}
-#header_right{
-	display:none;
-}
-</style>
-
-		<div id="header_register">
-			<ul>
-				<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/header_login_facebook.gif" width="80" height="26" alt="facebookログイン"></a></li>
-				<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/header_login_twetter.gif" width="80" height="26" alt="twetterログイン"></a></li>
-			</ul>
-
-			<div id="fb-root"></div>
-		</div>
 
 
+		<%if( is_auth_login){ %>
 
 
-		<div id="header_right">
-		
-			<table id="header_right_table">
-				<tr>
-					<td id="header_mypage_thumb"><div><img id="header_mypage_thumb_img" src="" width="40" height="40"></div></td>
-					<td id="header_mypage_name"><h2 id="header_mypage_name_h2"></h2></td>
-					<td id="header_mypage_pull"><a href="#"><img src="/images/common/pull.png" width="26" height="26" id="mypage_pull"></a></td>
-				</tr>
-			</table>
-			<div id="mypage_notification_wrapp">
-				<a href="/mypage" class="mypage_nortification_txt"><div>マイページ</div></a>
-				<a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a>
-				<!--a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a-->
-				<a href="/create-dec" class="mypage_nortification_txt"><div>コミュニティを作る</div></a>
-				<a href="/logout" id="logout_button" class="mypage_nortification_txt"><div>ログアウト</div></a>
-			</div><!--/mypage_notification_wrapp-->
+			<div id="header_right">
 
-		</div><!--/header_right-->
+				<table id="header_right_table">
+					<tr>
+						<td id="header_mypage_thumb"><div><img id="header_mypage_thumb_img" src="" width="40" height="40"></div></td>
+						<td id="header_mypage_name"><h2 id="header_mypage_name_h2"></h2></td>
+						<td id="header_mypage_pull"><a href="#"><img src="/images/common/pull.png" width="26" height="26" id="mypage_pull"></a></td>
+					</tr>
+				</table>
+				<div id="mypage_notification_wrapp">
+					<a href="/mypage" class="mypage_nortification_txt"><div>マイページ</div></a>
+					<a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a>
+					<a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a>
+					<a href="/create-dec" class="mypage_nortification_txt"><div>コミュニティを作る</div></a>
+					<a href="/search" class="mypage_nortification_txt"><div>コミュニティを探す</div></a>
+					<a href="javascript:logout( '/logout' , 'TW_FRIEND_FLAG' , '0' );" class="mypage_nortification_txt"><div>ログアウト</div></a>
+				</div><!--/mypage_notification_wrapp-->
+
+			</div>
+
+
+		<% }else{ %>
+
+			<div id="header_register">
+				<ul>
+					<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/header_login_facebook.gif" width="80" height="26" alt="facebookログイン"></a></li>
+					<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/header_login_twetter.gif" width="80" height="26" alt="twetterログイン"></a></li>
+				</ul>
+
+				
+			</div>
+
+		<% } %>
+
+		<div id="fb-root"></div>
 	</div>
 
 
@@ -90,49 +91,34 @@
 
 <!-- facebook oauth -->
 <script>
-
  
 window.fbAsyncInit = function() {
 
-	FB.init({ appId: '351823408214501',
-		status: true, 
-		cookie: true,
-		xfbml: true,
-		oauth: true
-	});
+FB.init({ appId: fb_appId,
+	status: true, 
+	cookie: true,
+	xfbml: true,
+	oauth: true
+});
 
 	function updateButton(response) {
-		var loginButton_facebook = document.getElementById('login_button_facebook');	
-		//しゃべりハウスのfacebookログイン
-		if ((response.authResponse) && (syaberi_login_flag == true)) {
-
-			//alert("ログイン済/"+syaberi_login_flag);
-			$('#fukidashi').css('display', 'block');
-			$('#header_register').css('display', 'none');
-			$('#header_right').css('display', 'block');
-
-		}else{
-
-			//alert("ログイン前/"+syaberi_login_flag);
-			$('#fukidashi').css('display', 'none');
-			$('#header_register').css('display', 'block');
-			$('#header_right').css('display', 'none');
-
-			loginButton_facebook.onclick = function() {
-				FB.login(function(response) {
-				    if (response.authResponse) {
-				        FB.api('/me', function(response) {
-				            userInfo.innerHTML = 
-				              '<img src="https://graph.facebook.com/' 
-				              + response.id + '/picture" style="margin-right:5px" />'
-				              + response.name;
-				        });
-				    } else {
-				        //user cancelled login or did not grant authorization
-				    }
-				}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
-			}
+	
+		var loginButton_facebook = document.getElementById('login_button_facebook');
+		loginButton_facebook.onclick = function() {
+			FB.login(function(response) {
+			    if (response.authResponse) {
+			        FB.api('/me', function(response) {
+			            userInfo.innerHTML = 
+			              '<img src="https://graph.facebook.com/' 
+			              + response.id + '/picture" style="margin-right:5px" />'
+			              + response.name;
+			        });
+			    } else {
+			        //user cancelled login or did not grant authorization
+			    }
+			}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
 		}
+
 	}
 
 	FB.getLoginStatus(updateButton);

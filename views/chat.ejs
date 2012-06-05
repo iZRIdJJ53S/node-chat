@@ -49,6 +49,7 @@ var sns_token = "";
 var sns_user_name = "";
 var sns_service = "";
 var sns_service_id = "";
+var TW_FRIEND_FLAG = ReadCookie("TW_FRIEND_FLAG");
 (function() {
 	var tim = new Date();
 	var parameters = "tim=" + tim.getSeconds()+tim.getMilliseconds();
@@ -62,11 +63,10 @@ var sns_service_id = "";
 			var arr = httpoj.responseText;
 			var getSessionJson = eval("(" + arr + ")");
 			
-			//alert(getSessionJson["accessToken"]);
 			sns_token = getSessionJson["accessToken"];
 			sns_user_name = getSessionJson["user_name"];
 			sns_service = getSessionJson["service"];
-			sns_service_id = getSessionJson["oauth_service_id"];;
+			sns_service_id = getSessionJson["oauth_service_id"];
 
 			if(sns_service == "facebook"){
 				getfbFriend();
@@ -80,7 +80,7 @@ var sns_service_id = "";
 
 			}else if(sns_service == "twitter"){
 				gettwFriend(sns_service_id);
-
+				//tw_friends_json();
 				if(window.addEventListener) {
 					window.addEventListener("load", twDisplay, false);
 				}
@@ -103,105 +103,123 @@ function twDisplay(){
 }
 
 /*****************  twitter ****************************************************/
-(function($) {
-
-	$.extend({
-		_jsonp : {
-			scripts: {},
-			charset: 'utf-8',
-			counter: 1,
-			head: document.getElementsByTagName("head")[0],
-			name: function( callback ) {
-				var name = '_jsonp_' +  (new Date).getTime()
-					+ '_' + this.counter;
-				this.counter++;
-				var cb = function( json ) {
-					eval( 'delete ' + name );
-					callback( json );
-					$._jsonp.head.removeChild( $._jsonp.scripts[ name ] );
-					delete $._jsonp.scripts[ name ];
-				};
-				eval( name + ' = cb' );
-				return name;
-			},
-			load: function( url, name ) {
-				var script = document.createElement( 'script' );
-				script.type    = 'text/javascript';
-				script.charset = this.charset;
-				script.src     = url;
-				this.head.appendChild( script );
-				this.scripts[ name ] = script;
-			}
-		},
-
-		getJSONP : function ( url, callback ){
-			var name = $._jsonp.name( callback );
-			var url = url.replace( /{callback}/, name );
-			$._jsonp.load( url, name );
-			return this;
-		}
-	});
-
-})(jQuery);
 
 var cursor = "-1";
 var tw_friends = new Array();
 var tw_flag = true;
-var timerID;
+var timerID = "";
 var tw_friendsJson = '{"data":[';
 
+function tw_friends_json(){
+	var tim = new Date();
+	var parameters = "cursor=" + cursor + "&flag=" + TW_FRIEND_FLAG + "&tim=" + tim.getSeconds()+tim.getMilliseconds();
+	var request = "/get-twitter-friends?"+ parameters;
+//	alert(request);
+	var httpoj = createHttpRequest()
+	httpoj.open( "GET" , request , true );
+	httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
+	httpoj.onreadystatechange = function(){ 
+		if ((httpoj.readyState==4) && (httpoj.status == 200)){
+			var args = {};
+			var arr = httpoj.responseText;
+			var json = arr.replace(/\&quot\;/g, '"');
+			var obj = eval("(" + json + ")");
 
-function tw_make_json(sns_id){
-	var url="http://api.twitter.com/1/statuses/friends.json?id=" + sns_id + "&cursor=" + cursor + "&callback={callback}";
-	$.getJSONP(url, function(obj){
-	  if(cursor != obj["next_cursor"]){
-	    cursor = obj["next_cursor"];
-	    if(obj["users"].length != 0){
-			
-		    for(var i=0;i<obj["users"].length;i++){
-	    	        //tw_friends.push(obj["users"][i]["name"]);
-			tw_friendsJson += '{"id":"'+ obj["users"][i]["id"] +'","name":"'+ obj["users"][i]["name"] +'","screen_name":"'+ obj["users"][i]["screen_name"] +'"}';
-			//alert(tw_friends[i]);
-			if((cursor == "0") && (obj["users"].length == ( i + 1 ))){
-		    		tw_friendsJson += ']}';
-		    	}else{
-		    		tw_friendsJson += ',';
-			}
-		    }
-		if(cursor == "0"){
+		  if(TW_FRIEND_FLAG != "1"){
+			  if(cursor != obj["next_cursor"]){
+			     cursor = obj["next_cursor"];
+
+				if(obj["users"].length != 0){
+				    for(var i=0;i<obj["users"].length;i++){
+			    	        //tw_friends.push(obj["users"][i]["name"]);
+					tw_friendsJson += '{"id":"'+ obj["users"][i]["id"] +'",';
+					tw_friendsJson += '"name":"'+ encodeURIComponent(obj["users"][i]["name"]) +'",';
+					tw_friendsJson += '"screen_name":"'+ encodeURIComponent(obj["users"][i]["screen_name"]) +'",';
+					tw_friendsJson += '"profile_image_url":"'+ obj["users"][i]["profile_image_url"] +'"}';
+					//alert(tw_friends[i]);
+					if((cursor == "0") && (obj["users"].length == ( i + 1 ))){
+				    		tw_friendsJson += ']}';
+				    	}else{
+				    		tw_friendsJson += ',';
+					}
+				    }
+				    if(cursor == "0"){
+					clearInterval(timerID);
+					print_tw();
+				    }
+				}else{
+					clearInterval(timerID);
+					tw_friendsJson += ']}';
+					print_tw();
+				}
+			   }
+		  }else{
+
 			clearInterval(timerID);
+			tw_friendsJson = obj;
 			print_tw();
+
+		  }
+		
 		}
-	    }else{
-		clearInterval(timerID);
-		tw_friendsJson += ']}';
-		print_tw();
-	    }
-	  }
-	});
+	}
+	httpoj.send();
+
 }
+
 
 function gettwFriend(sns_id){
 	timerID = setInterval(function(){
-	        tw_make_json(sns_id);
-	},500);
+//	        tw_make_json(sns_id);
+	        tw_friends_json();
+	},1000);
 }
 
 function print_tw(){
 	var tw_friendsArr = eval('('+tw_friendsJson+')');
-//	alert(tw_friendsArr["data"].length);
 	var str = ""
 	for( var i = 0 ; i < tw_friendsArr["data"].length ; i++ ){
 		str += '<li>';
-		str += '	<div class="invite_li_input"><input type="checkbox" name="tw_'+tw_friendsArr["data"][i]["id"]+'" id="tw_'+tw_friendsArr["data"][i]["id"]+'" value="'+tw_friendsArr["data"][i]["screen_name"]+'" class="invite_table_td_tumnb_checkbox"></div>';
-		str += '	<div class="invite_li_tumnb"><img src="http://img.tweetimag.es/i/'+tw_friendsArr["data"][i]["screen_name"]+'_o" width="40" height="40"></div>';
-		str += '	<div class="invite_li_name">'+tw_friendsArr["data"][i]["name"]+'</div>';
+		str += '	<div class="invite_li_input">';
+		str += '	<input type="checkbox" name="tw_'+tw_friendsArr["data"][i]["id"]+'" id="tw_'+tw_friendsArr["data"][i]["id"]+'" value="'+decodeURIComponent(tw_friendsArr["data"][i]["screen_name"])+'" class="invite_table_td_tumnb_checkbox">';
+		str += '	</div>';
+		str += '	<div class="invite_li_tumnb"><img src="'+tw_friendsArr["data"][i]["profile_image_url"]+'" width="40" height="40"></div>';
+		str += '	<div class="invite_li_name">'+decodeURIComponent(tw_friendsArr["data"][i]["name"])+'</div>';
 		str += '</li>';
 	}
 	document.getElementById("tab_2_area").innerHTML = str;
+
+	//alert(ReadCookie("TW_FRIEND_FLAG"));
+	if(TW_FRIEND_FLAG != "1"){
+		//alert(friend_up_flag);
+		settwFriend();
+	}
+
 	$('#scrollbar1').tinyscrollbar();
 
 }
+
+function settwFriend(){
+	var tim = new Date();
+	var parameters = "friend_list=" + tw_friendsJson + "&tim=" + tim.getSeconds()+tim.getMilliseconds();
+	var request = "/set-twitter-friends";
+	var httpoj = createHttpRequest()
+	httpoj.open( "POST" , request , true )
+	httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
+	httpoj.onreadystatechange = function(){ 
+		if ((httpoj.readyState==4) && (httpoj.status == 200)){
+			var args = {};
+			var arr = httpoj.responseText;
+			var res = eval("(" + arr + ")");
+			if(res["return"]){
+				set_cookie("TW_FRIEND_FLAG","1");
+				//alert("TW_FRIEND_FLAG");
+			}
+		}
+	}
+	httpoj.send(parameters);
+}
+
 
 function tw_sendMessage(){
 	var message_text = sns_user_name + 'さんがチャットに誘ってます！';
