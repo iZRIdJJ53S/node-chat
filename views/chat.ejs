@@ -18,19 +18,24 @@ var uaetc = 0;
 		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
 		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
 		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		document.write('<link rel="stylesheet" href="/css/nyroModal_smapho.css">');
+		document.write('<scr'+'ipt src="/js/jquery.nyroModal.customspaho.js" charset="UTF-8"></scr'+'ipt>');
 		uaiph = 1;
 	}else if(navigator.userAgent.indexOf('Android') != -1){
 		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
 		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
 		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		document.write('<link rel="stylesheet" href="/css/nyroModal_smapho.css">');
+		document.write('<scr'+'ipt src="/js/jquery.nyroModal.customspaho.js" charset="UTF-8"></scr'+'ipt>');
 		uaand = 1;
 	}else{
 		document.write('<link rel="stylesheet" type="text/css" href="/css/style.css">');
 		document.write('<link rel="stylesheet" href="/css/common.css" />');
+		document.write('<link rel="stylesheet" href="/css/nyroModal.css">');
+		document.write('<scr'+'ipt src="/js/jquery.nyroModal.custom.js" charset="UTF-8"></scr'+'ipt>');
 		uaetc = 1;
 	}
 </script>
-<link rel="stylesheet" href="/css/nyroModal.css">
 <script src="/js/jquery.tinyscrollbar.min.js" charset="UTF-8"></script>
 <script type="text/javascript">
 //write function jquery.tinyscrollbar.min.js line:498
@@ -40,9 +45,12 @@ function forscrol(){
 	},1500);
 }
 </script>
-<script src="/js/jquery.nyroModal.custom.js" charset="UTF-8"></script>
 <script>
 <!--
+//短縮URL取得
+(function(){
+	setShortURL();
+})();
 
 // snsトークン取得
 var sns_token = "";
@@ -96,10 +104,12 @@ var TW_FRIEND_FLAG = ReadCookie("TW_FRIEND_FLAG");
 function fbDisplay(){
 	document.getElementById("tab_1").style.display = "block";
 	document.getElementById("tab_1_area").style.display = "block";
+	document.getElementById("comment_flag_fb").style.display = "block";
 }
 function twDisplay(){
 	document.getElementById("tab_2").style.display = "block";
 	document.getElementById("tab_2_area").style.display = "block";
+	document.getElementById("comment_flag_tw").style.display = "block";
 }
 
 /*****************  twitter ****************************************************/
@@ -262,9 +272,65 @@ function tw_sendMessage(){
 	chg_inv_disp();
 }
 
+//投稿内容をツイート
+function tw_sendComment(){
+	//send-twitter
+	var val = document.getElementById("message1").value;
+	
+	//添付画像
+	var img_val = document.getElementById("realUpfile").value;
+	
+	if(document.getElementById("comment_check_tw").checked){
 
+		if((val != "") && (img_val == "")){
+		
+			var count = val.length;
+			var str = "";
+			if(count > 120){
+				//alert(count);
+				for(var i=0 ; i < 120 ; i++ ){
+					str += val.charAt(i);
+				}
+				val = str;
+			}
+
+			var tim = new Date();
+			var parameters = "message="+ val + " " + getShortUrl + "&tim=" + tim.getSeconds()+tim.getMilliseconds();
+			var request = "/send-twitter";
+			var httpoj = createHttpRequest()
+			httpoj.open( "POST" , request , true )
+			httpoj.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8'); 
+			httpoj.onreadystatechange = function(){ 
+				if ((httpoj.readyState==4) && (httpoj.status == 200)){
+					var args = {};
+					var arr = httpoj.responseText;
+					var send_return = eval("(" + arr + ")");
+				}
+			}
+			httpoj.send(parameters);
+
+		}
+	}
+
+}
 /*****************  /twitter ****************************************************/
 
+//投稿内容をつぶやく
+function sendComment(){
+	if(sns_service == "facebook"){
+
+//		alert("facebook");
+		fb_sendComment()
+
+	}else if(sns_service == "twitter"){
+
+		tw_sendComment();
+		//alert("twitter");
+	}
+
+}
+
+//友達招待
 function sendMessage(){
 	if(sns_service == "facebook"){
 
@@ -277,6 +343,28 @@ function sendMessage(){
 	}
 }
 /*****************  facebook ****************************************************/
+
+function fb_sendComment(){
+	//send-facebook
+	var val = document.getElementById("message1").value;
+	//添付画像
+	var img_val = document.getElementById("realUpfile").value;
+	
+	if(document.getElementById("comment_check_fb").checked){
+
+		if((val != "") && (img_val == "")){
+				
+			FB.api('/me/feed','post', { access_token: sns_token , message: val , picture: location.protocol+'//'+ location.host +'/images/common/logo.gif', link: location.href},
+				function(response) {
+					// コールバック
+					//alert('ID: ' + response.id);
+				}
+			);
+
+		}
+	}
+}
+
 
 //function getFacebookFriends(){
 function getfbFriend(){
@@ -394,7 +482,7 @@ FB.init({ appId: fb_appId,
 <%- partial('header') %>
 
 
-<div id="contents_wrapp" <% if ( dec_image ) { %>style="background-image:url('/decupload/<%= dec_image %>');"<% } %>>
+<div id="contents_wrapp" <% if ( dec_image ) { %>style="background-image:url('<%= dec_image %>');"<% } %>>
 	<div id="contents_wrapp_inside">
 <script type="text/javascript">
 	if(uaiph == 1 || uaand == 1){
@@ -484,6 +572,9 @@ if(uaiph == 1 || uaand == 1){
 	document.write('<input type="hidden" id="realUpfile" value="">');
 	//document.write('</div>');
 	document.write('</td>');
+	document.write('<td width="50" id="comment_flag_fb" style="display:none;"><input type="checkbox" name="comment_check_fb" class="comment_radio" id="comment_check_fb" value=""><label for="comment_check_fb"><img src="/images/room_radio_fb.gif" width="19" height="19"></label></td>');
+	document.write('<td width="50" id="comment_flag_tw" style="display:none;"><input type="checkbox" name="comment_check_tw" class="comment_radio" id="comment_check_tw" value=""><label for="comment_check_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label></td>');
+	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label--></td>');
 	document.write('<td>');
 	document.write('<div class="buttonContainer">');
 	document.write('<label for="submit_1">');
@@ -507,14 +598,14 @@ if(uaiph == 1 || uaand == 1){
 	document.write('<input type="hidden" id="realUpfile" value="">');
 	document.write('</div>');
 	document.write('</td>');
-	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_fx" value=""><label for="comment_radio_fx"><img src="/images/room_radio_fb.gif" width="19" height="19"></label--></td>');
-	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_tw" value=""><label for="comment_radio_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label--></td>');
+	document.write('<td width="50" id="comment_flag_fb" style="display:none;" style="vertical-align:middle;"><input type="checkbox" name="comment_check_fb" class="comment_radio" id="comment_check_fb" value=""><label for="comment_check_fb"><img src="/images/room_radio_fb.gif" width="19" height="19"></label></td>');
+	document.write('<td width="50" id="comment_flag_tw" style="display:none;" style="vertical-align:middle;"><input type="checkbox" name="comment_check_tw" class="comment_radio" id="comment_check_tw" value=""><label for="comment_check_tw"><img src="/images/room_radio_tw.gif" width="19" height="19"></label></td>');
 	document.write('<td width="50"><!--input type="radio" name="comment_radio_sns" class="comment_radio" id="comment_radio_mx" value=""><label for="comment_radio_mx"><img src="/images/room_radio_mx.gif" width="19" height="19"></label--></td>');
 	document.write('<td>');
-	document.write('<div class="buttonContainer">');
-	document.write('<!--div id="dropbox" style="float:left;">');
-	document.write('<span id="drop_message" class="message"><このエリアに画像をドラック＆ドロップ></span>');
-	document.write('</div-->');
+//	document.write('<div class="buttonContainer">');
+//	document.write('<!--div id="dropbox" style="float:left;">');
+//	document.write('<span id="drop_message" class="message"><このエリアに画像をドラック＆ドロップ></span>');
+//	document.write('</div-->');
 	document.write('<label for="submit_1">');
 	document.write('<!--input class="submitBtn" id="submit_1" type="submit" value="投稿"-->');
 	document.write('<input type="image" src="/images/room_toukou.gif" class="fltr" id="submit_1">');
@@ -527,24 +618,36 @@ if(uaiph == 1 || uaand == 1){
 					</form>
 					<div id="emoji_wrapp">
 						<div id="emoji_wrapp_in" class="clearfix">
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma01.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma02.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma03.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma04.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma05.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma06.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma07.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma08.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma09.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma10.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma11.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma12.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma13.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma14.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma15.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma16.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma17.png" ></a>
-							<a href="javascript:void(0)"><img src="/images/kuma/kuma18.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/01.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/02.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/03.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/04.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/05.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/06.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/07.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/08.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/09.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/10.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/11.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/12.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/13.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/14.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/15.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/16.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/17.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/18.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/19.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/20.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/21.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/22.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/23.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/24.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/25.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/26.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/27.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/28.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/29.png" ></a>
+							<a href="javascript:void(0)"><img src="/images/stamp/ebisawa/30.png" ></a>
 						</div>
 					</div><!--/emoji_wrapp-->
 				</table><div id="scrl_top"><a href="javascript:void(0);" title="ページTOP">▲</a></div>
@@ -567,7 +670,7 @@ $(function() {
 			var lcl_img_one = $('input#uploadings_input').val().split('\\');
 
 			for(var y = 0; y < lcl_img_one.length; y++){
-				if(lcl_img_one[y].indexOf('.jpg') != -1){
+				if(lcl_img_one[y].indexOf('.jpg') != -1 ||lcl_img_one[y].indexOf('.jpeg') != -1 || lcl_img_one[y].indexOf('.png') != -1 || lcl_img_one[y].indexOf('.gif') != -1){
 					var lcl_img_two = lcl_img_one[y];
 				}
 			}

@@ -76,6 +76,8 @@ var chat = {
           'message_time': message_time
         });
 
+	//スクロール
+	MovingFlag = 1;
         that._clearInputUserMessage();
       }
       return false;
@@ -194,7 +196,14 @@ var chat = {
           'message_time': message_time
         });
 
+	//SNS投稿
+	sendComment();
+
+	//スクロール
+	MovingFlag = 1;
         that._clearInputUserMessage();
+	$('input#uploadings_input').val('');
+	$('input.comment_radio').removeAttr('checked');
       }
       return false;
     });
@@ -304,9 +313,9 @@ var chat = {
 
     // URL 変換
     if (isURL(userMessage)) {
-	//スタンプの場合
+	//画像の場合
 	var stamp_flag = 0;
-	if(userMessage.indexOf('/kuma/') != -1){
+	if( userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.gif') != -1 ){
 		var stamp_flag = 1;
 	}else if (getURL(userMessage)) {
 		userMessage = replaceURL(userMessage);
@@ -376,9 +385,9 @@ var chat = {
 
 	if(stamp_flag == 1){
 		if (!is_owner) {
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
 		}else{
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp txtr"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" style="top:20px;" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="150"></div></div></div>');
+			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp txtr"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" style="top:20px;" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
 		}
 	}else{
 		if (!is_owner) {
@@ -393,7 +402,10 @@ var chat = {
 		this.messageList2.html(chat_content_node);
 		
 		$('#lines1 abbr.time').timeago();
-		CommentBox_func('chat-content-' + comment_id);
+		if(MovingFlag == 1){
+			CommentBox_func('chat-content-' + comment_id);
+			MovingFlag = 0;
+		}
 
 
 

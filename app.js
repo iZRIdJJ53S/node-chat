@@ -1743,7 +1743,7 @@ app.get('/dec/:id', function (req, res) {
 				
 					logger.info(suc_obj);
 				
-				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':results[0].image, 'is_auth_login': is_auth_login});
+				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':'/data/' + dec_id + '/images/' + results[0].image, 'is_auth_login': is_auth_login});
 				return;
 			}
 		}
@@ -1764,7 +1764,7 @@ app.get('/ch/:id', function (req, res) {
 	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
 
   // ID が正しいかチェックする
-  var dec_id = (req.params.id) ? req.params.id : '';
+  var ch_id = (req.params.id) ? req.params.id : '';
 
   var user_name = ''
     , user_image = ''
@@ -1791,9 +1791,9 @@ app.get('/ch/:id', function (req, res) {
   // パラメータが正しいかDB に聞いてみる
   client.query(
     'SELECT c.id, c.title AS name, c.image AS image, c.detail, c.user_id AS owner_id, c.status'+
-    '  , c.mailsend_status AS mailsend_status, d.image AS dec_image '+
+    '  , c.mailsend_status AS mailsend_status, d.id AS dec_id, d.image AS dec_image '+
     ' FROM '+TABLE_DECLARATIONS_CH+' AS c, '+ TABLE_DECLARATIONS + ' AS d WHERE d.id = c.dec_relation_id AND c.id = ?',
-    [dec_id],
+    [ch_id],
     function(err, results, fields) {
       if (err) {throw err;}
       if (results.length == 0) {
@@ -1824,7 +1824,7 @@ app.get('/ch/:id', function (req, res) {
         client.query(
           'SELECT id FROM '+TABLE_SUPPORTERS+
           ' WHERE declaration_id = ? AND user_id = ?',
-          [dec_id, user_id],
+          [ch_id, user_id],
           function(err2, results2) {
             if (err2) {throw err2;}
             if (results2.length === 0) {
@@ -1834,13 +1834,13 @@ app.get('/ch/:id', function (req, res) {
               is_supporter = true;
             }
             res.render('chat', {
-              'house_id': results[0].id, 'house_name': results[0].name, 'url_id': dec_id,
+              'house_id': results[0].id, 'house_name': results[0].name, 'url_id': ch_id,
               'house_image': results[0].image, 'house_desc': results[0].detail,
               'user_name': user_name, 'user_image': user_image,
               'user_id': user_id, 'house_status': results[0].status,
               'is_owner': is_owner, 'is_supporter': is_supporter,
               'is_mailsend': is_mailsend,
-              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token, 'dec_image':dec_image,
+              'meta_title': results[0].name+'｜', 'onetime_token': onetime_token, 'dec_image':'/data/' + results[0].dec_id + '/images/' + dec_image,
               'is_auth_login': is_auth_login
             });
             return;
@@ -2062,6 +2062,7 @@ app.post('/create-event', function (req, res) {
 	, deadline    = ''
 	, rental_time = ''
 	, dec_image   = ''
+	, thumb_image = ''
 	, word_tag    = ''
 	, user_id     = req.session.auth.user_id
 	;
@@ -2079,33 +2080,7 @@ app.post('/create-event', function (req, res) {
     res.json({text: '不正なリクエストです'}, 400);
     return;
   }
-  
-  if(req.files){
-  
-  
-  logger.debug('field--files--------------');
-  
-  
-  // ファイルをuploadし、場所や名前をDBに格納する
-  var form = new formidable.IncomingForm()
-    , files = []
-    , fields = []
-    ;
-  
-	// 格納場所(decupload)以下に格納
-    var uploadDir = __dirname+'/public/decupload';
 
-	//ファイル名をtmpのままにする
-	var uploadDir_two =req.files.dec_image.path.split('/');
-	var filename_Perse = uploadDir + '/' +uploadDir_two[2] + '.jpg';
-	var filename_Return = uploadDir_two[2] + '.jpg';
-	// リネーム
-	fs.rename(req.files.dec_image.path, filename_Perse);
-	
-	dec_image = filename_Return;
-  }
-  
-  
 	title = req.body.title;
 	//description = req.body.description;
 	detail      = req.body.detail;
@@ -2125,8 +2100,8 @@ app.post('/create-event', function (req, res) {
 	}
 logger.info(word_tag);
 
- // 背景用
-  if( '' == req.files.dec_image.name )
+  // 背景用
+  if( null == req.files.dec_image )
   {
   	// 何もしない
   }
@@ -2139,118 +2114,140 @@ logger.info(word_tag);
 		dec_image = filename_Return;
 	}
 
-
-
- client.query(
+  client.query(
     'INSERT INTO '+TABLE_DECLARATIONS+' ('+
-    '  created_at, title, description, detail, user_id, target_num, deadline, word_tag '+
+    '  created_at, title, description, detail, user_id, target_num, deadline'+
     '  , rental_time, status, image'+
     ') VALUES ('+
-    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?'+
+    '  NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?'+
     ')',
-    [title, description, detail, user_id, target_num, deadline, word_tag
-      , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image 
+    [title, description, detail, user_id, target_num, deadline
+      , rental_time, FLG_SUPPORTER_WANT_STAT, dec_image
     ],
-    function(err, results) {
-      if (err) {throw err;}
-      if( results.length === 0 )
-      {
-        res.json({text: 'コミュニティの作成を行えませんでした。'}, 400);
-        return;
-      }
-      else
-      {
-      	// コミュニティ登録成功
-		// ファイル格納場所(背景)
-		var uploadDir = __dirname+'/public/decupload/' + results.insertId;
-
-		try{
-			// ディレクトリチェック
-			fs.statSync( uploadDir );
-		}catch(e){
-			// 作成
-			fs.mkdirSync( uploadDir, 0777 );
-		}
-		var filename_Perse = uploadDir + '/' +dec_image;
-		// リネーム
-		fs.rename(req.files.dec_image.path, filename_Perse);
-
-
-	// サムネイル用
-	if( '' == req.files.thumb_image.name )
+    function(err, results)
 	{
-  	// 何もしない
-	}
-	else
-	{
-		// 格納場所
-		var new_thumb_uploadDir = __dirname+'/public/data/' + results.insertId;
-
-		try{
-			// ディレクトリチェック
-			fs.statSync( new_thumb_uploadDir );
-		}catch(e) {
-			console.log(new_thumb_uploadDir);
-			// 作成
-			fs.mkdirSync( new_thumb_uploadDir, 0777 );
+		if (err) {throw err;}
+		if( results.length === 0 )
+		{
+			res.json({text: 'コミュニティの作成を行えませんでした。'}, 400);
+			qreturn;
 		}
+		else
+		{
+			// 背景用
+			if( null == req.files.dec_image )
+			{
+			// 何もしない
+			}
+			else
+			{
+				// ファイル格納場所(背景もサムネも同じ場所にする)
+				var new_uploadDir = __dirname+'/public/data/' + results.insertId;
 
-		// 格納場所
-		var thumb_uploadDir = __dirname+'/public/data/' + results.insertId + '/images';
-		try{
-			// ディレクトリチェック
-			fs.statSync( thumb_uploadDir );
-		}catch(e) {
-			console.log(thumb_uploadDir);
-			// 作成
-			fs.mkdirSync( thumb_uploadDir, 0777 );
-		}
+				try{
+					// ディレクトリチェック
+					fs.statSync( new_uploadDir );
+				}catch(e) {
+					console.log(new_uploadDir);
+					// 作成
+					fs.mkdirSync( new_uploadDir, 0777 );
+				}
 
-		//ファイル名をtmpのままにする
-		var thumb_uploadDir_two =req.files.thumb_image.path.split('/');
-		var thumb_filename_Perse_l = thumb_uploadDir + '/thumb_l.jpg';
-		var thumb_filename_Perse_m = thumb_uploadDir + '/thumb_m.jpg';
-		var thumb_filename_Perse_s = thumb_uploadDir + '/thumb_s.jpg';
-		
-		
-		var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
-		  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
-		
-		oldFile_l.addListener( "data", function(chunk) {
-			newFile_l.write(chunk);
-		})
-		oldFile_l.addListener( "close",function() {
-			newFile_l.end();
-		});
-		
+				// 格納場所
+				var uploadDir = __dirname+'/public/data/' + results.insertId + '/images';
+				try{
+					// ディレクトリチェック
+					fs.statSync( uploadDir );
+				}catch(e) {
+					console.log(uploadDir);
+					// 作成
+					fs.mkdirSync( uploadDir, 0777 );
+				}
+				var filename_Perse = uploadDir + '/' +dec_image;
+				// リネーム
+				fs.rename(req.files.dec_image.path, filename_Perse);
+			}
 
-		var oldFile_m = fs.createReadStream( req.files.thumb_image.path )
-		  , newFile_m = fs.createWriteStream( thumb_filename_Perse_m );
-		
-		oldFile_m.addListener( "data", function(chunk) {
-			newFile_m.write(chunk);
-		})
-		oldFile_m.addListener( "close",function() {
-			newFile_m.end();
-		});
+			// サムネイル用
+			if( null == req.files.thumb_image )
+			{
+		  	// 何もしない
+			}
+			else
+			{
+				// ファイル格納場所(背景もサムネも同じ場所にする)
+				var new_uploadDir = __dirname+'/public/data/' + results.insertId;
 
-		var oldFile_s = fs.createReadStream( req.files.thumb_image.path )
-		  , newFile_s = fs.createWriteStream( thumb_filename_Perse_s );
-		
-		oldFile_s.addListener( "data", function(chunk) {
-			newFile_s.write(chunk);
-		})
-		oldFile_s.addListener( "close",function() {
-			newFile_s.end();
-		});
-	}
-		//res.json({flg_create: true,id:results.insertId}, 200);
+				try{
+					// ディレクトリチェック
+					fs.statSync( new_uploadDir );
+				}catch(e) {
+					console.log(new_uploadDir);
+					// 作成
+					fs.mkdirSync( new_uploadDir, 0777 );
+				}
+
+				// 格納場所
+				var uploadDir = __dirname+'/public/data/' + results.insertId + '/images';
+				try{
+					// ディレクトリチェック
+					fs.statSync( uploadDir );
+				}catch(e) {
+					console.log(uploadDir);
+					// 作成
+					fs.mkdirSync( uploadDir, 0777 );
+				}
+				exec("sudo -s");
+				//ファイル名をtmpのままにする
+				var thumb_uploadDir_two =req.files.thumb_image.path.split('/');
+				var thumb_filename_Perse_l = uploadDir + '/thumb_l.jpg';
+				var thumb_filename_Perse_m = uploadDir + '/thumb_m.jpg';
+				var thumb_filename_Perse_s = uploadDir + '/thumb_s.jpg';
+
+				// 軽い処理から
+				var oldFile_s = fs.createReadStream( req.files.thumb_image.path )
+				  , newFile_s = fs.createWriteStream( thumb_filename_Perse_s );
+
+				exec( "convert -geometry 215x111 " + req.files.thumb_image.path + " " + newFile_s.path);
+
+//				exec( "mogrify -resize 215x111 -unsharp 2x1.4+0.5+0 " + newFile_s.path);
+
+				oldFile_s.addListener( "data", function(chunk) {
+					newFile_s.write(chunk);
+				})
+				oldFile_s.addListener( "close",function() {
+					newFile_s.end();
+				});
+
+				var oldFile_m = fs.createReadStream( req.files.thumb_image.path )
+				  , newFile_m = fs.createWriteStream( thumb_filename_Perse_m );
+//				exec( "mogrify -resize 457x247 -unsharp 2x1.4+0.5+0 " + newFile_m.path);
+				exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_m.path);
+
+				oldFile_m.addListener( "data", function(chunk) {
+					newFile_m.write(chunk);
+				})
+				oldFile_m.addListener( "close",function() {
+					newFile_m.end();
+				});
+
+				var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
+				  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
+//				exec( "mogrify -resize 950x435 -unsharp 2x1.4+0.5+0 " + newFile_l.path);
+				exec( "convert -geometry 950x435 " + req.files.thumb_image.path + " " + newFile_l.path);
+				
+				oldFile_l.addListener( "data", function(chunk) {
+					newFile_l.write(chunk);
+				})
+				oldFile_l.addListener( "close",function() {
+					newFile_l.end();
+				});
+			}
 		res.redirect('/dec/'+results.insertId);
 	      return;
-      }
-    }
-  );
-});
+		}
+	}
+  );});
 
 
 /**

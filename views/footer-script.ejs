@@ -95,7 +95,13 @@ function makeEventListParts(data) {
 				table="table_b";
 				article_ul='article_ul_b';
 				join="join_b";
-				top_to_detail = "top_to_detail_b";
+
+				if(uaiph ==1 || uaand == 1){
+					top_to_detail = "top_to_detail";
+				}else{
+					top_to_detail = "top_to_detail_b";
+				}
+
 				live = "live_b";
 				supporter_image_limit = 18;
 
@@ -103,28 +109,52 @@ function makeEventListParts(data) {
 				data.event_data[i].detail = data.event_data[i].detail.slice(0,100); if( data.event_data[i].detail.length == 100 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
 
 			}else{
-				//サイズの小さいarticleの場合
-				widever = "";
-				topthumb = "topthumb";
-				thumb = "thumb_s";
-				nowprinting = "nowprinting_s";
-				thumbWidth = 215;
-				thumbHeight = 111;
-				table="table_s";
-				article_ul='article_ul';
-				join="join";
-				top_to_detail = "top_to_detail";
-				live = "live";
-				supporter_image_limit = 12;
+				if(uaiph ==1 || uaand == 1){
+					//サイズの大きいarticleの場合
+				 	widever = "widever";
+					topthumb = "topthumb_b";
+					thumb="thumb_m";
+					nowprinting="nowprinting_m";
+					thumbWidth = 457;
+					thumbHeight = 247;
+					table="table_b";
+					article_ul='article_ul_b';
+					join="join_b";
+					top_to_detail = "top_to_detail";
+					live = "live_b";
+					supporter_image_limit = 18;
 
-				data.event_data[i].title = data.event_data[i].title.slice(0,13);  if( data.event_data[i].title.length == 13 ){ data.event_data[i].title = data.event_data[i].title+"…"; };
-				data.event_data[i].detail = data.event_data[i].detail.slice(0,35); if( data.event_data[i].detail.length == 35 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
+					data.event_data[i].title = data.event_data[i].title.slice(0,50);  if( data.event_data[i].title.length == 50 ){ data.event_data[i].title = data.event_data[i].title+"…"; };
+					data.event_data[i].detail = data.event_data[i].detail.slice(0,100); if( data.event_data[i].detail.length == 100 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
+				}else{
+					//サイズの小さいarticleの場合
+					widever = "";
+					topthumb = "topthumb";
+					thumb = "thumb_s";
+					nowprinting = "nowprinting_s";
+					thumbWidth = 215;
+					thumbHeight = 111;
+					table="table_s";
+					article_ul='article_ul';
+					join="join";
+					top_to_detail = "top_to_detail";
+					live = "live";
+					supporter_image_limit = 12;
+
+					data.event_data[i].title = data.event_data[i].title.slice(0,13);  if( data.event_data[i].title.length == 13 ){ data.event_data[i].title = data.event_data[i].title+"…"; };
+					data.event_data[i].detail = data.event_data[i].detail.slice(0,35); if( data.event_data[i].detail.length == 35 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
+				}
 			}
 
 
 			if( i==1 || i==5 ){
-				//サイズの小さいarticle4個をdivに格納
-				write_data += '<div style="width:480px; float:left;">';
+				if(uaiph ==1 || uaand == 1){
+					//サイズの小さいarticle4個をdivに格納
+					write_data += '<div>';
+				}else{
+					//サイズの小さいarticle4個をdivに格納
+					write_data += '<div style="width:480px; float:left;">';
+				}
 			};
 
 
@@ -142,7 +172,13 @@ function makeEventListParts(data) {
 				write_data += '<td class="'+join+'">'+data.event_data[i].supporter_num+'<span>人<br>参加</span></td>';
 				write_data += '</tr>';
 			write_data += '</table>';
-			write_data += '<div class="to_detail padt5 padl10">';
+
+				if(uaiph ==1 || uaand == 1){
+					write_data += '<div class="to_detailb padt5 padl10">';
+				}else{
+					write_data += '<div class="to_detail padt5 padl10">';
+				}
+
 				write_data += '<a href="/dec/'+last_id+'"><img src="/images/'+top_to_detail+'.gif" alt="詳細"></a>';
 			write_data += '</div>';
 			write_data += '</article>';
