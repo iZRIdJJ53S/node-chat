@@ -10,6 +10,18 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/jquery.easing.1.3.js" type="text/javascript" charset="UTF-8"></script>
 <script src="/js/funcs.js" type="text/javascript" charset="UTF-8"></script>
+<link rel="shortcut icon" href="http://syaberi-house.com/images/favicon.ico" />
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <script type="text/javascript">
 var uaiph = 0;
@@ -66,7 +78,7 @@ var uaetc = 0;
  
 window.fbAsyncInit = function() {
 
-	FB.init({ appId: '351823408214501',
+	FB.init({ appId: fb_appId,
 		status: true, 
 		cookie: true,
 		xfbml: true,
@@ -138,15 +150,18 @@ window.fbAsyncInit = function() {
 				%>
 	<% if(i == 1 || i == 5) { %><div class="smatc"><% } %>
 				<article<% if(i == 0 || i == 9) { %> class="widever"<% } %>>
-				<%= dec_list[i].live %>
 
 
 			<script>
 				if(uaiph ==1 || uaand == 1){
-					document.write('<div class="live_b">LIVE</div>');
+					if(<%= dec_list[i].live %>){
+					//	document.write('<div class="live_b">LIVE</div>');
+					}
 					document.write('<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror=\'this.src="/images/common/nowprinting_m.jpg"\'></a></div>');
 				}else{
-					document.write('<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>');
+					if(<%= dec_list[i].live %>){
+					//	document.write('<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>');
+					}
 					document.write('<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" onerror=\'this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"\' width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 9) { %>247<% } else { %>111<% } %>"></a></div>');
 				}
 			</script>
@@ -254,9 +269,10 @@ window.fbAsyncInit = function() {
 
 
 <footer>
-<p><img src="/images/footer_copy.gif" width="140" height="11" alt="2012 syaberi-house.com"></p>
+<p><img src="/images/footer_copy_res.gif" width="306" height="12" alt="2012 NTT Resonant Inc. All Rights Reserved."></p>
 <ul>	
 	<li><a href="/terms"><img src="/images/footer_terms.gif" width="70" height="11" alt="利用規約"></a></li>
+	<li><a href="http://help.goo.ne.jp/" target="_blank"><img src="/images/footer_inquiry.gif" width="91" height="11" alt="お問い合わせ"></a></li>
 	<!--li><a href="#"><img src="/images/footer_top.gif" width="93" height="11" alt="トップページ"></a></li>
 	<li><a href="#"><img src="/images/footer_makeroom.gif" width="94" height="11" alt="部屋をつくる"></a></li>
 	<li><a href="#"><img src="/images/footer_serchroom.gif" width="82" height="11" alt="部屋を探す"></a></li>

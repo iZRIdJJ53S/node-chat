@@ -506,7 +506,7 @@ $('a[name="delete-button-right"]').live('click', function() {
   }
 
   var obj = $(this);
-  var event_obj = obj.find('li');
+  var event_obj = obj;
   var event_id  = event_obj.attr('id');
   event_id = parseInt(event_id.match(/[0-9]+/));
 
@@ -522,8 +522,8 @@ $('a[name="delete-button-right"]').live('click', function() {
     success: function(data){
       if (data.flg_delete_chatroom === 'ok') {
         // 削除した
-        $('#ticket-wrapper-'+event_id).animate({height:'hide', opacity:'hide'}, "slow",
-          function() {$('#event-first-li-area-'+event_id).remove();}
+        $('#article_room_'+event_id).animate({height:'hide', opacity:'hide'}, "slow",
+          function() {$('#article_room_'+event_id).remove();}
         );
       }
 
@@ -600,9 +600,22 @@ function __isLogin() {
         $('#auth-login-twitter').hide();
         $('#auth-logout').show();
         $('#mypage-href').show();
-        $('#header_right_table #header_mypage_thumb_img').attr('src', data.user_image);
-        document.getElementById('header_mypage_name_h2').innerHTML = data.user_name;
-        //$('#header_right_table').show();
+
+	if((ReadCookie("name") != data.user_name) && (ReadCookie("thumb") != data.user_image)){
+		set_cookie( 'name' , '' );
+		set_cookie( 'thumb' , '' );
+	}
+
+	if((ReadCookie("name") == "") && (ReadCookie("thumb") == "")){
+	        $('#header_right_table #header_mypage_thumb_img').attr('src', data.user_image);
+	        document.getElementById('header_mypage_name_h2').innerHTML = data.user_name;
+	        //$('#header_right_table').show();
+	 
+	 	//名前をcookieにセット
+		set_cookie("name",encodeURIComponent(data.user_name));
+		//サムネイルパスをcookieにセット
+		set_cookie("thumb",data.user_image);
+ 	}
       }
     },
     error: function(data){

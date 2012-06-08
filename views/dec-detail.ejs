@@ -9,6 +9,18 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<link rel="shortcut icon" href="http://syaberi-house.com/images/favicon.ico" />
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <script type="text/javascript">
 var uaiph = 0;
@@ -422,12 +434,19 @@ $(document).ready(function(){
 <% for(var i in suc_obj){ %>
 
 
-			<article>
+			<article id="article_room_<%= suc_obj[i].id %>">
 				<div class="section_makeroome_top"></div><div class="section_makeroome_cent">
 					<ul>
 						<li class="saying"><%= suc_obj[i].title %></li>
-						<li class="howmany_in"></li>
-						<li class="fltr pad5"><a href="/ch/<%= suc_obj[i].id %>"><img src="/images/section_makeroome_tochat.gif" width="141" height="29" alt="チャットルームへ"></a></li>
+						
+						<% if (suc_obj[i].live > 0) { %>
+						<li class="howmany_in">現在 <b><%= suc_obj[i].live %></b>人 がチャットルームで待っています。</li>
+						<% } %>
+						
+						<% if (owner_id == suc_obj[i].user_id) { %>
+						<li class="pad10"style="float:right;"><a href="#" name="delete-button-right" id="section_room_<%= suc_obj[i].id %>"><img src="/images/delete_chat.gif"></a></li>
+						<% } %>
+						<li class="fltr pad5"  style="float: right;"><a href="/ch/<%= suc_obj[i].id %>"><img src="/images/section_makeroome_tochat.gif" width="141" height="29" alt="チャットルームへ"></a></li>
 					</ul>
 				</div><div class="section_makeroome_bott"></div>
 			</article>

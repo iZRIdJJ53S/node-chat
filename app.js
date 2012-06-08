@@ -34,6 +34,7 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
 var FLG_SUPPORTER_COMP_STAT = 1; // 完了/サクセスしたもの
 var FLG_SUPPORTER_WANT_STAT = 2; // 現在開催中のもの
 var FLG_SUPPORTER_FAIL_STAT = 3; // 失敗/挫折したもの
+var DOMEIN = "http://syaberi-house.com"; //ドメイン
 
 
 
@@ -67,21 +68,23 @@ var email_server  = emailjs.server.connect({
 });
 
 function __sendEmail(text_msg, conf, mailto, subject) {
-  email_server.send(
-    {  text: text_msg
-     , from: conf.gmail.from
-     , to:   mailto
-     , subject: subject
-    },
-    function(err, message) {
-      if (err) {
-        logger.error(err);
-      }
-      if (message) {
-        logger.info(message)
-      }
-    }
-  );
+
+	  email_server.send(
+	    {  text: text_msg
+	     , from: conf.gmail.from
+	     , to:   mailto
+	     , subject: subject
+	    },
+	    function(err, message) {
+	      if (err) {
+	        logger.error(err);
+	      }
+	      if (message) {
+	        logger.info(message)
+	      }
+	    }
+	  );
+
 }
 
 
@@ -103,6 +106,7 @@ var logger = log4js.getLogger('[sys]');
 // mysql 関連初期設定
 // ----------------------------------------------
 var client = require('mysql').createClient({
+  host: conf.mysql.host,
   user: conf.mysql.user,
   password: conf.mysql.password,
   database: conf.mysql.database
@@ -122,6 +126,8 @@ var TABLE_AUDIENCES = 'audiences'
   , TABLE_DECLARATIONS_CH    = 'declarations_ch'
   , TABLE_SUPPORTERS      = 'supporters'
   , TABLE_DOT1_COMMENTS   = 'dot1_comments'
+  , TABLE_USER_OSHIRASE_CONTENTS = 'user_oshirase_contents'
+  , TABLE_USER_OSHIRASE_RELATION = 'user_oshirase_relation'
   ;
 
 
@@ -398,7 +404,7 @@ var httpProxyServer = httpProxy.createServer(
 //    }
 );
 //httpProxyServer.listen(80);
-httpProxyServer.listen(8125);
+//httpProxyServer.listen(8125);
 
 
 /**
@@ -555,8 +561,11 @@ app.get('/auth/complete', function(req, res) {
 // ----------------------------------------------
 app.get('/', function (req, res) {
 	logger.info('app.get: /');
+
 	//ログインフラグ
-	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }else{ res.redirect('/mypage'); }
+
+
 	var onetime_token = '';
 	if (req.session && req.session.auth) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
@@ -582,13 +591,19 @@ app.get('/', function (req, res) {
 					'title': ''
 					, 'dec_list': []
 					, 'onetime_token': onetime_token 
+					, 'is_auth_login': is_auth_login
 			});
 			return;
 		} else {
 			var dec_list = [];
 			var max_dec_num = results.length;
-			for (var i = 0; i < max_dec_num; i++) {
+			for (var i = 0; i < max_dec_num; i++) {	//live
 				dec_list[i] = results[i];
+				if(house.manager.rooms['/dec/' + results[i].id]){
+					dec_list[i].live = true;
+				}else{
+					dec_list[i].live = false;
+				}
 			};
 			res.render('index', {'locals':
 				{'title': 'SHABERI-HOUSE index'
@@ -690,6 +705,7 @@ app.post('/oauth/facebook-login', function (req, res) {
     , friend_list = req.body.friend_list
     , accessToken = req.body.accessToken
     , oauth_service_name = 'facebook'
+    , mail_chk = ''
     ;
 
     me_id = (me_id) ? me_id : '';
@@ -716,10 +732,10 @@ app.post('/oauth/facebook-login', function (req, res) {
         client.query(
           'INSERT INTO '+TABLE_USERS+' ('+
           ' created_at, name, oauth_service, oauth_service_id,'+
-          ' sex, image, description, mail_addr, friend_list'+
-          ') VALUES ( NOW() , ? , ? , ? , ? , ? , ? , ? , ? )',
-          [me_name, oauth_service_name, me_id, me_sex, me_image, me_bio, me_email, friend_list],
-          function(err) {
+          ' sex, image, description, friend_list'+
+          ') VALUES ( NOW() , ? , ? , ? , ? , ? , ? , ? )',
+          [me_name, oauth_service_name, me_id, me_sex, me_image, me_bio, friend_list],
+          function(err,res) {
              if (err) {throw err;}
           }
         );
@@ -738,8 +754,6 @@ app.post('/oauth/facebook-login', function (req, res) {
           }
         );
       }
-    }
-  );
 
 	// セッションの配列を確認
 	if(req.session && req.session.auth){
@@ -759,11 +773,10 @@ app.post('/oauth/facebook-login', function (req, res) {
 
 	  // user_id, メルアド情報を取得(あれば)
 	  client.query(
-	    'SELECT id, mail_addr'+
-	    ' FROM '+TABLE_USERS+
-	    ' WHERE oauth_service_id = ? AND oauth_service = "facebook"',
-	    [me_id],
-	    function(err, results) {
+	    'SELECT id, mail_addr FROM '+TABLE_USERS+' WHERE oauth_service_id = ? AND oauth_service = ?',
+	    [me_id,oauth_service_name],
+	    function(err, results, fields) {
+
 	      if (err) {throw err;}
 	      if (results[0]) {
 		//logger.debug("user_id=="+results[0].id);
@@ -772,20 +785,26 @@ app.post('/oauth/facebook-login', function (req, res) {
 	        if (results[0].mail_addr) {
 		//logger.debug("mail=="+results[0].mail_addr);
 	          req.session.auth.mail_addr = results[0].mail_addr;
-	        } else {
+	          mail_chk = "1";
+		} else {
 	          // メルアドを登録するフォームへ
-	          res.redirect('/firstset');
-	          return;
+	          //res.redirect('/firstset');
+	          //return;
+	          mail_chk = '0'
 	        }
 	      }
 
 		res.render('facebook-login', {
-		'meta_title': 'facebook｜'
+		'me_email': me_email,'mail_flag': mail_chk
 		});
 		return;
 
-	    }
-	  );
+	   }
+	);
+
+    }
+  );
+
 
 });
 
@@ -921,6 +940,11 @@ app.get('/suc', function (req, res) {
   //logger.info('---------- req.session: ----- ');logger.info(req.session);
   //res.render('home', { layout: false });
 
+
+	//ログインフラグ
+	var is_auth_login = true ; if (!__isAuthLogin(req)) { is_auth_login = false; }
+
+
   //if (req.session && req.session.auth) {
     // 最新の宣言リストを取得
     client.query(
@@ -941,6 +965,7 @@ app.get('/suc', function (req, res) {
           res.render('suc-list', {
               'suc_list': []
             , 'meta_title': 'まとめログ一覧｜'
+	    , 'is_auth_login': is_auth_login
           });
           return;
         } else {
@@ -948,6 +973,7 @@ app.get('/suc', function (req, res) {
           res.render('suc-list', {
               'suc_list': results
             , 'meta_title': 'まとめログ一覧｜'
+	    , 'is_auth_login': is_auth_login
            //,'user_name': req.session.auth.user_name
            //,'user_image': req.session.auth.user_image
            //,'user_id': req.session.auth.user_id
@@ -971,6 +997,9 @@ app.get('/suc', function (req, res) {
 // ログ詳細
 // ----------------------------------------------
 app.get('/suc/:id', function (req, res) {
+
+	//ログインフラグ
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
 
   // ID が正しいかチェックする
   var suc_id = (req.params.id) ? req.params.id : '';
@@ -1055,9 +1084,10 @@ app.get('/suc/:id', function (req, res) {
 		
 		        // クライアント(自分だけ)へデータを送る
                 res.render('suc-detail', {
-		            'suc_detail': dec_results[0]
-		          , 'send_data' : send_data
-                  , 'meta_title': dec_results[0].title+'｜'
+				'suc_detail': dec_results[0],
+				'send_data' : send_data, 
+				'meta_title': dec_results[0].title+'｜',
+				'is_auth_login': is_auth_login
 		        });
 		        return;
 
@@ -1105,11 +1135,22 @@ app.get('/suc/:id', function (req, res) {
 // --------------------------------------------------------
 app.get('/firstset', function (req, res) {
 
-  if (!__isAuthLogin(req)) {
-    // ログインしていないので、リダイレクト
-    res.redirect('/');
-    return;
-  }
+
+
+
+
+	//ログインフラグ
+	var is_auth_login = true;
+
+	if (!__isAuthLogin(req)) {
+		// ログインしていないので、リダイレクト
+		res.redirect('/');
+		is_auth_login = false;
+		return;
+	}
+
+
+  logger.debug('----- app.session: ');logger.info(req.session);
 
   // onetime_token 取得
   var onetime_token = __getOnetimeToken(req.session.auth.user_id);
@@ -1128,6 +1169,7 @@ app.get('/firstset', function (req, res) {
             'user_data': results
           , 'onetime_token': onetime_token
           , 'meta_title': '新規登録｜'
+,'is_auth_login': is_auth_login
         });
         return;
       }
@@ -1156,112 +1198,138 @@ app.get('/mypage', function (req, res) {
   // onetime_token 取得
   var onetime_token = __getOnetimeToken(req.session.auth.user_id);
 
-  var dec_list = [];
+  var dec_list_owner = [];
+  var user_results = [];
   var spt_comp_list = []; // 完了
   var spt_want_list = []; // 募集中
   var spt_fail_list = []; // 挫折
 
   // 自分が宣言しているリストを取得
   client.query(
-    'SELECT d.id, d.created_at, d.title, d.user_id'+
-    '  , d.target_num, d.deadline, d.status, d.image'+
-    '  , COUNT( spt.declaration_id ) AS supporter_num'+
-    '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
-    '  , u.name AS user_name, u.image AS user_image'+
-    ' FROM '+TABLE_DECLARATIONS+' AS d'+
-    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
-    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-    ' WHERE d.user_id = ?'+
-    //' WHERE d.user_id = ? AND d.status = ?'+
-    ' GROUP BY d.id'+
-    ' ORDER BY d.created_at DESC'+
-    ' LIMIT 10',
+
+  	  'SELECT d.id AS id, sup.id AS sup_id, sup.declaration_id AS sup_dec_id, sup.user_id AS sup_user_id, d.created_at, d.title, d.user_id ' +
+  	  ' ,COUNT( spt.declaration_id ) AS supporter_num ' +
+  	  ' ,d.target_num, d.deadline, d.status, d.image ' +
+  	  ' ,u.name AS user_name, u.image AS user_image ' +
+  	  ' FROM ' +TABLE_SUPPORTERS+' AS sup ' +
+  	  ' LEFT JOIN ' +TABLE_DECLARATIONS + ' AS d ON sup.declaration_id = d.id ' +
+  	  ' LEFT JOIN ' +TABLE_SUPPORTERS+ ' AS spt ON d.id = spt.declaration_id ' +
+  	  ' LEFT JOIN ' +TABLE_USERS+ ' AS u ON d.user_id = u.id ' +
+	' WHERE sup.user_id = ?'+
+	' GROUP BY sup_id'+
+	' ORDER BY d.created_at DESC'+
+	' LIMIT 20',
+
+//    'SELECT d.id, d.created_at, d.title, d.user_id'+
+//    '  , d.target_num, d.deadline, d.status, d.image'+
+//    '  , COUNT( spt.declaration_id ) AS supporter_num'+
+//    '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
+//    '  , u.name AS user_name, u.image AS user_image'+
+//    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+//    ' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
+//    ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+//    ' WHERE d.user_id = ?'+
+//    //' WHERE d.user_id = ? AND d.status = ?'+
+//    ' GROUP BY d.id'+
+//    ' ORDER BY d.created_at DESC'+
+//    ' LIMIT 10',
     [req.session.auth.user_id],
-    function(err, results, fields) {
-      if (err) {throw err;}
-      if (results.length === 0) {
-        dec_list = [];
+    function(err_owner, results_owner, fields_owner) {
+      if (err_owner) {throw err_owner;}
+      if (results_owner.length === 0) {
+        dec_list_owner = [];
       } else {
-        dec_list = results;
+        dec_list_owner = results_owner;
+        
+		var queryValue = ''
+		for( var jj = 0; jj < results_owner.length; jj++ )
+		{
+			if( jj + 1 == results_owner.length )
+			{
+				// 最終処理
+				queryValue += dec_list_owner[jj].id;
+			}
+			else
+			{
+				queryValue += dec_list_owner[jj].id + ',';
+			}
+		}
+
+		// ここでコミュニティに関連付くユーザをすべてもってくる
+		client.query(
+			'SELECT sup.declaration_id AS sup_dec_id, sup.user_id AS sup_user_id,' +
+			' u.name AS name, u.image AS image' +
+			' FROM ' + TABLE_SUPPORTERS + ' AS sup, ' + TABLE_USERS + ' AS u WHERE sup.declaration_id in(' + queryValue + ')' +
+			' AND sup.user_id = u.id'+
+			' ORDER BY sup.declaration_id DESC, sup.id ASC',
+			function(user_err, user_results_images)
+			{
+				if(user_err){throw user_err;}
+				if(user_results_images.length === 0)
+				{
+				}
+				else
+				{
+					user_results = user_results_images;
+				}
+			});
       }
 
 
-      res.render('mypage', {
-          'dec_list': dec_list
-        , 'onetime_token': onetime_token
-        , 'meta_title': 'マイページ｜'
-	, 'is_auth_login': is_auth_login
-      });
-      return;
 
-      // 自分がサポーターになっているリストを取得
-      //client.query(
-      //  'SELECT s.declaration_id, s.user_id AS supporter_id'+
-      //  '  , d.created_at, d.title, d.user_id AS owner_id'+
-      //  '  , d.target_num, d.deadline, d.status AS stat, d.image'+
-      //  ' FROM '+TABLE_SUPPORTERS+' AS s'+
-      //  ' INNER JOIN '+TABLE_DECLARATIONS+' AS d ON s.declaration_id = d.id'+
-      //  ' WHERE s.user_id = ?',
-      //  [req.session.auth.user_id],
-      //  function(err2, results2) {
-      //    if (err2) {throw err2;}
-      //    if (results2.length === 0) {
-      //      spt_comp_list = [];
-      //      spt_want_list = [];
-      //      spt_fail_list = [];
+	var dec_list = [];
+	var dec_list_live = [];
+	var ans = 0;
+	if (req.session && req.session.auth) {
+		onetime_token = __getOnetimeToken(req.session.auth.user_id);
+	}
+	// 最新のリストを取得
 
-      //      res.render('mypage', {
-      //        'user_name': req.session.auth.user_name
-      //        , 'user_image': req.session.auth.user_image
-      //        , 'user_id': req.session.auth.user_id
-      //        , 'dec_list': dec_list
-      //        , 'spt_comp_list': spt_comp_list
-      //        , 'spt_want_list': spt_want_list
-      //        , 'spt_fail_list': spt_fail_list
-      //      });
-      //    } else {
-      //      var tmp_cnt;
-      //      var counter = {};
-      //      var max_length = results2.length;
-      //      for (var i = 0; i < max_length; i++) {
-      //        var stat = results2[i].stat;
-      //        if (counter[stat]) {
-      //          tmp_cnt = counter[stat];
-      //          counter[stat]++;
-      //        } else {
-      //          tmp_cnt = 0;
-      //          counter[stat] = 1;
-      //        }
+	client.query(
+		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
+		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
+		' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+		' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
+		[FLG_SUPPORTER_WANT_STAT],
+		function(err, results, fields) {
+			if (err) {throw err;}
+			if (results.length === 0) {
+					res.render('mypage', {
+			          'dec_list_owner': dec_list_owner
+				,'dec_list': dec_list
+			        , 'onetime_token': onetime_token
+			        , 'meta_title': 'マイページ｜'
+				, 'is_auth_login': is_auth_login
+				,'user_dec_list':user_results
+				});
+				return;
+			} else {
+				var max_dec_num = results.length;
+				for (var i = 0; i < max_dec_num; i++) {
+					dec_list[i] = results[i];
+				}
+			}
+			//logger.debug("ーーーーーーーーーーーーーーー１－－");
+			
+			
+			
+			
+			//logger.debug(dec_list);
+			      res.render('mypage', {
+			          'dec_list_owner': dec_list_owner
+				,'dec_list': dec_list
+			        , 'onetime_token': onetime_token
+			        , 'meta_title': 'マイページ｜'
+				, 'is_auth_login': is_auth_login
+				,'user_dec_list':user_results
+			      });
+			      return;
 
-      //        switch (stat) {
-      //          case FLG_SUPPORTER_COMP_STAT:
-      //            spt_comp_list[tmp_cnt] = results2[i];
-      //            break;
-      //          case FLG_SUPPORTER_WANT_STAT:
-      //            spt_want_list[tmp_cnt] = results2[i];
-      //            break;
-      //          case FLG_SUPPORTER_FAIL_STAT:
-      //            spt_fail_list[tmp_cnt] = results2[i];
-      //            break;
-      //          default:
-      //            break;
-      //        }
-      //      }
+			
+			
+		});
 
-      //      res.render('mypage', {
-      //        'user_name': req.session.auth.user_name
-      //        , 'user_image': req.session.auth.user_image
-      //        , 'user_id': req.session.auth.user_id
-      //        , 'dec_list': dec_list
-      //        , 'spt_comp_list': spt_comp_list
-      //        , 'spt_want_list': spt_want_list
-      //        , 'spt_fail_list': spt_fail_list
-      //      });
 
-      //    }
-
-      //  }
-      //);
     }
   );
 });
@@ -1708,8 +1776,10 @@ app.get('/dec/:id', function (req, res) {
 	// 正しくなければ、一覧へリダイレクトする
 	var dec_id = (req.params.id) ? req.params.id : '';
 	var suc_obj = {};
+	var owner_id = '';
 	var onetime_token = '';
 	if (req.session && req.session.auth) {
+		owner_id = req.session.auth.user_id;
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
 	}
 	
@@ -1741,9 +1811,16 @@ app.get('/dec/:id', function (req, res) {
 				detail_txt = detail_txt.replace(/\n/g, '<br />');
 				results[0].detail = detail_txt;
 				
-					logger.info(suc_obj);
+				for(var i=0;i<suc_obj.length;i++){	//live
+					if(house.manager.rooms['/houses/' + suc_obj[i].id] != undefined){
+						var suvv = house.manager.rooms['/houses/' + suc_obj[i].id].length;
+						suc_obj[i].live = suvv;
+					}else{
+						suc_obj[i].live = 0;
+					}
+				}
 				
-				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':'/data/' + dec_id + '/images/' + results[0].image, 'is_auth_login': is_auth_login});
+				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':'/data/' + dec_id + '/images/' + results[0].image, 'is_auth_login': is_auth_login, 'owner_id': owner_id});
 				return;
 			}
 		}
@@ -1790,9 +1867,12 @@ app.get('/ch/:id', function (req, res) {
 
   // パラメータが正しいかDB に聞いてみる
   client.query(
+   // 'SELECT c.id, c.title AS name, c.image AS image, c.detail, c.user_id AS owner_id, c.status'+
+    //'  , c.mailsend_status AS mailsend_status, d.id AS dec_id, d.image AS dec_image '+
+    //' FROM '+TABLE_DECLARATIONS_CH+' AS c, '+ TABLE_DECLARATIONS + ' AS d WHERE d.id = c.dec_relation_id AND c.id = ?',
     'SELECT c.id, c.title AS name, c.image AS image, c.detail, c.user_id AS owner_id, c.status'+
-    '  , c.mailsend_status AS mailsend_status, d.id AS dec_id, d.image AS dec_image '+
-    ' FROM '+TABLE_DECLARATIONS_CH+' AS c, '+ TABLE_DECLARATIONS + ' AS d WHERE d.id = c.dec_relation_id AND c.id = ?',
+    '  , c.mailsend_status AS mailsend_status, d.id AS dec_id, d.image AS dec_image, u.mail_addr AS owner_mail_addr, u.name AS owner_name'+
+    ' FROM '+TABLE_DECLARATIONS_CH+' AS c, '+ TABLE_DECLARATIONS + ' AS d, '+ TABLE_USERS + ' AS u WHERE d.id = c.dec_relation_id AND c.id = ? AND u.id=c.user_id',
     [ch_id],
     function(err, results, fields) {
       if (err) {throw err;}
@@ -1833,6 +1913,71 @@ app.get('/ch/:id', function (req, res) {
               // サポーターです
               is_supporter = true;
             }
+
+
+
+
+
+		//自分の作成した(オーナーになってる)部屋に誰かが入ってきた時
+		if(results[0].owner_name != user_name){	
+			
+			//logger.debug("results-------------------------------------------------------------------------------------------------------------------");
+			//logger.debug(results);
+
+			var oshirase_comment = results[0].owner_name +"さんの作ったチャットルーム「"+results[0].name+"」に "+user_name+" さんが入ってきました。";
+			var chat_room_url = "/ch/"+results[0].id;
+
+
+			client.query(
+			'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+			[oshirase_comment, chat_room_url, user_id],
+			function(err_o1,results_o1) {
+			if (err_o1) {throw err_o1;}
+			//logger.debug(results_o1);
+			
+				client.query(
+				'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_USER_OSHIRASE_CONTENTS,
+				function(err_oc2, results_oc2) {
+				if (err_oc2) {throw err_oc2;}
+				//logger.debug(results_oc2);
+				
+						client.query(
+						'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+						[results[0].owner_id, results_oc2[0].last_id],
+						function(err_oc3,results_oc3) {
+						if (err_oc3) {throw err_oc3;}
+						//logger.debug(results_oc3);
+
+
+
+						var text_msg = ''
+						, email_tmpl = fs.readFileSync(__dirname + '/views/email/chat-in.ejs', 'utf8')
+						, mailto     = results[0].owner_mail_addr
+						, subject    = '自分の作成した(オーナーになってる)部屋に誰かが入ってきた時｜SYABERI-HOUSE'
+						;
+
+						text_msg = ejs.render(email_tmpl, {
+						chat_owner_name: results[0].owner_name,
+						chat_in_user_name: user_name,
+						chat_room_title: results[0].name,
+						chat_room_detail: results[0].detail,
+						chat_room_url: DOMEIN + chat_room_url
+						});
+						//__sendEmail(text_msg, conf, mailto, subject);
+
+						}
+						);
+
+				}
+				);
+
+			});
+
+
+		}////自分の作成した(オーナーになってる)部屋に誰かが入ってきた時
+
+	results[0].detail = results[0].detail.replace(/\n/g,"<br/>");
+
             res.render('chat', {
               'house_id': results[0].id, 'house_name': results[0].name, 'url_id': ch_id,
               'house_image': results[0].image, 'house_desc': results[0].detail,
@@ -1955,6 +2100,33 @@ app.post('/firstset', function (req, res) {
     function(err) {
       if (err) {throw err;}
 
+
+
+
+	var oshirase_comment = "SYABERI-HOUSEへようこそ！";
+	var mypage_url = "/mypage";
+
+
+	client.query(
+	'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+	[oshirase_comment, mypage_url, req.session.auth.user_id],
+	function(err_o1,results_o1) {
+		if (err_o1) {throw err_o1;}
+		//logger.debug(results_o1);
+
+		client.query(
+		'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+		[req.session.auth.user_id, results_o1.insertId],
+		function(err_oc3,results_oc3) {
+		if (err_oc3) {throw err_oc3;}
+		//logger.debug(results_oc3);
+
+		}
+		);
+	});
+
+
+
       // session にメルアドを保持しておく
       req.session.auth.mail_addr = mail_addr;
 
@@ -2038,6 +2210,42 @@ app.post('/profile-change', function (req, res) {
 
 });
 
+/**
+ * --------------------------------------------------------
+ * GET: お知らせ取得
+ * --------------------------------------------------------
+ */
+app.get('/get-informations', function(req, res){
+	// ログインチェック
+	if (!__isAuthLogin(req)) {
+		// フロント側にて、エリアの非表示を行っています
+		res.json({text:"ログインしていません。"}, 401);
+		return;
+	}
+
+	limit = parseInt(req.query.limit);
+	client.query(
+		'SELECT u.name AS name, con.comment AS comment, con.url AS url ' +
+		' FROM ' + TABLE_USERS + ' As u,' + TABLE_USER_OSHIRASE_RELATION +' AS rel,' + TABLE_USER_OSHIRASE_CONTENTS + ' AS con' +
+		' WHERE u.id = rel.user_id_to'+
+		' AND rel.oshirase_id = con.id' +
+		' AND u.id = ? ORDER BY con.created_at DESC LIMIT ?',
+	[req.session.auth.user_id,limit],
+	function(err, results)
+	{
+		if (err) {throw err;}
+		if( results.length === 0 )
+		{
+			// フロント側にて、件数を0にしています
+			res.json({text:"件数が0件です。"}, 400);
+			return;
+		}
+		else
+		{
+			res.json({info_list: results, info_coount:results.length}, 200);
+		}
+	})
+});
 
 
 /**
@@ -2101,7 +2309,7 @@ app.post('/create-event', function (req, res) {
 logger.info(word_tag);
 
   // 背景用
-  if( null == req.files.dec_image )
+  if( req.files.dec_image == null )
   {
   	// 何もしない
   }
@@ -2135,7 +2343,7 @@ logger.info(word_tag);
 		else
 		{
 			// 背景用
-			if( null == req.files.dec_image )
+			if( req.files.dec_image == null )
 			{
 			// 何もしない
 			}
@@ -2169,7 +2377,7 @@ logger.info(word_tag);
 			}
 
 			// サムネイル用
-			if( null == req.files.thumb_image )
+			if( req.files.thumb_image == null )
 			{
 		  	// 何もしない
 			}
@@ -2234,7 +2442,7 @@ logger.info(word_tag);
 				var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
 				  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
 //				exec( "mogrify -resize 950x435 -unsharp 2x1.4+0.5+0 " + newFile_l.path);
-				exec( "convert -geometry 950x435 " + req.files.thumb_image.path + " " + newFile_l.path);
+				exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_l.path);
 				
 				oldFile_l.addListener( "data", function(chunk) {
 					newFile_l.write(chunk);
@@ -2316,19 +2524,148 @@ app.post('/create-chat', function (req, res) {
       }
       else
       {
-        res.json({flg_create: true, chat_create_id:results.insertId}, 200);
-        return;
+
+
+
+
+
+	//フォロー中のコミュニティで、チャット部屋が出来た時
+	client.query(
+		'SELECT u.mail_addr, u.name, u.id'+
+		' FROM '+TABLE_SUPPORTERS+' AS s'+
+		' INNER JOIN '+TABLE_USERS+' AS u ON s.user_id = u.id'+
+		' WHERE s.declaration_id = ?',
+		[dec_relation_id],
+		function(err2, results2) {
+			if (err2) {throw err2;}
+			//logger.debug("results2---------------------------------------------------------------------------------------------------------------------------");
+			//logger.debug(results2);
+
+			if (results2.length > 0) {
+
+			
+				client.query(
+					'SELECT title FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
+					[dec_relation_id],
+					function(err3, results3) {
+					if (err3) {throw err3;}
+
+					//logger.debug(results3[0].title);
+
+					client.query(
+						'SELECT name FROM '+TABLE_USERS+' WHERE id = ?',
+						[user_id],
+						function(err4, results4) {
+						if (err4) {throw err4;}
+
+						//logger.debug(results4[0].name);
+
+
+						var oshirase_comment = "フォローしている「"+results3[0].title+"」コミュニティに新しいチャットルーム「"+title+"」ができました！";
+						var community_url = "/dec/" + dec_relation_id;
+						var chat_room_url = "/ch/"+ results.insertId;
+
+
+
+						client.query(
+						'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+						[oshirase_comment, chat_room_url, user_id],
+						function(err_o1,results_o1) {
+						if (err_o1) {throw err_o1;}
+						//logger.debug(results_o1);
+						
+							client.query(
+							'SELECT LAST_INSERT_ID() AS last_id FROM '+TABLE_USER_OSHIRASE_CONTENTS,
+							function(err_oc2, results_oc2) {
+							if (err_oc2) {throw err_oc2;}
+							//logger.debug(results_oc2);
+
+
+									for (var i=0; i < results2.length; i++) {
+
+										//logger.debug("results[0].id="+results[0].id);
+
+
+										client.query(
+										'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+										[results2[i].id, results_oc2[0].last_id],
+										function(err_oc3,results_oc3) {
+											if (err_oc3) {throw err_oc3;}
+											//logger.debug(results_oc3);
+
+
+										}
+										);
+
+
+										var text_msg = ''
+										, email_tmpl = fs.readFileSync(__dirname + '/views/email/create-chat.ejs', 'utf8')
+										, mailto     = results2[i].mail_addr
+										, subject    = '「'+results3[0].title+'」コミュニティに新しいチャットルーム「'+title+'」ができました｜SYABERI-HOUSE'
+										;
+										text_msg = ejs.render(email_tmpl, {
+										create_user_name: results4[0].name,
+										follow_user_name: results2[i].name,
+										community_id: dec_relation_id,
+										community_title: results3[0].title,
+										community_url: DOMEIN + community_url,
+										chat_room_url: DOMEIN + chat_room_url,
+										chat_room_title: title,
+										chat_room_detail: detail
+										});
+										__sendEmail(text_msg, conf, mailto, subject);
+
+
+
+									}
+							
+
+
+							}
+							);
+
+						});
+
+
+
+
+						}
+					);
+					}
+				);
+
+			
+
+
+
+
+				res.json({flg_create: true, chat_create_id:results.insertId}, 200);
+				return;
+
+			} else {
+				res.json({text: 'no_results'}, 200);
+				return;
+			}
+		}
+	);
+
+
+
+
+
       }
     }
   );
 });
-
 
 /**
  * --------------------------------------------------------
  * POST: サポーターになる
  * --------------------------------------------------------
  */
+
+
+
 app.post('/join-commit', function (req, res) {
   // ログインチェック
   if (!__isAuthLogin(req)) {
@@ -2396,19 +2733,62 @@ app.post('/join-commit', function (req, res) {
             );
 
 
-            // イベント参加メール送信
-            var text_msg = ''
-             , email_tmpl = fs.readFileSync(__dirname + '/views/email/join-event.ejs', 'utf8')
-             , mailto     = req.session.auth.mail_addr
-             , subject    = event_data.title+' に参加しました。｜SYABERI-HOUSE'
-             ;
-            text_msg = ejs.render(email_tmpl, {
-               user_name: req.session.auth.user_name
-             , event_id: req.body.id
-             , event_owner_name: event_data.user_name
-             , event_title: event_data.title
-            });
-            __sendEmail(text_msg, conf, mailto, subject);
+            
+
+
+
+		logger.debug("results-------------------------------------------------------------------------------------------------------------------");
+		logger.debug(results);
+
+		var oshirase_comment = "「"+event_data.title+"」コミュニティをフォローしました。";
+		var community_url = "/dec/"+req.body.id;
+
+
+		client.query(
+		'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+		[oshirase_comment, community_url, event_data.user_id],
+		function(err_o1,results_o1) {
+			if (err_o1) {throw err_o1;}
+			//logger.debug(results_o1);
+	
+			client.query(
+			'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+			[req.session.auth.user_id, results_o1.insertId],
+			function(err_oc3,results_oc3) {
+			if (err_oc3) {throw err_oc3;}
+			//logger.debug(results_oc3);
+
+			}
+			);
+		});
+
+
+
+		// コミュニティフォローメール送信
+		var text_msg = ''
+		, email_tmpl = fs.readFileSync(__dirname + '/views/email/community-follow.ejs', 'utf8')
+		, mailto     = req.session.auth.mail_addr
+		, subject    = '「'+event_data.title+'」コミュニティをフォローしました。｜SYABERI-HOUSE'
+		;
+		text_msg = ejs.render(email_tmpl, {
+		user_name: req.session.auth.user_name,
+		community_url: DOMEIN +community_url,
+		community_owner_name: event_data.user_name,
+		community_title: event_data.title,
+		community_detail:event_data.detail
+		});
+		__sendEmail(text_msg, conf, mailto, subject);
+
+
+
+
+
+
+
+
+
+
+
 
             return;
           }
@@ -2423,6 +2803,162 @@ app.post('/join-commit', function (req, res) {
 
 });
 
+
+
+
+
+
+
+
+/*
+app.post('/join-commit', function (req, res) {
+  // ログインチェック
+  if (!__isAuthLogin(req)) {
+    res.json({ text: 'ログインして下さい' }, 401);
+    return;
+  }
+
+  // リクエストチェック
+  // id
+  try {
+    check(req.body.id).isInt();
+    req.body.id = parseInt(req.body.id);
+  } catch (e) {
+    logger.error(e.message); //Invalid
+    res.json({text: '不正なIDです'}, 400);
+    return;
+  }
+
+  // 無駄な処理だけど、、、事前に情報を取得しておく
+  var event_data = {};
+  client.query(
+    'SELECT d.title, d.detail,'+
+    '  u.id AS user_id, u.name AS user_name'+
+    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' INNER JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+    ' WHERE d.id = ?',
+    [req.body.id],
+    function(err, results) {
+      if (err) {throw err;}
+      if (results.length === 0) {
+        // nothing
+        res.json({text: 'データがありませんでした'}, 400);
+        return;
+      } else {
+        event_data = results[0];
+      }
+    }
+  );
+
+
+logger.debug("req.body.id-------------------------------------------------------------------------------------------------------------------");
+logger.debug(req.body.id);
+logger.debug("req.session.auth.user_id-------------------------------------------------------------------------------------------------------------------");
+logger.debug(req.session.auth.user_id);
+
+var flag = false;
+
+
+  // すでに参加済みかどうかチェック
+  client.query(
+    'SELECT id '+
+    ' FROM '+TABLE_SUPPORTERS+
+    ' WHERE declaration_id = ? AND user_id = ?',
+    [req.body.id, req.session.auth.user_id],
+    function(err, results) {
+
+logger.debug("results-------------------------------------------------------------------------------------------------------------------");
+logger.debug(results.id);
+
+      if (err) {throw err;}
+
+
+
+      if (results.length === 0) {
+	flag = true;
+
+      } else {
+        res.json({join_flg: 'already_joined'}, 200);
+        return;
+      }
+
+if(flag)
+{
+        client.query(
+          'INSERT INTO '+TABLE_SUPPORTERS+'('+
+          '  created_at, declaration_id , user_id'+
+          ') VALUES ('+
+          '  NOW(),?,?'+
+          ')',
+          [req.body.id, req.session.auth.user_id],
+          function(err) {
+            if (err) {throw err;}
+            res.json(
+              {join_flg: 'ok'
+               , user_id: req.session.auth.user_id
+               , user_name: req.session.auth.user_name
+               , user_image: req.session.auth.user_image
+              }
+              , 200
+            );
+*******************
+
+		logger.debug("results-------------------------------------------------------------------------------------------------------------------");
+		logger.debug(results);
+
+		var oshirase_comment = "「"+event_data.title+"」コミュニティをフォローしました。";
+		var community_url = "/dec/"+req.body.id;
+
+
+		client.query(
+		'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+		[oshirase_comment, community_url, event_data.user_id],
+		function(err_o1,results_o1) {
+			if (err_o1) {throw err_o1;}
+			//logger.debug(results_o1);
+	
+			client.query(
+			'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+			[req.session.auth.user_id, results_o1.insertId],
+			function(err_oc3,results_oc3) {
+			if (err_oc3) {throw err_oc3;}
+			//logger.debug(results_oc3);
+
+			}
+			);
+		});
+
+
+
+		// コミュニティフォローメール送信
+		var text_msg = ''
+		, email_tmpl = fs.readFileSync(__dirname + '/views/email/community-follow.ejs', 'utf8')
+		, mailto     = req.session.auth.mail_addr
+		, subject    = 'コミュニティフォロー時　「'+event_data.title+'」コミュニティをフォローしました。｜SYABERI-HOUSE'
+		;
+		text_msg = ejs.render(email_tmpl, {
+		user_name: req.session.auth.user_name,
+		community_url: DOMEIN+community_url,
+		community_owner_name: event_data.user_name,
+		community_title: event_data.title,
+		community_detail:event_data.detail
+		});
+		__sendEmail(text_msg, conf, mailto, subject);
+****************
+
+
+		return;
+          }
+        );
+
+
+}
+
+    }
+  );
+
+});
+*/
 
 /**
  * --------------------------------------------------------
@@ -2459,7 +2995,7 @@ app.post('/end-proc', function (req, res) {
 
   // ログインID がイベントオーナーかどうかチェック
   client.query(
-    'SELECT id, title'+
+    'SELECT id, title, dec_relation_id, detail'+
     ' FROM '+TABLE_DECLARATIONS_CH+
     ' WHERE id = ? AND user_id = ?',
     [req.body.dec_id, req.session.auth.user_id],
@@ -2482,8 +3018,113 @@ app.post('/end-proc', function (req, res) {
           [FLG_SUPPORTER_COMP_STAT, req.body.dec_id],
           function(err2, results2) {
             if (err2) {throw err2;}
-            res.json({flg_update: 'ok'}, 200);
-            return;
+
+
+
+		//logger.debug("results-------------------------------------------------------------------------------------------------------------------");
+		//logger.debug(results);
+		//logger.debug("results2-------------------------------------------------------------------------------------------------------------------");
+		//logger.debug(results2);
+
+
+
+	        // メール送信用リストを取得する
+	        client.query(
+	          'SELECT u.mail_addr, u.name, u.id'+
+	          ' FROM '+TABLE_SUPPORTERS+' AS s'+
+	          ' INNER JOIN '+TABLE_USERS+' AS u ON s.user_id = u.id'+
+	          ' WHERE s.declaration_id = ?',
+	          [results[0].dec_relation_id],
+	          function(err3, results3) {
+	            if (err3) {throw err3;}
+	            if (results3.length > 0) {
+
+			logger.debug(results3);
+			
+			client.query(
+				'SELECT title FROM '+TABLE_DECLARATIONS+' WHERE id = ?',
+				[results[0].dec_relation_id],
+				function(err4, results4) {
+				if (err4) {throw err4;}
+				//logger.debug(results4[0].title);
+
+
+
+				var oshirase_comment = "フォローしている「"+results4[0].title+"」コミュニティのチャットルーム「"+results[0].title+"」がブログ化されました。";
+				var blog_page_url = "/suc/"+results[0].id;
+				var community_url = "/dec/"+results[0].dec_relation_id;
+
+
+				client.query(
+				'INSERT INTO '+TABLE_USER_OSHIRASE_CONTENTS+' ( created_at, public_flag, comment, url ,regist_user_id) VALUES ( NOW(), 1, ?, ?, ? )',
+				[oshirase_comment, blog_page_url, req.session.auth.user_id],
+				function(err_o1,results_o1) {
+					if (err_o1) {throw err_o1;}
+					logger.debug(results_o1);
+
+					for (var i=0; i < results3.length; i++) {
+
+						logger.debug("results3[i]=============================================================================");
+						logger.debug(results3[i]);
+						client.query(
+						'INSERT INTO '+TABLE_USER_OSHIRASE_RELATION+' ( user_id_to, oshirase_id, check_flag, created_at ) VALUES ( ?, ?, 0, NOW() )',
+						[results3[i].id, results_o1.insertId],
+						function(err_oc3,results_oc3) {
+						if (err_oc3) {throw err_oc3;}
+						logger.debug(results_oc3);
+
+						}
+						);
+					}
+				});
+
+
+				// メール送信
+				for (var i=0; i < results3.length; i++) {
+
+					//logger.info("results3[i].mail_addr="+results3[i].mail_addr);
+
+					// 新規チャットルームのお知らせメール送信
+					var text_msg = ''
+					, email_tmpl = fs.readFileSync(__dirname + '/views/email/create-blog.ejs', 'utf8')
+					, mailto     = results3[i].mail_addr
+					, subject    = 'フォロー中のコミュニティで、まとめログ出来た時｜SYABERI-HOUSE'
+					;
+					text_msg = ejs.render(email_tmpl, {
+					create_user_name: results3[0].name,
+					follow_user_name: results3[i].name,
+					community_title: results4[0].title,
+					community_url: DOMEIN + community_url,
+					blog_page_url: DOMEIN + blog_page_url,
+					chat_room_title: results[0].title,
+					chat_room_detail: results[0].detail
+					});
+					__sendEmail(text_msg, conf, mailto, subject);
+				}
+
+
+				res.json({flg_update: 'ok'}, 200);
+			        return;
+
+
+				}
+			);
+
+
+
+	            } else {
+	              res.json({text: 'no_results'}, 200);
+	              return;
+	            }
+	          }
+	        );
+
+
+
+
+
+
+
           }
         );
       }
@@ -2492,6 +3133,8 @@ app.post('/end-proc', function (req, res) {
   );
 
 });
+
+
 
 
 
@@ -2864,7 +3507,7 @@ app.post('/delete-chatroom', function (req, res) {
   // 削除対象部屋の管理人 が本人かどうかチェック
   client.query(
     'SELECT id, title'+
-    ' FROM '+TABLE_DECLARATIONS+
+    ' FROM '+TABLE_DECLARATIONS_CH+
     ' WHERE id = ? AND user_id = ?',
     [req.body.dec_id, req.session.auth.user_id],
     function(err, results) {
@@ -2880,7 +3523,7 @@ app.post('/delete-chatroom', function (req, res) {
 
         // チャット部屋を削除する
         client.query(
-          'DELETE FROM '+TABLE_DECLARATIONS+
+          'DELETE FROM '+TABLE_DECLARATIONS_CH+
           ' WHERE id = ?',
           [dec_id],
           function(err2, results2) {
@@ -3143,7 +3786,7 @@ everyauth.everymodule.logoutRedirectPath('/');
 app.listen(80, function () {
   var addr = app.address();
   //logger.info('   app listening on http://' + addr.address + ':' + addr.port);
-  logger.info('   app listening on http://ec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com/');
+  logger.info('   app listening on http://ec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com');
 });
 
 /**
@@ -3280,6 +3923,14 @@ var house = io
           }
 
 
+      client.query(
+        'SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE id = ?',
+        [house_id],
+        function(err, results, fields) {
+          if (err) {throw err;}
+
+socket.manager.rooms['/dec/'+results[0].dec_relation_id] = member_id;	//live
+
           //logger.debug('----- join members-data: ');logger.debug(avatar_members);
           // 自分自身のみへデータ送る
           socket.to(url_id).emit('user join', {
@@ -3299,6 +3950,9 @@ var house = io
           socket.broadcast.to(url_id).emit('audience join', {
             'session_id': sessionid, 'audience_img': user_image, 'audience_members': audience_members
           });
+
+logger.debug(socket);
+});
 
 
           // 現在house に入室しているユーザーを取得

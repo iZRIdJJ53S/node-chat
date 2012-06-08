@@ -3,12 +3,24 @@
 <head>
 <title>シャベリハウス</title>
 <meta charset="UTF-8">
-<meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
+<meta name="description" content="twitter・facebookユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
 <script src="/js/globalcommon.js" charset="UTF-8"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<link rel="shortcut icon" href="http://syaberi-house.com/images/favicon.ico" />
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <script type="text/javascript">
 var uaiph = 0;
@@ -35,6 +47,7 @@ var uaetc = 0;
 		document.write('<scr'+'ipt src="/js/jquery.nyroModal.custom.js" charset="UTF-8"></scr'+'ipt>');
 		uaetc = 1;
 	}
+var StampHideFlag = 0;
 </script>
 <script src="/js/jquery.tinyscrollbar.min.js" charset="UTF-8"></script>
 <script type="text/javascript">
@@ -670,7 +683,7 @@ $(function() {
 			var lcl_img_one = $('input#uploadings_input').val().split('\\');
 
 			for(var y = 0; y < lcl_img_one.length; y++){
-				if(lcl_img_one[y].indexOf('.jpg') != -1 ||lcl_img_one[y].indexOf('.jpeg') != -1 || lcl_img_one[y].indexOf('.png') != -1 || lcl_img_one[y].indexOf('.gif') != -1){
+				if(lcl_img_one[y].indexOf('.jpg') != -1 || lcl_img_one[y].indexOf('.jpeg') != -1 || lcl_img_one[y].indexOf('.JPG') != -1 || lcl_img_one[y].indexOf('.png') != -1 || lcl_img_one[y].indexOf('.PNG') != -1 || lcl_img_one[y].indexOf('.gif') != -1 || lcl_img_one[y].indexOf('.GIF') != -1){
 					var lcl_img_two = lcl_img_one[y];
 				}
 			}
@@ -680,6 +693,8 @@ $(function() {
 		//textareaにユーザが添付したファイル名を表示
 			$('#message1').val(lcl_img_two);
 			Upload_Cancel = 1;
+			//添付とコメントを同時に投稿できぬようテキストエリアをdisable化
+			$('#message1').attr("disabled", "disabled")
 
 		//hiddenにapp.jsから戻ってきたファイルパスを格納
 			$('#realUpfile').val(seikei_thr[0]);
@@ -689,6 +704,8 @@ $(function() {
 
 
 	$('#message1').change(function() {
+		//添付とコメントを同時に投稿できぬようテキストエリアをdisable化を解除
+		$('#message1').removeAttr('disabled');
 		if(Upload_Cancel == 1){
 			$('input#uploadings_input').val('');
 			Upload_Cancel = 0;
@@ -817,9 +834,10 @@ $().ready(function(){
 
     if (<%= house_status %> === 1) {
       $('#owner_proc_area').empty();
-      $('#owner_proc_area').html('<a href="/suc/<%= house_id %>">このイベントは終了しています</a>');
-      $('#message1').attr("disabled", "disabled").attr('value','このイベントは終了しています');
-      $('#submit_1').attr("disabled", "disabled");
+      //$('#owner_proc_area').html('<a href="/suc/<%= house_id %>">このイベントは終了しています</a>');
+      //$('#message1').attr("disabled", "disabled").attr('value','このイベントは終了しています');
+      //$('#submit_1').attr("disabled", "disabled");
+	$('#thread_comment_box').fadeOut('slow');
     }
 
 

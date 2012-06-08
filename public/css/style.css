@@ -27,6 +27,14 @@ section#section_left{
 		border:solid 1px #c2c2c2;
 		text-align:center;
 	}
+		#section_left #left_column a{
+			color:#333;
+			text-decoration:none;
+		}
+		#section_left #left_column a:hover{
+			color:#6BA200;
+			text-decoration:underline;
+		}
 	/*MAKE COMMUNITY*/
 	#section_left #make_community{
 		margin:10px 0px 10px 0px;
@@ -37,6 +45,13 @@ section#section_left{
 		padding:10px 0px 10px 0px;
 		border-bottom:solid 1px #c2c2c2;
 	}
+		article.community_room a{
+			color:#333;
+		}
+		article.community_room a:hover{
+			color:#333;
+			text-decoration:underline;
+		}
 	article.community_room h4{
 		*margin-top:9px;
 		margin-left:11px;
@@ -111,7 +126,7 @@ section#section_center{
 			width:480px;
 			background:#ffffff;
 			margin:0px auto 1px auto;
-			padding-bottom:10px;
+			padding-bottom:5px;
 			position:relative;
 		}
 		/*MYPAGE CORNER OF BACKGROUND*/
@@ -390,7 +405,7 @@ section#section_thread_right{
 	.thread_article_box_arrowl{
 		width:14px;
 		height:16px;
-		background:url('/images/article_left_arrow.gif') no-repeat;
+		background:url('/images/article_left_arrow.png') no-repeat;
 		position:absolute;
 		top:18px;
 		left:58px;
@@ -398,7 +413,7 @@ section#section_thread_right{
 	.thread_article_box_arrowr{
 		width:14px;
 		height:16px;
-		background:url('/images/article_right_arrow.gif') no-repeat;
+		background:url('/images/article_right_arrow.png') no-repeat;
 		position:absolute;
 		top:18px;
 		left:418px;
@@ -530,6 +545,7 @@ section#section_thread_right{
 		#thread_comment_box table#comment_wrapp td{
 			vertical-align:middle;
 			text-align:left;
+			margin-top:5px;
 		}
 		/*COMMENT FORM*/
 		textarea#message1{
@@ -772,23 +788,26 @@ section#make_community{
 
 		div#input_makecommunity_name_textarea{
 			width:417px;
-			height:110px;
-			background:url('/images/makecommunity_textarea.gif') no-repeat;
+			/*height:110px;
+			background:url('/images/makecommunity_textarea.gif') no-repeat;*/
 			font-size:14px;
 			border:none;
 			outline:none;
 			color:#333333;
 		}
 			div#input_makecommunity_name_textarea textarea{
-				width:400px;
-				height:90px;
-				margin:10px 15px 0px 10px;
+				width:99%;
+				min-height:40px;
+				/*margin:10px 15px 0px 10px;*/
 				font-size:14px;
 				background:#f4f4f4;
 				border:none;
 				outline:none;
 				color:#333333;
 				font-family:verdana,"ヒラギノ角ゴ Pro W3","Hiragino Kaku Gothic Pro",Osaka,"ＭＳ Ｐゴシック","MS PGothic",Sans-Serif;
+				resize : none; 
+				border: solid 1px #C2C2C2;
+				border-radius: 5px;
 			}
 /*UPLOAD*/
 	/* 枠 */
@@ -917,6 +936,22 @@ section.section_makeroome2{
 			padding-top:8px;
 			cursor:pointer;
 		}
+
+
+
+		div#joinedthumbs_wrapp img{
+			width: 44px;
+			height: 44px;
+			border: solid 1px #C2C2C2;
+			padding: 4px;
+			float: left;
+			display: block;
+			margin-top: -1px;
+			margin-left: -1px;
+		}
+
+
+
 		div#joined_details:hover{
 			filter: alpha(opacity=80);
 			opacity: 0.8;
@@ -953,11 +988,13 @@ section#section_make_chatroom{
 				float:left;
 			}
 			.section_makeroome_cent ul li.saying{
-				width:80px;
+				/*width:80px;*/
 				padding:10px;
+				font-weight:bold;
+				color:#333;
 			}
 			.section_makeroome_cent ul li.howmany_in{
-				width:635px;
+				/*width:580px;*/
 				padding:10px;
 				color:#d00000;
 			}
@@ -1059,10 +1096,12 @@ section#make_community_invite{
 			}
 			div.invite_li_name {
 				width: 100px;
-				padding: 10px 0 0 15px;
+				height:50px;
+				padding: 0px 0 0 15px;
 				word-wrap: break-word;
 				float:left;
 				color:#333333;
+				overflow-y:hidden;
 			}
 div#invite_submittingbt{
 width:698px;
@@ -1092,6 +1131,8 @@ section#section_searchcommu{
 		width:930px;
 		word-wrap: break-word;
 	}
+		dl.search_dl a{ color:#333; text-decoration:none;}
+		dl.search_dl a:hover{ color:#333; text-decoration:underline;}
 	dl.search_dl{width:930px;} /* clearfix IE 6, 7 */
 	dl.search_dl:after {content:"";} /* clearfix */
 
@@ -1294,4 +1335,99 @@ h3#section_makeroome_h3{
 	width:950px;
 	text-align:left;
 	font-size:20px;
+}
+.smatc{
+	width:459px;
+	margin:0px auto;
+}
+
+
+
+
+
+article table.table_b{
+	height:75px;
+	border-collapse:collapse;
+	margin-left:1px;
+	margin-top:26px;
+}
+	article table.table_b td{
+		vertical-align:top;
+		padding-right:10px;
+	}
+	article table.table_b ul{
+		width:295px;
+		list-style-type:none;
+	}
+	article table.table_b td.join_b{
+		width:148px;
+		font-size:40px;
+		background:#dadada;
+		text-align:center;
+		border:solid 1px #c2c2c2;
+		line-height:0.5;
+		*line-height:1;
+		letter-spacing:-0.05em;
+		vertical-align:middle;
+	}
+		article table.table_b td.join_b span{
+			font-size:20px;
+			font-weight:bold;
+			letter-spacing:0;
+		}
+.topthumb_b{
+	text-align:center;
+}
+	.topthumb_b img{
+		margin-top:5px;
+		border:solid 1px #c2c2c2;
+	}
+	.topthumb_b h3{
+		padding:0px 5px 0px 5px;
+		font-weight:normal;
+	}
+	.smatc a{
+		color:#6BA200;
+		text-decoration:underline;
+	}
+	.smatc a:hover{
+		color:#6BA200;
+		text-decoration:none;
+	}
+/*ARTICLE UL*/
+article ul.article_ul_b{
+	width:293px;
+	list-style-type:none;
+	margin:-1px 0px 0px 11px;
+}
+ul.article_ul_b{width:293px;} /* clearfix IE 6, 7 */
+ul.article_ul_b:after {content:"";} /* clearfix */
+	article ul.article_ul_b li{
+			width:44px;
+			height:44px;
+		border:solid 1px #c2c2c2;
+		padding:4px 0px 0px 4px;
+		float:left;
+		margin-bottom:-1px;
+		margin-left:-1px;
+	}
+		article ul.article_ul_b li img{
+			width:40px;
+			height:40px;
+		}
+
+/*LIVE*/
+div.live_b{
+	width:71px;
+	height:29px;
+	position:absolute;
+	top:6px;
+	left:21px;
+	background:url('/images/top_live_b.png') no-repeat;
+	text-indent:-9999px;
+	z-index:9999;
+}
+/*TO DETAIL*/
+.to_detailb{
+	margin-top:10px;
 }

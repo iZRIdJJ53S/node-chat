@@ -49,6 +49,9 @@ var chat = {
         , flg_owner   = true
         ;
 
+	//スタンプ用
+	StampHideFlag = 1;
+
       if (userMessage || image_src) {
 
         // image_src が優先
@@ -153,7 +156,6 @@ var chat = {
 		//alert(location.protocol+'//'+location.host+'/uploads/'+$('#realUpfile').val());
 		userMessage = location.protocol+'//'+location.host+'/uploads/'+$('#realUpfile').val();
 		//input file clear
-		$('input#uploadings_input').val('');
 		image_src = '';
 	}
 
@@ -202,8 +204,6 @@ var chat = {
 	//スクロール
 	MovingFlag = 1;
         that._clearInputUserMessage();
-	$('input#uploadings_input').val('');
-	$('input.comment_radio').removeAttr('checked');
       }
       return false;
     });
@@ -315,7 +315,7 @@ var chat = {
     if (isURL(userMessage)) {
 	//画像の場合
 	var stamp_flag = 0;
-	if( userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.gif') != -1 ){
+	if( userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.JPG') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.PNG') != -1 || userMessage.indexOf('.gif') != -1 || userMessage.indexOf('.GIF') != -1 ){
 		var stamp_flag = 1;
 	}else if (getURL(userMessage)) {
 		userMessage = replaceURL(userMessage);
@@ -381,19 +381,22 @@ var chat = {
 		*/
 
 //node split
+var JointOne = '<article class="chat-content" id="chat-content-';
+var JointTwo_l = '<div class="thread_article_thumb fltl"><img src="';
+var JointTwo_r = '<div class="thread_article_thumb fltr"><img src="';
 
 
 	if(stamp_flag == 1){
 		if (!is_owner) {
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
+			 chat_content_node = $(JointOne + comment_id+'">').prepend(JointTwo_l + user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magl22 fltl"><div class="thread_article_box_wrapp_stmp"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
 		}else{
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp txtr"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" style="top:20px;" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
+			 chat_content_node = $(JointOne + comment_id+'">').prepend(JointTwo_r + user_image+'" width="40" height="40"></div><div class="thread_article_box_stmp magr22 fltr"><div class="thread_article_box_wrapp_stmp txtr"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" style="top:20px;" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_txt_stmp"><img src='+userMessage+' width="150" height="auto"></div></div></div>');
 		}
 	}else{
 		if (!is_owner) {
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltl"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowl"></div><div class="thread_article_box magl22 fltl"><div class="thread_article_box_wrapp"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
+			 chat_content_node = $(JointOne + comment_id+'">').prepend(JointTwo_l + user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowl"></div><div class="thread_article_box magl22 fltl"><div class="thread_article_box_wrapp"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
 		}else{
-			 chat_content_node = $('<article class="chat-content" id="chat-content-'+comment_id+'">').prepend('<div class="thread_article_thumb fltr"><img src="'+user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowr"></div><div class="thread_article_box magr22 fltr"><div class="thread_article_box_wrapp"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
+			 chat_content_node = $(JointOne + comment_id+'">').prepend(JointTwo_r + user_image+'" width="40" height="40"></div><div class="thread_article_box_arrowr"></div><div class="thread_article_box magr22 fltr"><div class="thread_article_box_wrapp"><img src="/images/article_close.png" width="18" height="18" alt="閉じる" class="thread_article_date" name="delete_cmt" id="del_cmt_'+comment_id+'"><h4>'+userName+'</h4><div class="thread_article_date">'+this._changeEasyTimeStamp(message_time)+'</div><div class="thread_article_txt">'+userMessage+'</div></div></div>');
 		}
 	}
 		//this.messageList.prepend(chat_content_node); article上
@@ -406,7 +409,12 @@ var chat = {
 			CommentBox_func('chat-content-' + comment_id);
 			MovingFlag = 0;
 		}
-
+		$('input#uploadings_input').val('');
+		$('#realUpfile').val('');
+		//$('input.comment_radio').removeAttr('checked');
+		$('input.comment_radio').attr('checked',false);
+		//添付とコメントを同時に投稿できぬようテキストエリアをdisable化を解除
+		$('#message1').removeAttr('disabled');
 
 
 //    } else {
@@ -422,7 +430,10 @@ var chat = {
   },
 
   _setIframeArea: function (iframeURL, flg_owner, ext_image_path, ext_image_domain) {
-    this.iframeArea.empty();
+
+	if(StampHideFlag !=1){ //スタンプは非表示
+	    this.iframeArea.empty();
+	}
 
 
     // youtube 有り
@@ -475,13 +486,30 @@ var chat = {
       }
 
     // 画像あり
-    } else if (ext_image_path && ext_image_domain) {
-      this.iframeArea.prepend($('<img class="img" style="max-width:430px;">').attr('src', iframeURL));
-      //this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
 
-      // ドメイン取得
-      var domain_txt = '引用元：<a href="'+iframeURL+'?wmode=transparent" target="_blank">'+ext_image_domain+'</a>';
-      this.iframeArea.append($('<p>').html(domain_txt));
+
+	}else if( StampHideFlag !=1 ){
+
+		if (ext_image_path && ext_image_domain ) {
+		this.iframeArea.prepend($('<img class="img" style="max-width:430px;">').attr('src', iframeURL));
+		//this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
+
+		// ドメイン取得
+		var domain_txt = '引用元：<a href="'+iframeURL+'?wmode=transparent" target="_blank">'+ext_image_domain+'</a>';
+		this.iframeArea.append($('<p>').html(domain_txt));
+		}
+
+
+
+
+
+	   // } else if (ext_image_path && ext_image_domain) {
+	    //  this.iframeArea.prepend($('<img class="img" style="max-width:430px;">').attr('src', iframeURL));
+	      //this.iframeArea.prepend($('<img class="img" style="max-width:500px; max-height:300px;">').attr('src', iframeURL));
+
+	      // ドメイン取得
+	    //  var domain_txt = '引用元：<a href="'+iframeURL+'?wmode=transparent" target="_blank">'+ext_image_domain+'</a>';
+	    //  this.iframeArea.append($('<p>').html(domain_txt));
 
     // nicovideo 有り
 //    } else if (iframeURL.indexOf('nicovideo.jp') !== -1) {
@@ -505,7 +533,8 @@ var chat = {
 //    // 該当なし。その他
 //    } else {
 //      this.iframeArea.prepend($('<iframe width="500" height="460">').attr('src', iframeURL));
-    }
+	}
+	StampHideFlag = 0;　//スタンプは非表示
     //this.iframeArea.attr('src', iframeURL);
   },
 

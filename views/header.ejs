@@ -7,16 +7,8 @@
 			<table id="header_center_table">
 				<tr>
 					<td>
-						<a href="javascript:void(0);" id="fukidashi" style="display:none;">5</a>
-						<div id="fukidashi_notification_wrapp">
-							<div id="oshirase_top"></div>
-							<div id="oshirase_midl">
-								<div class="fukidashi_nortification_txt">AAAコミュニティに ○×チャットルームができました。</div>
-								<div class="fukidashi_nortification_txt">AAAコミュニティに □□□□さん 他150人参加しました□□□□さん 他150人参加しました。</div>
-								<div class="fukidashi_nortification_txt">AAAコミュニティの ○×チャットルームに□□□□さん </div>
-							</div>
-							<div id="oshirase_bott"><a href="#">他10人がいます。</a></div>
-						</div><!--/fukidashi_notification_wrapp-->
+						<a href="javascript:void(0);" id="fukidashi" style="display:none;"></a>
+						<div id="fukidashi_notification_wrapp"></div><!--/fukidashi_notification_wrapp-->
 					</td>
 					<td>
 						<form id="serch_box" method="get" action="/search">
@@ -25,11 +17,12 @@
 						</form>
 						<div id="tag_word">
 							<a href="javascript:void(0);"><img src="/images/common/tag.png" width="71" height="26" alt="TAG" id="header_tag"></a>
-							<a href="/search?search_str=tag">tag</a>
-							<a href="/search?search_str=iphone">iphone</a>
-							<a href="/search?search_str=タグテスト">タグテスト</a>
-							<a href="/search?search_str=foo">foo</a>
-							<a href="/search?search_str=bar">bar</a>
+							<a href="/search?search_str=速報">速報</a>
+							<a href="/search?search_str=画像">画像</a>
+							<a href="/search?search_str=教えて">教えて</a>
+							<a href="/search?search_str=猫">猫</a>
+							<a href="/search?search_str=グルメ">グルメ</a>
+							<a href="/search?search_str=旅行">旅行</a>
 						</div>
 						<div id="tag_notification_wrapp">
 							<div class="pad10 fontb bg_g">注目タグ</div>
@@ -60,16 +53,24 @@
 				</table>
 				<div id="mypage_notification_wrapp">
 					<a href="/mypage" class="mypage_nortification_txt"><div>マイページ</div></a>
-					<a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a>
-					<a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a>
+					<!--a href="/my-setting" class="mypage_nortification_txt"><div>マイページ設定</div></a-->
+					<!--a href="/my-setting" class="mypage_nortification_txt"><div>制作した部屋の設定</div></a-->
 					<a href="/create-dec" class="mypage_nortification_txt"><div>コミュニティを作る</div></a>
 					<a href="/search" class="mypage_nortification_txt"><div>コミュニティを探す</div></a>
-					<a href="javascript:logout( '/logout' , 'TW_FRIEND_FLAG' , '0' );" class="mypage_nortification_txt"><div>ログアウト</div></a>
+					<a href="javascript:logout( '/logout' );" class="mypage_nortification_txt"><div>ログアウト</div></a>
 				</div><!--/mypage_notification_wrapp-->
 
 			</div>
+<script>
+if((ReadCookie("name") != "") && (ReadCookie("thumb") != "")){
+	//	alert("ok");
+	document.getElementById("header_mypage_thumb_img").src = ReadCookie("thumb");
+	document.getElementById("header_mypage_name_h2").innerHTML = ReadCookie("name");
+}
 
+$('#fukidashi').css('display', 'block');
 
+</script>
 		<% }else{ %>
 
 			<div id="header_register">
@@ -81,6 +82,10 @@
 				
 			</div>
 
+<script>
+$('#fukidashi').css('display', 'none');
+</script>
+
 		<% } %>
 
 		<div id="fb-root"></div>
@@ -91,7 +96,35 @@
 
 <!-- facebook oauth -->
 <script>
- 
+
+	$().ready(function(){
+
+	// お知らせの中身を作成する
+	$.ajax({
+		type: 'GET',
+		url: '/get-informations',
+		data:{limit:10},
+		success: function(data)
+		{
+		console.log( data.info_coount );
+			$("#fukidashi").text(data.info_coount);
+			var a_tag = '<div id="oshirase_top"></div><div id="oshirase_midl">';
+			for (var ii = 0; ii < data.info_coount; ii++)
+			{
+				a_tag += '<div class="fukidashi_nortification_txt"><a href="' + data.info_list[ii].url + '">' + data.info_list[ii].comment + '</a></div>';
+			}
+			a_tag += '</div>';
+			$("#fukidashi_notification_wrapp").text("");
+			$("#fukidashi_notification_wrapp").append(a_tag);
+		},
+		error: function(data)
+		{
+		console.log( "bbbbb" );
+			$("#fukidashi").text("0");
+		}
+	});
+  });
+
 window.fbAsyncInit = function() {
 
 FB.init({ appId: fb_appId,
@@ -104,20 +137,29 @@ FB.init({ appId: fb_appId,
 	function updateButton(response) {
 	
 		var loginButton_facebook = document.getElementById('login_button_facebook');
-		loginButton_facebook.onclick = function() {
-			FB.login(function(response) {
-			    if (response.authResponse) {
-			        FB.api('/me', function(response) {
-			            userInfo.innerHTML = 
-			              '<img src="https://graph.facebook.com/' 
-			              + response.id + '/picture" style="margin-right:5px" />'
-			              + response.name;
-			        });
-			    } else {
-			        //user cancelled login or did not grant authorization
-			    }
+		//しゃべりハウスのfacebookログイン
+		if ((response.authResponse) && (syaberi_login_flag == true))
+		{
+			//alert("ログイン済/"+syaberi_login_flag);
+		}
+		else
+		{
+			//alert("ログイン前/"+syaberi_login_flag);
+			loginButton_facebook.onclick = function() {
+				FB.login(function(response) {
+					if (response.authResponse) {
+						FB.api('/me', function(response) {
+						userInfo.innerHTML = 
+							'<img src="https://graph.facebook.com/' 
+							+ response.id + '/picture" style="margin-right:5px" />'
+							+ response.name;
+					});
+					} else {
+						//user cancelled login or did not grant authorization
+					}
 			}, {scope:'email,publish_stream,manage_pages,read_friendlists,friends_activities',redirect_uri: location.protocol+"//"+ location.host +"/oauth/facebook"});
 		}
+	}
 
 	}
 

@@ -9,9 +9,39 @@
 <!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
+<link rel="shortcut icon" href="http://syaberi-house.com/images/favicon.ico" />
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
-<link rel="stylesheet" href="/css/common.css" />
-<link rel="stylesheet" href="/css/style.css" />
+<script type="text/javascript">
+var uaiph = 0;
+var uaand = 0;
+var uaetc = 0;
+	if(navigator.userAgent.indexOf('iPhone') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaiph = 1;
+	}else if(navigator.userAgent.indexOf('Android') != -1){
+		document.write('<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />');
+		document.write('<link rel="stylesheet" href="/css/common_smapho.css" />');
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style_smapho.css">');
+		uaand = 1;
+	}else{
+		document.write('<link rel="stylesheet" type="text/css" href="/css/style.css">');
+		document.write('<link rel="stylesheet" href="/css/common.css" />');
+		uaetc = 1;
+	}
+</script>
 </head>
 <body>
 <div id="wrapper">
@@ -24,30 +54,30 @@
 	<section id="section_left">
 		<div id="left_column">
 			<div id="make_community"><a href="/create-dec"><img src="/images/common/make_community.jpg" width="195" height="72" alt="コミュニティを作る"></a></div>
-			<div id="community_list" class="clearfix">
-				<h3 id="community_list_h3"><img src="/images/common/community_list.gif" alt="コミュニティリスト"></h3>
+			<!--div id="community_list" class="clearfix"-->
+				<h3 id="community_list_2" class="bdtp"><img src="/images/common/community_list.gif" alt="コミュニティリスト"></h3>
+				<!--
 				<a href="javascript:void(0)" id="hakunetsu" class="community_tab active_thing top1px">白熱中！</a>
 				<a href="javascript:void(0)" id="joinning" class="community_tab">参加中の部屋</a>
-			</div>
+				-->
+			<!--/div-->
 <!--左カラム　コミュニティリスト　白熱中！-->
 			<div id="hakunetsu_area" class="shownot">
 			
-	<% for (var i in dec_list) { %>
+	<% for (var i in dec_list_owner) { %>
 		
 		<article class="community_room">
-			<a href="/dec/<%= dec_list[i].id %>"><h4><%= dec_list[i].title %></h4></a>
+			<a href="/dec/<%= dec_list_owner[i].id %>"><h4><%= dec_list_owner[i].title %></h4></a>
 			<table class="table_s">
 				<tr>
 				<td>
 					<ul class="article_ul">
-						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
-						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
-						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
-						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
-						<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
+					<% for ( var j in user_dec_list) { %>
+						<% if ( dec_list_owner[i].id == user_dec_list[j].sup_dec_id) { %><li><a href="#"><img src="<%=user_dec_list[j].image%>"></a></li><% } %>
+					<% } %>
 					</ul>
 				</td>
-				<td class="join"><%= dec_list[i].supporter_num %><span>人<br>参加</span></td>
+				<td class="join"><%= dec_list_owner[i].supporter_num %><span>人<br>参加</span></td>
 				</tr>
 			</table>
 		</article>
@@ -101,100 +131,108 @@
 	</section>
 	<section id="section_center">
 		<div id="center_column">
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd><img src="/images/community_thumb.jpg"></dd>
-				</dl>
+<!--///////////////////////////-->
+<div id="article_area">
+	<script type="text/javascript">
+	<!--
+	var last_id_my;
+	-->
+	</script>
+
+	<% for (var i in dec_list) { %>
+		<article class="timeline">
+			<div class="smatc">
+				<!--div class="live_b">LIVE</div-->
+				<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
+				<p><%= dec_list[i].detail %></p>
+				<table class="table_b">
+					<tr>
+						<td>
+						<ul class="article_ul_b" id="dec-supporters-<%= dec_list[i].id %>"></ul>
+						</td>
+						<td class="join_b">
+							<%= dec_list[i].supporter_num %><span>人<br>参加</span>
+						</td>
+					</tr>
+				</table>
+				<div class="to_detailb padt5 txtc">
+				<a href="/dec/<%= dec_list[i].id %>">
+					<script>
+					if(uaiph == 1 || uaand == 1){
+						document.write('<img src="/images/top_to_detail.gif" alt="詳細">');
+					}else{
+						document.write('<img src="/images/top_to_detail_b.gif" alt="詳細">');
+					}
+					</script>
+				</a>
+			</div>
+		</article>
+
+		<script type="text/javascript">
+		<!--
+		$().ready(function(){
+		  $.ajax({
+		    type: "GET",
+		    url: "/get-supporters",
+		    data: {id: <%= dec_list[i].id %>, limit:18},
+		    success: function(data){
+
+		      var img_tag = '';
+		      for (var j = 0; j < data.supporter_data.length; j++){
+		        // imgタグを作成
+		        img_tag += '<li><a herf="/"><img src="'+data.supporter_data[j].image+'"></a></li>';
+		      }
+		      $('#dec-supporters-<%= dec_list[i].id %>').append(img_tag);
+		    },
+		    error: function(data){
+		      // error
+		    }
+		  });
+		});
+		
+		//-->
+		</script>
+
+		<script type="text/javascript">
+		<!--
+		last_id_my = <%= dec_list[i].id %>;
+		-->
+		</script>
+	<% } %>
+</div><!--/article_area-->
+		<script>
+		if(uaiph == 1 || uaand == 1){
+			document.write('<article class="txtc padt15">');
+		}else{
+			document.write('<article class="timeline txtc padt15">');
+		}
+		</script>
+			<div id="roadmore_border">
+				<div id="view-more-loader" style="text-align:center;display:none;"><img src="/img/loader.gif" /></div>
+				<a href="javascript:void(0);" id="view-more-events">
+					<script>
+					if(uaiph == 1 || uaand == 1){
+						document.write('<img src="/images/common/show_morecontents_s.gif" width="100%" height="auto" alt="SHOW MORE CONTENTS">');
+					}else{
+						document.write('<img src="/images/common/show_morecontents.jpg" alt="SHOW MORE CONTENTS">');
+					}
+					</script>
+				</a>
+			</div>
 			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd><iframe width="399" height="203" src="http://www.youtube.com/embed/_RXs2y8AtBQ?wmode=transparent" frameborder="0" style="z-index:1;" allowfullscreen></iframe></dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<dl class="timeline_dl">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline">
-				<img src="/images/top_thumb_s.jpg" class="baseBg"><div class="coverBg"></div>
-				<dl class="timeline_dl">
-					<dt class=""><a href="#"><img src="/images/thumb_s3.jpg" width="40" height="40"></a></dt>
-					<dd><a href="#">name name</a> さんが ○○コミュニティを制作しました。</dd>
-					<dd>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</dd>
-				</dl>
-			</article>
-			<article class="timeline txtc padt15">
-				<a href="#"><img src="/images/common/show_morecontents.jpg" width="428" height="31" alt="SHOW MORE CONTENTS"></a>
-			</article>
+<!--///////////////////////////-->
 		</div><!--/center_column-->
 	</section>
 	<section id="section_right">
 		<div class="right_column">
 			<h3 id="community_recommend">オススメのコミュニティ</h3>
 			<article class="community_room">
-				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
-				<h4>iOS5.1の部屋</h4>
-				<p>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</p>
+				<div class="txtc"><a href="/dec/1"><img src="/images/01.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<h4><a href="/dec/1">ようこそ！シャベリハウスへ</a></h4>
+				<p>シャベリハウス初心者のひとが集まるチャット部屋です。</p>
 				<table class="table_s">
-					<tr>
+					<!--tr>
 					<td>
 						<ul class="article_ul">
 							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
@@ -208,15 +246,15 @@
 						</ul>
 					</td>
 					<td class="join">120<span>人<br>参加</span></td>
-					</tr>
+					</tr-->
 				</table>
 			</article>
 			<article class="community_room bg_g">
-				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
-				<h4>iOS5.1の部屋</h4>
-				<p>■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□■□□□□□□□□□</p>
+				<div class="txtc"><a href="/dec/7"><img src="/data/7/images/thumb_l.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<h4><a href="/dec/7">うまい棒</a></h4>
+				<p>うまい棒 たこ焼き？ いいえ、 めんたいこ。</p>
 				<table class="table_s">
-					<tr>
+					<!--tr>
 					<td>
 						<ul class="article_ul">
 							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
@@ -230,11 +268,11 @@
 						</ul>
 					</td>
 					<td class="join">120<span>人<br>参加</span></td>
-					</tr>
+					</tr-->
 				</table>
 			</article>
 		</div><!--/.right_column-->
-		<div class="right_column magt20">
+		<!--div class="right_column magt20">
 			<h3 id="community_joined">友達の参加しているコミュニティ</h3>
 			<article class="community_room">
 				<table class="friends_joind">
@@ -256,30 +294,11 @@
 				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
 				<h4>iOS5.1の部屋</h4>
 			</article>
-		</div><!--/.right_column-->
+		</div--><!--/.right_column-->
 	</section>
 	</div><!--/#contents_wrapp_inside-->
 </div><!--/#contents_wrapp-->
 
-
-	<div class="main-img"></div>
-
-	<div class="left-content">
-		<h2 class="title">自分が作成したチャット部屋一覧</h2>
-		<ul id="ul-my-events">
-			<!-- $()ready() -->
-		</ul>
-	</div>
-
-	<div class="right-content">
-		<!--div class="AD"><img src="img/AD_350x240.gif"></div-->
-		<ul>
-			<a href="/create-dec"><li class="btn">新しいチャット部屋をつくる</li></a>
-			<a href="/my-setting"><li class="btn">プロフィール設定</li></a>
-			<a href="/logout"><li class="btn">ログアウト</li></a>
-		</ul>
-	</h2></div>
-<div class="clear"></div>
 
 <script type="text/javascript">
 <!--
@@ -304,6 +323,7 @@ $().ready(function(){
 -->
 </script>
 
+<%- partial('mypage-script') %>
 <%- partial('footer') %>
 <%- partial('footer-script') %>
 </div><!--/#wrapper-->
