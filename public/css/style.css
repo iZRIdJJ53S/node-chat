@@ -119,14 +119,13 @@ section#section_center{
 		width:490px;
 		background:#333333;
 		margin-left:10px;
-		padding:4px 1px 4px 1px;
+		padding:6px 1px 6px 1px;
 	}
 		/*ARTICLE TIMELINE*/
 		article.timeline{
 			width:480px;
 			background:#ffffff;
 			margin:0px auto 1px auto;
-			padding-bottom:5px;
 			position:relative;
 		}
 		/*MYPAGE CORNER OF BACKGROUND*/
@@ -176,7 +175,9 @@ section#section_center{
 				article.timeline dl.timeline_dl dd img{
 					border:solid 1px #c2c2c2;
 				}
-
+				article.timeline #roadmore_border{ padding:10px;}
+				article.timeline h3{margin-bottom:4px; font-size: 16px;}
+				
 	/*SENTER COLUMN 'SETTING'*/
 	#section_center .center_column_set{
 		width:490px;
@@ -344,6 +345,7 @@ section#thread{
 			display:block;
 			margin-top:-1px;
 			margin-left:-1px;
+			background-color:white;
 		}
 
 	a#pullpullpull{
@@ -549,25 +551,22 @@ section#section_thread_right{
 		}
 		/*COMMENT FORM*/
 		textarea#message1{
-			width:420px;
-			height:12px;
-			margin:5px 10px 0px 10px;
+			width:442px;
+			margin:5px 10px 0px 0px;
 			background:#f4f4f4;
-			border:none;
 			outline:none;
 			color:#333333;
 			font-family:verdana,"ヒラギノ角ゴ Pro W3","Hiragino Kaku Gothic Pro",Osaka,"ＭＳ Ｐゴシック","MS PGothic",Sans-Serif;
-			overflow:hidden;
 			resize:none;
-			max-height:20px;
-			min-height:20px;
-			height:20px;
+			border: 1px solid #C2C2C2;
+			min-height:12px;
 			word-wrap:normal;
+			border-radius:5px;
 		}
 		#comment_wrapp_inputarea{
 			width:442px;
-			height:31px;
-			background:url('/images/serchbox442_bg.gif') no-repeat;
+			/*height:31px;
+			background:url('/images/serchbox442_bg.gif') no-repeat;*/
 			margin-bottom:5px;
 		}
 		input.comment_radio{
@@ -588,6 +587,7 @@ section#section_thread_right{
 		word-wrap: break-word;
 		overflow-y:scroll;
 		overflow-x:hidden;
+		z-index:9999;
 	}
 		#emoji_wrapp_in{
 			width:280px;
@@ -621,7 +621,8 @@ section#section_thread_right{
 /*THREAD SECTION BOTTOM*/
 section#section_thread_bottom{
 	width:960px;
-	height:150px;
+	/*height:150px;*/
+	padding-bottom:20px;
 	position:relative;
 	clear:both;
 }
@@ -879,11 +880,11 @@ section#make_community{
 
 /*MAKE ROOM*/
 section.section_makeroome{
-	width:950px;
 	margin:30px 0px 10px 0px;
 	border:solid 5px #eaeaea;
 	background:#ffffff;
 	text-align:center;
+	padding: 10px 30px;
 }
 	section.section_makeroome p{
 		text-align:left;
@@ -900,11 +901,13 @@ section.section_makeroome2{
 		text-align:left;
 		word-wrap: break-word;
 	}
+	/*
 	#joinedthumbs_wrapp{
 		width:912px;
 		margin:0px auto;
 		position:relative;
 	}
+	*/
 		div.joined_thumbs{
 			width:44px;
 			height:44px;
@@ -959,17 +962,74 @@ section.section_makeroome2{
 
 /*MAKE CHATROOM*/
 section#section_make_chatroom{
-	width:958px;
-	margin:16px 0px 65px 0px;
-	border:solid 1px #eaeaea;
-	background:#ffffff;
+	width:960px;
+	margin:0px 0px 65px 0px;
+	/*border:solid 1px #eaeaea;*/
 	text-align:center;
 }
+/*//////////////////////*/
+.tab_elm{
+	background:#ffffff;
+}
+
+#ul_dec_detail{
+	width:960px;
+	list-style-type:none;
+	margin-top:16px;
+}
+#ul_dec_detail{width:960px;} /* clearfix IE 6, 7 */
+#ul_dec_detail:after {content:"";} /* clearfix */
+	#ul_dec_detail li{
+		width:450px;
+		height:30px;
+		float:left;
+		background:red;
+		text-align:center;
+		border-top:solid 1px #EAEAEA;
+		border-left:solid 1px #EAEAEA;
+		border-right:solid 1px #EAEAEA;
+		margin-left:20px;
+		-webkit-border-top-left-radius: 5px;
+		-webkit-border-top-right-radius: 5px;
+		-moz-border-radius-topleft: 5px;
+		-moz-border-radius-topright: 5px;
+		background:#DADADA;
+		position:relative;
+	}
+	#ul_dec_detail li a{
+		width:450px;
+		display:block;
+		padding-top:5px;
+		font-weight:bold;
+		color:#333;
+		text-shadow: 1px 1px 3px #fff;
+	}
+	#ul_dec_detail li a:hover{
+		text-shadow: 0px 0px 30px rgba(255, 255, 46, 1);
+	}
+	#ul_dec_detail li.over{ background:#D7F2A3; top:3px; }
+.tab_upper{
+	background:#d7f2a3;
+	border-top:solid 1px #c2c2c2;
+	border-bottom:solid 1px #c2c2c2;
+	padding:10px 0px 10px 0px;
+	margin:0px 0px 10px 0px;
+}
+	.tab_upper img{ margin:2px 0px; }
+/*//////////////////////*/
+#arrow_showchatroom ul{
+	list-style-type:none;
+	padding-top:10px;
+}
+	#arrow_showchatroom ul li{
+		display:inline;
+		padding:5px;
+	}
 	.section_makeroome_top{
 		width:942px;
 		height:2px;
 		background:url('/images/section_makeroome_top.gif') no-repeat;
-		margin:10px auto 0px auto;
+		margin:0px auto 0px auto;
 	}
 	.section_makeroome_cent{
 		width:942px;
@@ -1002,7 +1062,8 @@ section#section_make_chatroom{
 		width:942px;
 		height:2px;
 		background:url('/images/section_makeroome_bott.gif') no-repeat;
-		margin:0px auto 10px auto;
+		margin:0px auto 0px auto;
+		padding-bottom:10px;
 	}
 
 
@@ -1139,14 +1200,19 @@ section#section_searchcommu{
 		dl.search_dl dt{
 			clear:left;
 			float:left;
-			width:230px;
+			width:215px;
+			border:solid 1px #c2c2c2;
+			text-align:center;
 		}
 			dl.search_dl dt img{
-				border:solid 1px #c2c2c2;
+
 			}
 		dl.search_dl dd{
+			margin-left: 10px;
+			
 		}
 		dd.search_dd_title{
+			width:690px;word-wrap: break-word;
 			float:left;
 			font-size:15px;
 			font-weight:bold;
@@ -1179,7 +1245,6 @@ section#section_searchcommu{
 			}
 
 	.joinedthumbs_wrapp{
-		width:920px;
 		margin-top:15px;
 		position:relative;
 	}
@@ -1332,13 +1397,12 @@ h3#makecommunity_invite_h3{
 }
 /*H3 'MAKE ROOM'*/
 h3#section_makeroome_h3{
-	width:950px;
 	text-align:left;
 	font-size:20px;
 }
 .smatc{
 	width:459px;
-	margin:0px auto;
+	padding:10px;
 }
 
 
@@ -1349,7 +1413,7 @@ article table.table_b{
 	height:75px;
 	border-collapse:collapse;
 	margin-left:1px;
-	margin-top:26px;
+	margin-top:14px;
 }
 	article table.table_b td{
 		vertical-align:top;
@@ -1377,10 +1441,11 @@ article table.table_b{
 		}
 .topthumb_b{
 	text-align:center;
+	border:solid 1px #c2c2c2;
+	margin-bottom:10px;
 }
 	.topthumb_b img{
-		margin-top:5px;
-		border:solid 1px #c2c2c2;
+	
 	}
 	.topthumb_b h3{
 		padding:0px 5px 0px 5px;
@@ -1398,7 +1463,6 @@ article table.table_b{
 article ul.article_ul_b{
 	width:293px;
 	list-style-type:none;
-	margin:-1px 0px 0px 11px;
 }
 ul.article_ul_b{width:293px;} /* clearfix IE 6, 7 */
 ul.article_ul_b:after {content:"";} /* clearfix */

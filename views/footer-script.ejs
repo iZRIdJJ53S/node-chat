@@ -159,8 +159,10 @@ function makeEventListParts(data) {
 
 
 			write_data += '<article class="'+widever+'">';
+			if(data.event_data[i].live){
 			write_data += '<div class="'+live+'">LIVE</div>';
-			write_data += '<div class="'+topthumb+'"><a href="/dec/'+last_id+'"><img src="/data/'+last_id+'/images/'+thumb+'.jpg" onerror=\'this.src="/images/common/'+nowprinting+'.jpg"\' width="'+thumbWidth+'" height="'+thumbHeight+'"></a></div>'
+			}
+			write_data += '<div class="'+topthumb+'"><a href="/dec/'+last_id+'"><img src="/data/'+last_id+'/images/'+thumb+'.jpg" onerror=\'this.src="/images/common/'+nowprinting+'.jpg"\' ></a></div>'
 			write_data += '<h3><a href="/dec/'+last_id+'">'+data.event_data[i].title+'</a></h3>';
 			write_data += '<p>'+data.event_data[i].detail+'</p>';
 			write_data += '<table class="'+table+'">';

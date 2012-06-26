@@ -315,10 +315,34 @@ var chat = {
     if (isURL(userMessage)) {
 	//画像の場合
 	var stamp_flag = 0;
-	if( userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.JPG') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.PNG') != -1 || userMessage.indexOf('.gif') != -1 || userMessage.indexOf('.GIF') != -1 ){
+	//if( userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.JPG') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.PNG') != -1 || userMessage.indexOf('.gif') != -1 || userMessage.indexOf('.GIF') != -1 ){
+
+	//スタンプのディレクトリがある場合はスタンプフラグを立てる
+	if( userMessage.indexOf('/images/stamp/') != -1 ){
 		var stamp_flag = 1;
+		//スタンプ用
+		StampHideFlag = 1;
 	}else if (getURL(userMessage)) {
-		userMessage = replaceURL(userMessage);
+/////////////////////////////////////////////////投稿画像URLの整形前のデータを変数に格納
+		var nama_messe = userMessage;
+//////////////////////////////////////////////////////////
+		userMessage = replaceURL(userMessage);	//ココで投稿された画像URLをaタグで挟んでる※多分ライブラリ
+/////////////////////////////////////////////////投稿内容に画像URLがある場合、画像URLをimgタグで挟む
+		if( userMessage.indexOf('<a href=') != -1 && (userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.JPG') != -1 || userMessage.indexOf('.gif') != -1 || userMessage.indexOf('.GIF') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.PNG') != -1) ){
+			//alert('整形前'+nama_messe);
+			//alert('整形後'+userMessage);
+
+			if( nama_messe.indexOf('<br />') != -1 || (userMessage.indexOf('.jpg') != -1 || userMessage.indexOf('.jpeg') != -1 || userMessage.indexOf('.JPG') != -1 || userMessage.indexOf('.gif') != -1 || userMessage.indexOf('.GIF') != -1 || userMessage.indexOf('.png') != -1 || userMessage.indexOf('.PNG') != -1)){
+				//alert(nama_messe);
+				var change_messe = nama_messe.split('<br />');
+				for(var aa = 0; aa < change_messe.length; aa++){
+					if(change_messe[aa].indexOf('.jpg') != -1 || change_messe[aa].indexOf('.jpeg') != -1 || change_messe[aa].indexOf('.JPG') != -1 || change_messe[aa].indexOf('.gif') != -1 || change_messe[aa].indexOf('.GIF') != -1 || change_messe[aa].indexOf('.png') != -1 || change_messe[aa].indexOf('.PNG') != -1){
+						userMessage += '<br /><img src="'+change_messe[aa]+'"><br />';
+					}
+				}
+			}
+		}
+//////////////////////////////////////////////////////////
 	}
     }
 
@@ -415,6 +439,7 @@ var JointTwo_r = '<div class="thread_article_thumb fltr"><img src="';
 		$('input.comment_radio').attr('checked',false);
 		//添付とコメントを同時に投稿できぬようテキストエリアをdisable化を解除
 		$('#message1').removeAttr('disabled');
+		//$('#message1').blur();
 
 
 //    } else {
@@ -431,7 +456,9 @@ var JointTwo_r = '<div class="thread_article_thumb fltr"><img src="';
 
   _setIframeArea: function (iframeURL, flg_owner, ext_image_path, ext_image_domain) {
 
-	if(StampHideFlag !=1){ //スタンプは非表示
+	if(StampHideFlag != 1){ //スタンプは非表示
+	    this.iframeArea.empty();
+	} else if (iframeURL.indexOf('youtube.com') !== -1) {
 	    this.iframeArea.empty();
 	}
 
@@ -439,7 +466,7 @@ var JointTwo_r = '<div class="thread_article_thumb fltr"><img src="';
     // youtube 有り
     if (iframeURL.indexOf('youtube.com') !== -1) {
       // 動画ID を抜き出す
-      var youtube_vid = iframeURL.match(/[&\?]v=([\d\w]+)/);
+      var youtube_vid = iframeURL.match(/[&\?]v=([\d\w-]+)/);
       if (youtube_vid[1]) {
 
         // player-ctrl の部品組立

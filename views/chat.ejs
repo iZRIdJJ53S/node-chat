@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="ja">
 <head>
-<title>シャベリハウス</title>
+<title><%= house_name %></title>
 <meta charset="UTF-8">
 <meta name="description" content="twitter・facebookユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
@@ -418,7 +418,17 @@ function fb_sendMessage(){
 			check_num++;
 //			alert(check_obj[i].value);
 			
-			FB.api('/'+check_obj[i].value+'/feed','post', { access_token: sns_token , message: message_text , picture: location.protocol+'//'+ location.host +'/images/common/logo.gif', link: location.href},
+			FB.api('/'+check_obj[i].value+'/feed',
+				'post',
+				{
+				 access_token: sns_token ,
+				 message: message_text ,
+				 picture: 'http://syaberi-house.com/images/common/logo.gif',
+				 link: location.href,
+				 name: document.getElementsByTagName("title")[0].innerText,
+				 caption: 'シャベリハウス',
+				 description: '友人やちょっとした知り合い、共通の仲間と家(コミュニティ)を作り、楽しくシャベリあおう！'
+				},
 				function(response) {
 					// コールバック
 					//alert('ID: ' + response.id);
@@ -599,7 +609,7 @@ if(uaiph == 1 || uaand == 1){
 }else{
 	document.write('<tr>');
 	document.write('<td colspan="6">');
-	document.write('<div id="comment_wrapp_inputarea"><textarea type="text" value="" id="message1" style="overflow:hidden; resize:none; max-height:20px; min-height:20px; height:20px; word-wrap:normal;" cols="60" wrap="off"></textarea></div>');
+	document.write('<div id="comment_wrapp_inputarea"><textarea type="text" value="" id="message1" style="overflow:hidden; resize:none; word-wrap:normal;" cols="60" wrap="off"></textarea></div>');
 	document.write('</td>');
 	document.write('</tr>');
 	document.write('<tr>');
@@ -664,6 +674,13 @@ if(uaiph == 1 || uaand == 1){
 						</div>
 					</div><!--/emoji_wrapp-->
 				</table><div id="scrl_top"><a href="javascript:void(0);" title="ページTOP">▲</a></div>
+<script>
+if(uaiph == 1 || uaand == 1){
+	<% if ( is_owner) { %>
+	document.write('<div id="forblog"><a href="#alert_box" class="nyroModal" rel="sidealert">チャットルームをブログ化する</a></div>');
+	<% } %>
+}
+</script>
 <!--//////////////////////////////////////-->
 <script src="/js/upload.js" charset="UTF-8"></script>
 <script>

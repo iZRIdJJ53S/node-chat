@@ -47,7 +47,7 @@ var uaetc = 0;
 <header>
 	<div class="header_left">
 		<h1><img src="/images/header_logo.gif" width="234" height="106" alt="SYABERI HOUSE" ></h1>
-		<p>友人やちょっとした知り合い、<br>共通の仲間と部屋(コミュニティ)を<br>作り、楽しくシャベリあおう！</p>
+		<p>友人やちょっとした知り合い、<br>共通の仲間と家(コミュニティ)を<br>作り、楽しくシャベリあおう！</p>
 	</div>
 
 	<div class="header_center">
@@ -63,7 +63,7 @@ var uaetc = 0;
 		<% }else{  %>
 			<div id="register">
 				<ul>
-					<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/top_login_facebook.gif" width="215" height="52" alt="facebookログイン"></a></li>
+					<li><a href="javascript:void(0);" id="login_button_facebook"><img src="/images/top_login_facebook.gif" width="215" height="52" alt="facebookログイン" style="margin-bottom:3px;"></a></li>
 					<li><a href="/auth/twitter" id="login_button_twetter"><img src="/images/top_login_twetter.gif" width="215" height="52" alt="twetterログイン"></a></li>
 				</ul>
 
@@ -155,14 +155,14 @@ window.fbAsyncInit = function() {
 			<script>
 				if(uaiph ==1 || uaand == 1){
 					if(<%= dec_list[i].live %>){
-					//	document.write('<div class="live_b">LIVE</div>');
+						document.write('<div class="live_b">LIVE</div>');
 					}
 					document.write('<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror=\'this.src="/images/common/nowprinting_m.jpg"\'></a></div>');
 				}else{
 					if(<%= dec_list[i].live %>){
-					//	document.write('<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>');
+						document.write('<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>');
 					}
-					document.write('<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" onerror=\'this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"\' width="<% if(i == 0 || i == 9) { %>457<% } else { %>215<% } %>" height="<% if(i == 0 || i == 9) { %>247<% } else { %>111<% } %>"></a></div>');
+					document.write('<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" onerror=\'this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"\'></a></div>');
 				}
 			</script>
 
@@ -257,7 +257,7 @@ window.fbAsyncInit = function() {
 <div class="clear"></div>
 
 <section id="roadmore"><div id="roadmore_border">
-	<div id="view-more-loader" style="text-align:center;display:none;"><img src="/img/loader.gif" /></div>
+	<div id="view-more-loader" style="text-align:center;display:none; height:39px;"><img src="/img/loader.gif" /></div>
 	<a href="javascript:void(0);" id="view-more-events"><div id="roadmore_inner">SHOW MORE CONTENTS</div></a>
 </div></section>
 

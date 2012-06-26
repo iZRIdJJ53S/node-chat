@@ -1,13 +1,26 @@
 <!DOCTYPE HTML>
 <html lang="ja">
 <head>
-	<title>シャベリハウス</title>
+<title>コミュニティ検索｜シャベリハウス</title>
 <meta charset="UTF-8">
 <meta name="description" content="twitterユーザーが趣味と興味でつながるリアルタイムなおしゃべり部屋。シャベリハウス">
 <meta name="keywords" content="シャベリハウス,チャット,趣味,興味,twitter">
-<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<script src="/js/globalcommon.js" charset="UTF-8"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" charset="UTF-8"></script>
 <script src="/js/common.js" type="text/javascript" charset="UTF-8"></script>
+<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" charset="UTF-8"></script><![endif]-->
+<link rel="shortcut icon" href="http://syaberi-house.com/images/favicon.ico" />
+<!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-29477382-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
 <link rel="stylesheet" href="/css/html5reset-1.6.1.css" />
 <script type="text/javascript">
 var uaiph = 0;
@@ -28,20 +41,6 @@ var uaetc = 0;
 		document.write('<link rel="stylesheet" href="/css/common.css" />');
 		uaetc = 1;
 	}
-</script>
-<script>
-$(function(){
-	var contscrol_elm = $('.thread_article_box_left');
-	var distance_of_top = $('.thread_article_box_left').offset().top - 101;
-	$(window).scroll(function(){
-		if($(window).scrollTop() > distance_of_top){
-			contscrol_elm.css({'position':'fixed','top':'101px'});
-		}else{
-			contscrol_elm.css('position','static');
-		}
-	});
-});
-//-------------------------------------------------------------------------------------(；´∀｀)
 </script>
 </head>
 <body>
@@ -112,15 +111,168 @@ $().ready(function(){
 
 		
 <section id="section_thread_left">
-			<!--article>
+			<article>
 				<div class="thread_article_box_left fltl">
 					<div class="thread_article_box_wrapp_left">
 						<div class="thread_article_txt">
-							<img src="/images/blog_dummy.jpg" width="400">
+
+
+<script>
+//ここからグラフ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+var max_point = 20;
+
+var start_date = new Date(_changeEasyTimeStam("<%= suc_detail.start_date %>"));
+var end_date   = new Date(_changeEasyTimeStam("<%= suc_detail.end_date %>"));
+
+
+//タイムスタンプ
+function _changeEasyTimeStam(time_str) {
+	if (!time_str) {return false;}
+	var d = new Date(time_str);
+	var date_txt = d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();
+	date_txt += ' '+d.toLocaleTimeString();
+
+	return date_txt;
+}
+
+
+var start_sec = start_date/1000; //数に置き換え
+var end_sec   = end_date/1000; //数に置き換え
+
+var total_sec = end_sec - start_sec;
+var one_point_sec = total_sec / max_point;
+
+
+	/*
+	alert("start_date = "+start_date+" = "+start_sec+"\n"+
+		"end_date = "+end_date+" = "+end_sec+"\n"+
+		"total_sec = "+total_sec
+	);
+	*/
+
+
+
+
+var point_sec_array = new Array();
+var point_wrapper_array = new Array();
+
+for(var i=0; i<= max_point; i++){
+	
+	//個々メモリの位置
+	var num_point = start_sec + ( one_point_sec * i );
+	point_sec_array.push( num_point );
+
+	//配列の中にメモリ分の配列をつくる
+	var point_inner_array = new Array();
+	point_wrapper_array.push( point_inner_array );
+}
+
+
+	//alert("one_point_sec = "+one_point_sec+"\n"+point_sec_array);
+
+var lastMessageId;
+
+<% for(var i=0; i<200; i++){ %>
+	<% if (!send_data[i]) {break;} %>
+
+	var message_time_<%= i %> = new Date(_changeEasyTimeStam("<%= send_data[i].message_time %>"));
+	var message_sec_<%= i %> = message_time_<%= i %>/1000; //数に置き換え
+	
+	for(var n=0; n< max_point; n++){
+
+		//メモリの位置（時間）とコメントの位置（時間）を見比べる
+		if( message_sec_<%= i %> >= point_sec_array[n] && message_sec_<%= i %> < point_sec_array[n+1]){
+			
+			//配列 in 配列に push
+			point_wrapper_array[n].push(<%= send_data[i].id %>);
+			lastMessageId = <%= send_data[0].id %>;
+				/*
+				alert("n="+n+"\n"+
+					"point_sec_array[n]="+point_sec_array[n]+"\n"+
+					"message_sec_<%= i %> ="+message_sec_<%= i %>+"\n"+
+					"point_sec_array[n+1]="+point_sec_array[n+1]);
+				*/
+		}
+	}
+<% } %>
+
+console.log(point_wrapper_array);
+
+
+//Y軸の最大数
+var maxY = 0;
+for(var i=0; i<= max_point; i++){
+	//alert(point_wrapper_array[i].length);
+	
+	if( maxY < point_wrapper_array[i].length ){
+		maxY = point_wrapper_array[i].length;
+	}
+}
+	//alert( "maxY = " + maxY );
+
+
+//グラフイメージのsrc用に文字列にする
+var imgParam = "0,";
+for(var i=0; i< max_point; i++){
+	
+	imgParam += ( point_wrapper_array[i].length / maxY * 100 );
+
+	if( i != max_point-1 ){
+		imgParam += "," ;
+	}
+}
+
+	//alert("imgParam = "+ imgParam );
+
+
+document.write('<a href="#"><img src="http://chart.apis.google.com/chart?chs=430x240&chd=t:'+imgParam+'&cht=lc&chco=74ae01&chls=3,1,0&chm=B,d7f2a3,0,0,0" id="graf_image"></a>');
+//document.write('<a href="#"><img src="http://chart.apis.google.com/chart?chs=430x240&chd=t:'+imgParam+'&cht=lc&chco=74ae01&chls=3,1,0&chm=B,d7f2a3,0,0,0&chg='+(100/max_point)+',50,1,5" id="graf_image"></a>');
+
+
+$('#graf_image').click(　function(e){
+		
+		//クリック位置を取得（画像の相対位置）
+		var posX = e.pageX - $('#section_thread_left').position().left -10;
+		
+		//クリック位置は何個目のメモリに該当するか
+		var pointPosision = parseInt( posX / 430 * 100 );
+		pointPosision = parseInt( pointPosision * max_point / 100 );
+
+			//alert("X="+posX+"\n"+"pointPosision = "+ pointPosision);
+		
+		//該当メモリの配列を探し０個目のidを入れる
+		var pointId = point_wrapper_array[ pointPosision ][0];
+		
+		//idが空の場合次のidを探す
+		while(!pointId ){
+			pointPosision += 1;
+			pointId = point_wrapper_array[ pointPosision ][0];
+			
+			//最後までidがなかったら一番最後のidを入る
+			//alert(point_wrapper_array.length - pointPosision-2);
+			if( point_wrapper_array.length - pointPosision-2 == 0 ){
+				pointId = lastMessageId;
+			}
+		}
+
+		//idの位置を取得しtween
+		var targetY = $('#'+ pointId +'').offset().top-81;
+		$($.browser.opera ? document.compatMode == 'BackCompat' ? 'body' : 'html' :'html,body').animate({scrollTop: targetY},500);return false;
+
+		return false;
+	});
+
+
+//ここまでグラフ---------------------------------------------------------------------------------------------------------------------------------------------------------
+</script>
+
+
 						</div>
 					</div>
 				</div>
-			</article-->
+			</article>
+
 </section><!--/section_thread_left-->
 
 
@@ -133,7 +285,7 @@ $().ready(function(){
 	<% for(var i=0; i<200; i++){ %>
 		<% if (!send_data[i]) {break;} %>
 		
-		<article>
+		<article id="<%= send_data[i].id %>">
 		<div class="thread_article_thumb fltl"><img src="<%= send_data[i].user_image %>" width="40" height="40"></div><div class="thread_article_box_arrowl"></div>
 		<div class="thread_article_box magl22 fltl">
 			<div class="thread_article_box_wrapp"><!-- img src="/images/article_close.gif" width="18" height="18" alt="閉じる" class="thread_article_date" -->
@@ -210,13 +362,20 @@ $().ready(function(){
 
 
 
-
-
-
-
-
 <%- partial('footer') %>
 <%- partial('footer-script') %>
+
+
+<script>
+//グラフのフィクシード---------------------------------------------------------------------------------------------
+if(uaiph == 1 || uaand == 1){
+	document.write('<scr'+'ipt src="/js/scrol_fixed_d.js" charset="UTF-8"></scr'+'ipt>');
+}else{
+	document.write('<sc'+'ript src="/js/scrol_fixed.js" charset="UTF-8"></sc'+'ript>');
+}
+//グラフのフィクシード---------------------------------------------------------------------------------------------
+</script>
+
 
 </body>
 </html>

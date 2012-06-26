@@ -9,6 +9,8 @@ var express = require('express') // フレームワーク(cakePHP 的な感じ)
   , ejs     = require('ejs')     // テンプレートエンジン
   , nib     = require('nib')     // coffeescript ライブラリ？よく分からん
   , sio     = require('socket.io') // WebSockets realtime
+//  , redis     = require('redis') // redis
+//  , RedisStore = require('connect-redis')(express)
   , log4js  = require('log4js')    // ロギング
   , util    = require('util')      // デバッグ等に便利な
   , nodehttp = require('http')      // http
@@ -147,10 +149,20 @@ function changeText2Array(text_data) {
 function __isAuthLogin(req) {
   if (!req.session || !req.session.auth) {
     // ログインしていない
+//      logger.debug('---------- req.session1: ------------- ');logger.debug(req);
+//      logger.debug('---------- req.session.auth1: ------------- ');logger.debug(req.auth);
     return false;
   } else {
-    return true;
-  }
+	if(!req.session.auth.user_id){
+//		logger.debug('---------- req.session2: ------------- ');logger.debug(req);
+//		logger.debug('---------- req.session.auth2: ------------- ');logger.debug(req.session.auth);
+	    	return false;
+    	} else {
+//		logger.debug('---------- req.session3: ------------- ');logger.debug(req);
+//		logger.debug('---------- req.session.auth3: ------------- ');logger.debug(req.session.auth);
+	    	return true;
+  	}
+   }
 }
 
 // CSRF対策用キー発行
@@ -427,7 +439,7 @@ app.configure(function () {
 //  app.use(express.basicAuth(conf.basicAuth.user, conf.basicAuth.password));
 
   app.use(express.cookieParser()); // クッキー操作
-  app.use(express.session({ secret: 'team0110' }));
+  app.use(express.session({ secret: 'team0110'})); // ,store: new RedisStore(),cookie: {maxAge: 86400 * 1000}
   app.use(express.bodyParser()); // POSTメソッド操作
 //  app.use(app.router); // app.get の優先順位を決めれる
   app.use(everyauth.middleware()); // 認証ミドルウェア
@@ -563,7 +575,7 @@ app.get('/', function (req, res) {
 	logger.info('app.get: /');
 
 	//ログインフラグ
-	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }else{ res.redirect('/mypage'); }
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }else{ res.redirect('/mypage');return; }
 
 
 	var onetime_token = '';
@@ -605,7 +617,7 @@ app.get('/', function (req, res) {
 					dec_list[i].live = false;
 				}
 			};
-			res.render('index', {'locals':
+			res.render('index',{'locals':
 				{'title': 'SHABERI-HOUSE index'
 					, 'dec_list': dec_list
 					, 'onetime_token': onetime_token
@@ -952,7 +964,7 @@ app.get('/suc', function (req, res) {
       '  , d.target_num, d.deadline, d.status, d.image'+
       '  , COUNT( spt.declaration_id ) AS supporter_num'+
       '  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio'+
-      ' FROM '+TABLE_DECLARATIONS+' AS d'+
+      ' FROM '+TABLE_DECLARATIONS_CH+' AS d'+
       ' INNER JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id'+
       ' WHERE status = ?'+
       ' GROUP BY d.id'+
@@ -999,8 +1011,7 @@ app.get('/suc', function (req, res) {
 app.get('/suc/:id', function (req, res) {
 
 	//ログインフラグ
-	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; }
-
+	var is_auth_login = true; if (!__isAuthLogin(req)) { is_auth_login = false; };
   // ID が正しいかチェックする
   var suc_id = (req.params.id) ? req.params.id : '';
 
@@ -1011,7 +1022,7 @@ app.get('/suc/:id', function (req, res) {
     '  , COUNT( s.declaration_id ) AS supporter_num'+
     '  , (COUNT(s.declaration_id) / d.target_num) *100 AS ratio'+
     '  , u.name AS user_name, u.image AS user_image'+
-    ' FROM '+TABLE_DECLARATIONS+' AS d'+
+    ' FROM '+TABLE_DECLARATIONS_CH+' AS d'+
     ' LEFT JOIN '+TABLE_SUPPORTERS+' AS s ON d.id = s.declaration_id'+
     ' LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
     ' WHERE d.id = ?'+
@@ -1050,6 +1061,7 @@ app.get('/suc/:id', function (req, res) {
                     'suc_detail': dec_results[0]
                   , 'send_data' : []
                   , 'meta_title': dec_results[0].title+'｜'
+		  , 'is_auth_login': is_auth_login
                 });
                 return;
 
@@ -1061,7 +1073,7 @@ app.get('/suc/:id', function (req, res) {
 		        for (var i = 0; i < max_result; i++) {
 		          var tmp_data = results[i];
 		          // データを溜め込んでいく
-		          send_data[i] = {'comment_id': tmp_data.tweet_id_str,
+		          send_data[i] = {'id': tmp_data.id, 'comment_id': tmp_data.tweet_id_str,
 		            'message_time': tmp_data.created_at, 'userMessage': tmp_data.body,
 		            //'message_time': date_txt, 'userMessage': tmp_data.body,
 		            'image_src': tmp_data.image, 'userName': tmp_data.user_name,
@@ -1200,6 +1212,7 @@ app.get('/mypage', function (req, res) {
 
   var dec_list_owner = [];
   var user_results = [];
+  var fr_sup_list =[];
   var spt_comp_list = []; // 完了
   var spt_want_list = []; // 募集中
   var spt_fail_list = []; // 挫折
@@ -1217,7 +1230,7 @@ app.get('/mypage', function (req, res) {
   	  ' LEFT JOIN ' +TABLE_USERS+ ' AS u ON d.user_id = u.id ' +
 	' WHERE sup.user_id = ?'+
 	' GROUP BY sup_id'+
-	' ORDER BY d.created_at DESC'+
+	' ORDER BY sup.created_at DESC'+
 	' LIMIT 20',
 
 //    'SELECT d.id, d.created_at, d.title, d.user_id'+
@@ -1261,7 +1274,7 @@ app.get('/mypage', function (req, res) {
 			' u.name AS name, u.image AS image' +
 			' FROM ' + TABLE_SUPPORTERS + ' AS sup, ' + TABLE_USERS + ' AS u WHERE sup.declaration_id in(' + queryValue + ')' +
 			' AND sup.user_id = u.id'+
-			' ORDER BY sup.declaration_id DESC, sup.id ASC',
+			' ORDER BY sup.declaration_id DESC, sup.id DESC',
 			function(user_err, user_results_images)
 			{
 				if(user_err){throw user_err;}
@@ -1285,6 +1298,100 @@ app.get('/mypage', function (req, res) {
 	}
 	// 最新のリストを取得
 
+var fr_list = [];
+var fr_queryValue = '';
+client.query(
+	'SELECT friend_list FROM users WHERE id = ?',
+	[req.session.auth.user_id],
+	function(fr_err, fr_results)
+	{
+		if (fr_err) {throw fr_err;}
+		if (fr_results.length === 0)
+		{
+		}
+		else
+		{
+			// fr_list の内容はparseした内容にする
+			fr_list = JSON.parse(fr_results[0].friend_list);
+			fr_list = JSON.parse(JSON.stringify(fr_list.data));
+			for( var kk = 0; kk < fr_list.length; kk++ )
+			{
+				if( kk + 1 == fr_list.length )
+				{
+					// 最終処理
+					fr_queryValue += fr_list[kk].id;
+				}
+				else
+				{
+					fr_queryValue += fr_list[kk].id + ',';
+				}
+			}
+			if( fr_queryValue == '' )
+			{
+				fr_queryValue = '\'\'';
+			}
+
+	// ユーザIDの一覧を取得
+	var oauth_service_queryValue = '';
+	client.query(
+		'SELECT id FROM users WHERE oauth_service_id IN ( '+fr_queryValue+' )',
+//		[fr_queryValue],
+		function(oauth_service_err, oauth_service_results)
+		{
+			if (oauth_service_err) {throw oauth_service_err;}
+			if (oauth_service_results.length === 0)
+			{
+
+			}
+			else
+			{
+				for( var ll = 0; ll < oauth_service_results.length; ll++ )
+				{
+					if( ll + 1 == oauth_service_results.length )
+					{
+						// 最終処理
+						oauth_service_queryValue += oauth_service_results[ll].id;
+					}
+					else
+					{
+						oauth_service_queryValue += oauth_service_results[ll].id + ',';
+					}
+				}
+				
+				
+				if( oauth_service_queryValue == '' )
+				{
+					oauth_service_queryValue = '\'\'';
+				}
+
+				// 友人が参加した順にする
+				client.query(
+					'SELECT d.id AS id, d.title AS title, d.image AS image, sup.id AS sup_id, sup.declaration_id AS sup_dec_id, sup.user_id AS sup_user_id, d.created_at, d.user_id ' +
+					' ,COUNT( spt.declaration_id ) AS supporter_num ' +
+					' ,d.target_num, d.deadline, d.status ' +
+					' ,u.name AS user_name, u.image AS user_image ' +
+					' FROM ' +TABLE_SUPPORTERS+' AS sup ' +
+					' LEFT JOIN ' +TABLE_DECLARATIONS + ' AS d ON sup.declaration_id = d.id ' +
+					' LEFT JOIN ' +TABLE_SUPPORTERS+ ' AS spt ON d.id = spt.declaration_id ' +
+					' LEFT JOIN ' +TABLE_USERS+ ' AS u ON sup.user_id = u.id ' +
+					' WHERE sup.user_id in( ' + oauth_service_queryValue + ' )'+
+					' GROUP BY sup_id'+
+					' ORDER BY sup.created_at DESC'+
+					' LIMIT 5',
+//					[oauth_service_queryValue],
+					function(fr_sup_err, fr_sup_results)
+					{
+						if (fr_sup_err) {throw fr_sup_err;}
+						if (fr_sup_results.length === 0)
+						{
+
+						}
+						else
+						{
+							
+							fr_sup_list = fr_sup_results;
+						}
+
 	client.query(
 		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
 		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
@@ -1301,12 +1408,18 @@ app.get('/mypage', function (req, res) {
 			        , 'meta_title': 'マイページ｜'
 				, 'is_auth_login': is_auth_login
 				,'user_dec_list':user_results
+				,'fr_sup_list':fr_sup_list
 				});
 				return;
 			} else {
 				var max_dec_num = results.length;
 				for (var i = 0; i < max_dec_num; i++) {
 					dec_list[i] = results[i];
+					if(house.manager.rooms['/dec/' + results[i].id]){
+						dec_list[i].live = true;
+					}else{
+						dec_list[i].live = false;
+					}
 				}
 			}
 			//logger.debug("ーーーーーーーーーーーーーーー１－－");
@@ -1322,16 +1435,18 @@ app.get('/mypage', function (req, res) {
 			        , 'meta_title': 'マイページ｜'
 				, 'is_auth_login': is_auth_login
 				,'user_dec_list':user_results
+				,'fr_sup_list':fr_sup_list
 			      });
 			      return;
+				});
 
-			
-			
+			});
+		}
 		});
+	}
+	});
 
-
-    }
-  );
+	});
 });
 
 
@@ -1752,6 +1867,11 @@ app.get('/get-events', function (req, res) {
           dec_list[i].image = sanitize(dec_list[i].image).xss();
           dec_list[i].user_name = sanitize(dec_list[i].user_name).xss();
           dec_list[i].user_image = sanitize(dec_list[i].user_image).xss();
+		if(house.manager.rooms['/dec/' + results[i].id]){
+			dec_list[i].live = true;
+		}else{
+			dec_list[i].live = false;
+		}
         };
         res.json({event_data: dec_list}, 200);
         return;
@@ -1776,6 +1896,7 @@ app.get('/dec/:id', function (req, res) {
 	// 正しくなければ、一覧へリダイレクトする
 	var dec_id = (req.params.id) ? req.params.id : '';
 	var suc_obj = {};
+	var blog_obj = {};
 	var owner_id = '';
 	var onetime_token = '';
 	if (req.session && req.session.auth) {
@@ -1783,8 +1904,13 @@ app.get('/dec/:id', function (req, res) {
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
 	}
 	
-	client.query('SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ' + dec_id +' ORDER BY id DESC', function (err, results) {
+	// チャットのリストを取得
+	client.query('SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ' + dec_id +' AND status = 2 ORDER BY id DESC', function (err, results) {
 	suc_obj = results;
+	});
+	// ブログのリストを取得
+	client.query('SELECT * FROM '+TABLE_DECLARATIONS_CH+' WHERE dec_relation_id = ' + dec_id +' AND status = 1 ORDER BY id DESC', function (b_err, b_results) {
+	blog_obj = b_results;
 	});
 	
 	// 正しいかDB に確認
@@ -1802,6 +1928,9 @@ app.get('/dec/:id', function (req, res) {
 		' LIMIT 1',
 		[dec_id],
 		function(err, results, fields) {
+		
+		logger.debug(house.manager.rooms);
+		
 			if (err) {throw err;}
 			if (results.length === 0) {
 				res.send('dec_id error: no result');
@@ -1820,7 +1949,7 @@ app.get('/dec/:id', function (req, res) {
 					}
 				}
 				
-				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj, 'dec_image':'/data/' + dec_id + '/images/' + results[0].image, 'is_auth_login': is_auth_login, 'owner_id': owner_id});
+				res.render('dec-detail', {'dec_detail': results[0], 'onetime_token': onetime_token, 'meta_title': results[0].title+'｜', 'suc_obj': suc_obj,'blog_obj': blog_obj, 'dec_image':'/data/' + dec_id + '/images/' + results[0].image, 'is_auth_login': is_auth_login, 'owner_id': owner_id});
 				return;
 			}
 		}
@@ -2379,7 +2508,10 @@ logger.info(word_tag);
 			// サムネイル用
 			if( req.files.thumb_image == null )
 			{
-		  	// 何もしない
+				// 何もしない
+				console.log( results.insertId );
+				res.redirect('/dec/'+results.insertId);
+				return;
 			}
 			else
 			{
@@ -2405,58 +2537,84 @@ logger.info(word_tag);
 					// 作成
 					fs.mkdirSync( uploadDir, 0777 );
 				}
-				exec("sudo -s");
-				//ファイル名をtmpのままにする
+				
 				var thumb_uploadDir_two =req.files.thumb_image.path.split('/');
 				var thumb_filename_Perse_l = uploadDir + '/thumb_l.jpg';
 				var thumb_filename_Perse_m = uploadDir + '/thumb_m.jpg';
 				var thumb_filename_Perse_s = uploadDir + '/thumb_s.jpg';
-
-				// 軽い処理から
-				var oldFile_s = fs.createReadStream( req.files.thumb_image.path )
-				  , newFile_s = fs.createWriteStream( thumb_filename_Perse_s );
-
-				exec( "convert -geometry 215x111 " + req.files.thumb_image.path + " " + newFile_s.path);
-
-//				exec( "mogrify -resize 215x111 -unsharp 2x1.4+0.5+0 " + newFile_s.path);
-
-				oldFile_s.addListener( "data", function(chunk) {
-					newFile_s.write(chunk);
-				})
-				oldFile_s.addListener( "close",function() {
-					newFile_s.end();
-				});
-
-				var oldFile_m = fs.createReadStream( req.files.thumb_image.path )
-				  , newFile_m = fs.createWriteStream( thumb_filename_Perse_m );
-//				exec( "mogrify -resize 457x247 -unsharp 2x1.4+0.5+0 " + newFile_m.path);
-				exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_m.path);
-
-				oldFile_m.addListener( "data", function(chunk) {
-					newFile_m.write(chunk);
-				})
-				oldFile_m.addListener( "close",function() {
-					newFile_m.end();
-				});
-
-				var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
-				  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
-//				exec( "mogrify -resize 950x435 -unsharp 2x1.4+0.5+0 " + newFile_l.path);
-				exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_l.path);
 				
-				oldFile_l.addListener( "data", function(chunk) {
-					newFile_l.write(chunk);
-				})
-				oldFile_l.addListener( "close",function() {
-					newFile_l.end();
-				});
+				async.series([
+				function (callback)
+				{
+					exec("sudo -s");
+					//ファイル名をtmpのままにする
+					// 軽い処理から
+					var oldFile_s = fs.createReadStream( req.files.thumb_image.path )
+					  , newFile_s = fs.createWriteStream( thumb_filename_Perse_s );
+					exec( "convert -geometry 215x111 " + req.files.thumb_image.path + " " + newFile_s.path);
+//					exec( "mogrify -resize 215x111 -unsharp 2x1.4+0.5+0 " + newFile_s.path);
+					oldFile_s.addListener( "data", function(chunk) {
+						newFile_s.write(chunk);
+					})
+					oldFile_s.addListener( "close",function() {
+						newFile_s.end();
+					});
+
+					callback(null, 1);
+				},
+
+				function (callback)
+				{
+					var oldFile_m = fs.createReadStream( req.files.thumb_image.path )
+					  , newFile_m = fs.createWriteStream( thumb_filename_Perse_m );
+//					exec( "mogrify -resize 457x247 -unsharp 2x1.4+0.5+0 " + newFile_m.path);
+					exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_m.path);
+					oldFile_m.addListener( "data", function(chunk) {
+						newFile_m.write(chunk);
+					})
+					oldFile_m.addListener( "close",function() {
+						newFile_m.end();
+					});
+
+					callback(null, 2);
+				},
+
+				function (callback)
+				{
+					var oldFile_l = fs.createReadStream( req.files.thumb_image.path )
+					  , newFile_l = fs.createWriteStream( thumb_filename_Perse_l );
+//					exec( "mogrify -resize 950x435 -unsharp 2x1.4+0.5+0 " + newFile_l.path);
+					// 大きさを一段階下げる
+					exec( "convert -geometry 457x247 " + req.files.thumb_image.path + " " + newFile_l.path);
+
+					oldFile_l.addListener( "data", function(chunk) {
+						newFile_l.write(chunk);
+					})
+					oldFile_l.addListener( "close",function() {
+						newFile_l.end();
+					});
+					callback(null, 3);
+				},
+				function( callback )
+				{
+					setTimeout(function()
+					{
+						res.redirect('/dec/'+results.insertId);
+						callback(null, 4);
+						return;
+					 }, 20000);
+				}
+
+				],function (err, results2)
+				{
+					if (err) { throw err; }
+				}
+				);
 			}
-		res.redirect('/dec/'+results.insertId);
-	      return;
 		}
 	}
-  );});
-
+);
+});
 
 /**
  * --------------------------------------------------------
@@ -3783,10 +3941,8 @@ everyauth.everymodule.logoutRedirectPath('/');
  * --------------------------------------------------------
  */
 
-app.listen(80, function () {
-  var addr = app.address();
-  //logger.info('   app listening on http://' + addr.address + ':' + addr.port);
-  logger.info('   app listening on http://ec2-176-34-2-152.ap-northeast-1.compute.amazonaws.com');
+app.listen( conf.listen.port , function () {
+  logger.info('   app listening on http://'+conf.listen.url);
 });
 
 /**

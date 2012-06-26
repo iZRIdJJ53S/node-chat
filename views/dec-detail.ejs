@@ -334,7 +334,17 @@ function fb_sendMessage(){
 			check_num++;
 //			alert(check_obj[i].value);
 			
-			FB.api('/'+check_obj[i].value+'/feed','post', { access_token: sns_token , message: message_text , picture: location.protocol+'//'+ location.host +'/images/common/logo.gif', link: location.href},
+			FB.api('/'+check_obj[i].value+'/feed',
+				'post',
+				{
+				 access_token: sns_token ,
+				 message: message_text ,
+				 picture: 'http://syaberi-house.com/images/common/logo.gif',
+				 link: location.href,
+				 name: document.getElementsByTagName("title")[0].innerText,
+				 caption: 'シャベリハウス',
+				 description: '友人やちょっとした知り合い、共通の仲間と家(コミュニティ)を作り、楽しくシャベリあおう！'
+				},
 				function(response) {
 					// コールバック
 					//alert('ID: ' + response.id);
@@ -350,7 +360,6 @@ function fb_sendMessage(){
 	}
 	chg_inv_disp();
 }
-
 
 
 function fbFriendList(arr){
@@ -406,11 +415,9 @@ $(document).ready(function(){
 
 <div id="contents_wrapp" <% if ( dec_image ) { %>style="background-image:url('<%= dec_image %>');"<% } %>>
 	<div id="contents_wrapp_inside">
-		<section class="section_makeroome" id="pnode">
-			<img src="/data/<%= dec_detail.id %>/images/thumb_l.jpg" onerror="document.getElementById('pnode').parentNode.removeChild(document.getElementById('pnode'));"/>
-		</section>
 		<section class="section_makeroome">
-			<div class="mag10">
+		<span id="pnode"><img src="/data/<%= dec_detail.id %>/images/thumb_l.jpg" onerror="document.getElementById('pnode').parentNode.removeChild(document.getElementById('pnode'));"/></span>
+			<div style="margin:10px 0px">
 				<h3 id="section_makeroome_h3"><%= dec_detail.title %></h3>
 				<p><%= dec_detail.detail %></p>
 			</div>
@@ -419,46 +426,97 @@ $(document).ready(function(){
 				 <div id="dec-supporters-<%= dec_detail.id %>">
 				</div>
 			</div><!--/joinedthumbs_wrapp-->
-		<a href="#" name="join-button-right-join"><img id="join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/section_makeroome_join.gif" width="260" height="39" alt="フォローする"></a>
-		<a href="#" name="cancel-join-button-right-join"><img id="cancel-join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/cancel-join.gif" width="77" height="20" alt="×参加取消"></a>
-		<div class="magt15_magb15" style="display:none;"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/section_makeroome_invitefriends.gif" width="260" height="39" alt="このコミュニティに友達を招待する"></a></div>
 		</section>
-		<section id="section_make_chatroom" style="display:none;">
-		<script>
-			if(uaiph == 1 || uaand == 1){
-				document.write('<div class="bg_r bdbt padt10 padb10"><a href="#likebox_wrapp_form" class="nyroModal" rel="lightboxform"><img src="/images/section_makeroome_makechatroom_s.gif" alt="新しいチャットルームをつくる"></a></div>');
-			}else{
-				document.write('<div class="bg_r bdbt padt10 padb10"><a href="#likebox_wrapp_form" class="nyroModal" rel="lightboxform"><img src="/images/section_makeroome_makechatroom.gif" width="942" height="39" alt="新しいチャットルームをつくる"></a></div>');
-			}
-		</script>
-<% for(var i in suc_obj){ %>
 
 
-			<article id="article_room_<%= suc_obj[i].id %>">
-				<div class="section_makeroome_top"></div><div class="section_makeroome_cent">
-					<ul>
-						<li class="saying"><%= suc_obj[i].title %></li>
-						
-						<% if (suc_obj[i].live > 0) { %>
-						<li class="howmany_in">現在 <b><%= suc_obj[i].live %></b>人 がチャットルームで待っています。</li>
-						<% } %>
-						
-						<% if (owner_id == suc_obj[i].user_id) { %>
-						<li class="pad10"style="float:right;"><a href="#" name="delete-button-right" id="section_room_<%= suc_obj[i].id %>"><img src="/images/delete_chat.gif"></a></li>
-						<% } %>
-						<li class="fltr pad5"  style="float: right;"><a href="/ch/<%= suc_obj[i].id %>"><img src="/images/section_makeroome_tochat.gif" width="141" height="29" alt="チャットルームへ"></a></li>
-					</ul>
-				</div><div class="section_makeroome_bott"></div>
-			</article>
+<!-- Tab Area -->
+<section id="section_make_chatroom" style="display:block;">
+<ul id="ul_dec_detail">
+	<li class="icchi over" id="elm_chat_li"><a href="javascript:void(0)">チャットルーム</a></li>
+	<li class="icchi" id="elm_blog_li"><a href="javascript:void(0)">ブログ</a></li>
+</ul>
+<div id="elm_chat" class="tab_elm block">
+	<div class="tab_upper">
+	<div id="arrow_showchatroom" style="display:none;">
+		<p>チャットルームをご覧になるには、ログインをしてください。</p>
+			<ul>
+				<li><a href="javascript:void(0);" id="login_button_facebook2"><img src="/images/dec_login_facebook.png" alt="facebookログイン"></a></li>
+				<li><a href="/auth/twitter" id="login_button_twetter2"><img src="/images/dec_login_twetter.png" alt="twetterログイン"></a></li>
+			</ul>
+	</div>
+	<a href="#" name="join-button-right-join"><img id="join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/section_makeroome_join.gif" alt="フォローする"></a>
+	<div class="magt15_magb15" style="display:none;"><a href="#lightboxinvite_wrapp" class="nyroModal" rel="lightboxinvite"><img src="/images/section_makeroome_invitefriends.gif" alt="このコミュニティに友達を招待する"></a></div>
+	<script>
+		if(uaiph == 1 || uaand == 1){
+			document.write('<a href="#likebox_wrapp_form" class="nyroModal" rel="lightboxform"><img src="/images/section_makeroome_makechatroom_s.gif" alt="新しいチャットルームをつくる"></a>');
+		}else{
+			document.write('<a href="#likebox_wrapp_form" class="nyroModal" rel="lightboxform" id="new_chtroom" style="display:none;"><img src="/images/section_makeroome_makechatroom.gif" width="942" height="39" alt="新しいチャットルームをつくる"></a>');
+		}
+	</script>
+	<a href="#" name="cancel-join-button-right-join"><img id="cancel-join-button-right-join-<%= dec_detail.id %>" style="display:none;" src="/images/cancel-join2.gif" alt="×参加取消"></a>
+	</div><!--/tab_upper-->
 
+	<div id="article_area" style="display:none;">
+		<% for(var i in suc_obj){ %>
+		<article id="article_room_<%= suc_obj[i].id %>">
+			<div class="section_makeroome_top"></div><div class="section_makeroome_cent">
+				<ul>
+					<li class="saying"><%= suc_obj[i].title %></li>
+					
+					<% if (suc_obj[i].live > 0) { %>
+					<li class="howmany_in">現在 <b><%= suc_obj[i].live %></b>人 がチャットルームで待っています。</li>
+					<% } %>
+					
+					<% if (owner_id == suc_obj[i].user_id) { %>
+					<li style="float:right; padding-top:13px;"><a href="#" name="delete-button-right" id="section_room_<%= suc_obj[i].id %>"><img src="/images/delete_chat.gif"></a></li>
+					<% } %>
+					<li class="pad5" style="float:right;"><a href="/ch/<%= suc_obj[i].id %>"><img src="/images/section_makeroome_tochat.gif" width="141" height="29" alt="チャットルームへ"></a></li>
+				</ul>
+			</div><div class="section_makeroome_bott"></div>
+		</article>
+		<% } %>
+	</div><!--/article_area-->
+</div>
 
+<div id="elm_blog" class="tab_elm none">
+<div class="tab_upper">ブログ化されたチャットルームは<%= blog_obj.length %>件です</div>
+<% for(var i in blog_obj){ %>
+<article id="article_room_<%= blog_obj[i].id %>">
+	<div class="section_makeroome_top"></div><div class="section_makeroome_cent">
+		<ul>
+			<li class="saying"><%= blog_obj[i].title %></li>
+			
+			<% if (blog_obj[i].live > 0) { %>
+			<li class="howmany_in">現在 <b><%= blog_obj[i].live %></b>人 がチャットルームで待っています。</li>
+			<% } %>
+			
+			<% if (owner_id == blog_obj[i].user_id) { %>
+			<li class="pad10"style="float:right;"><a href="#" name="delete-button-right" id="section_room_<%= blog_obj[i].id %>"><img src="/images/delete_chat.gif"></a></li>
+			<% } %>
+			<li class="fltr pad5"  style="float: right;"><a href="/suc/<%= blog_obj[i].id %>"><img src="/images/section_makeroome_blog.gif" width="141" height="29" alt="ブログページへ"></a></li>
+		</ul>
+	</div><div class="section_makeroome_bott"></div>
+</article>
 <% } %>
+</div>
+	<!--div class="magb5"><a href="#"><img src="/images/common/show_morecontents_b.jpg"></a></div-->
+</section>
+<script>
+$(function(){
+	$('.icchi').click(function(){
+		var addid = $(this).attr('id');
+		var contelm = $(this).attr('id').split('_li');
+		$('.tab_elm').css('display','none');
+		$('#ul_dec_detail li').removeClass('over');
+		$('#'+addid).addClass('over');
+		$('#'+contelm[0]).css('display','block');
+
+	});
+});
+</script>
+<!-- /Tab Area -->
 
 
-			<!--div class="magb5"><a href="#"><img src="/images/common/show_morecontents_b.jpg"></a></div-->
-
-
-		</section>
 	</div><!--/#contents_wrapp_inside-->
 </div><!--/#contents_wrapp-->
 
@@ -539,7 +597,7 @@ $(document).ready(function(){
 					</div><!--end_disp-->
 				</div><!--/scrollbar1-->
 		</div><!--/makecommunity_invite_tab-->
-		<div class="padt20 bg_w bdlf bdbt bdrt txtc" id="invite_submittingbt"><input type="image" id="inv_submit" class="mag0a" onclick="sendMessage()" src="/images/makecommunity_invite_submit.png" width="396" height="73" alt="送信"></div>
+		<div class="padt20 bg_w bdlf bdbt bdrt txtc" id="invite_submittingbt"><input type="image" id="inv_submit" class="mag0a" onclick="sendMessage()" src="/images/makecommunity_submit.png" width="396" height="73" alt="送信"></div>
 	</div>
 	<!--/lightbox invite-->
 <script type="text/javascript">
@@ -609,27 +667,33 @@ $(function() {
 				$('#cancel-join-button-right-join-'+event_id).show();
 				// 参加ボタンの非表示
 				$('#join-button-right-join-'+event_id).hide();
-				// 参加しているから表示
-				$('#section_make_chatroom').show();
+				// 参加しているからチャットルームを表示
+				$('#article_area').css('display','block');
 				$('.magt15_magb15').show();
+				//新しいチャットルームを作る
+				$('#new_chtroom').css('display','block');
 			} else {
 				// 参加ボタンの表示
 				$('#join-button-right-join-'+event_id).show();
 				// 取り消しボタンの非表示
 				$('#cancel-join-button-right-join-'+event_id).hide();
-				// 参加していないから非表示
-				$('#section_make_chatroom').hide();
+				// 参加していないからチャットルームを非表示
+				$('#article_area').css('display','none');
+				//参加してないのでチャットルームは非表示
 				$('.magt15_magb15').hide();
+				//新しいチャットルームを作る
+				$('#new_chtroom').css('display','none');
 			}
 		},
 		error: function(data){
 			if (data.status === 401) {
-				$('#join-button-right-join-'+event_id).show();
+				//$('#join-button-right-join-'+event_id).show();
 				// ログインしていないから非表示
-				$('#section_make_chatroom').hide();
+				//$('#article_area').hide();
 				$('.magt15_magb15').hide();
 				// ローカル変数にステータスを入れておく
 				date_state = data.status;
+				$('#arrow_showchatroom').css('display','block');
 			}
 		}
 	});
@@ -691,7 +755,8 @@ $(function() {
 					// 参加ボタンは隠す
 					$('#join-button-right-join-'+event_id).hide();
 					// 参加しているから表示
-					$('#section_make_chatroom').animate({height:'show', opacity:'show'}, "slow");
+					$('#article_area').animate({height:'show', opacity:'show'}, "slow");
+					$('#new_chtroom').animate({height:'show', opacity:'show'}, "slow");
 
 					// 人数も変更
 					var sup_cnt = $('#member-counter-'+event_id).text();
@@ -751,10 +816,11 @@ $(function() {
 							sup_cnt--;
 							// 参加取り消しを非表示
 							$('#cancel-join-button-right-join-'+event_id).hide();
-							// 参加を表示
+							// 参加していないから非表示
+							$('#article_area').animate({height:'hide', opacity:'hide'}, "slow");
+							$('#new_chtroom').animate({height:'hide', opacity:'hide'}, "slow");
 							$('#join-button-right-join-'+event_id).show();
 							// 参加していないから非表示
-							$('#section_make_chatroom').animate({height:'hide', opacity:'hide'}, "slow");
 							$('#member-counter-'+event_id).text(sup_cnt);
 							$('.magt15_magb15').hide();
 						}

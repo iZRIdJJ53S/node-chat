@@ -142,7 +142,13 @@ var uaetc = 0;
 	<% for (var i in dec_list) { %>
 		<article class="timeline">
 			<div class="smatc">
-				<!--div class="live_b">LIVE</div-->
+
+				<script>
+				if(<%= dec_list[i].live %>){
+					document.write('<div class="live_b">LIVE</div>');
+				}
+				</script>
+
 				<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
 				<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
 				<p><%= dec_list[i].detail %></p>
@@ -205,11 +211,11 @@ var uaetc = 0;
 		if(uaiph == 1 || uaand == 1){
 			document.write('<article class="txtc padt15">');
 		}else{
-			document.write('<article class="timeline txtc padt15">');
+			document.write('<article class="timeline txtc ">');
 		}
 		</script>
 			<div id="roadmore_border">
-				<div id="view-more-loader" style="text-align:center;display:none;"><img src="/img/loader.gif" /></div>
+				<div id="view-more-loader" style="text-align:center;display:none; height:30px;"><img src="/img/loader.gif" /></div>
 				<a href="javascript:void(0);" id="view-more-events">
 					<script>
 					if(uaiph == 1 || uaand == 1){
@@ -228,11 +234,11 @@ var uaetc = 0;
 		<div class="right_column">
 			<h3 id="community_recommend">オススメのコミュニティ</h3>
 			<article class="community_room">
-				<div class="txtc"><a href="/dec/1"><img src="/images/01.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<div class="txtc padb10"><a href="/dec/1"><img src="/images/01.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
 				<h4><a href="/dec/1">ようこそ！シャベリハウスへ</a></h4>
 				<p>シャベリハウス初心者のひとが集まるチャット部屋です。</p>
-				<table class="table_s">
-					<!--tr>
+				<!--table class="table_s">
+					<tr>
 					<td>
 						<ul class="article_ul">
 							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
@@ -246,15 +252,15 @@ var uaetc = 0;
 						</ul>
 					</td>
 					<td class="join">120<span>人<br>参加</span></td>
-					</tr-->
-				</table>
+					</tr>
+				</table-->
 			</article>
 			<article class="community_room bg_g">
-				<div class="txtc"><a href="/dec/7"><img src="/data/7/images/thumb_l.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<div class="txtc padb10"><a href="/dec/7"><img src="/data/7/images/thumb_l.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
 				<h4><a href="/dec/7">うまい棒</a></h4>
 				<p>うまい棒 たこ焼き？ いいえ、 めんたいこ。</p>
-				<table class="table_s">
-					<!--tr>
+				<!--table class="table_s">
+					<tr>
 					<td>
 						<ul class="article_ul">
 							<li><a href="#"><img src="/images/top_thumb_s.jpg"></a></li>
@@ -268,33 +274,27 @@ var uaetc = 0;
 						</ul>
 					</td>
 					<td class="join">120<span>人<br>参加</span></td>
-					</tr-->
-				</table>
+					</tr>
+				</table-->
 			</article>
 		</div><!--/.right_column-->
-		<!--div class="right_column magt20">
+		<% if ( fr_sup_list != "" ) { %>
+		<div class="right_column magt20">
 			<h3 id="community_joined">友達の参加しているコミュニティ</h3>
+			<% for (var kk in fr_sup_list) { %>
 			<article class="community_room">
 				<table class="friends_joind">
 					<tr>
-					<td><a href="#"><img src="/images/thumb_s2.jpg" width="40" height="40"></a></td>
-					<td>山口　ゆうすけ</td>
+					<td><a href="#"><img src="<%= fr_sup_list[kk].user_image %>" width="40" height="40"></a></td>
+					<td><%= fr_sup_list[kk].user_name %></td>
 					</tr>
 				</table>
-				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
-				<h4>iOS5.1の部屋</h4>
+				<div class="txtc"><a href="#"><img src="/data/<%= fr_sup_list[kk].id %>/images/thumb_m.jpg" width="193" onerror='this.src="/images/common/nowprinting_m.jpg"' class="imgborder"></a></div>
+				<h4><%= fr_sup_list[kk].title %></h4>
 			</article>
-			<article class="community_room bg_g">
-				<table class="friends_joind">
-					<tr>
-					<td><a href="#"><img src="/images/thumb_s2.jpg" width="40" height="40"></a></td>
-					<td>山口　ゆうすけ</td>
-					</tr>
-				</table>
-				<div class="txtc"><a href="#"><img src="/images/top_thumb_m.jpg" width="193" class="imgborder"></a></div>
-				<h4>iOS5.1の部屋</h4>
-			</article>
-		</div--><!--/.right_column-->
+			<% } %>
+		</div><!--/.right_column-->
+		<% } %>
 	</section>
 	</div><!--/#contents_wrapp_inside-->
 </div><!--/#contents_wrapp-->

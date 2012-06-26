@@ -52,6 +52,8 @@ var house = {
 
     this.socket.on( 'user leave', function ( data ) {
       $.publish( 'user:left', data );
+      console(data);
+      alert(data);
     });
 
     // オーディエンス
