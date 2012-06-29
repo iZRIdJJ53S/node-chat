@@ -90,3 +90,9 @@ body.mypage{
 	padding: 8px 6px;
 }
 
+#content-wrapper .container .content .content-body .mypage_osusume_tumb{
+	width:193px;
+	height:104px;
+	border: solid 1px #C2C2C2;
+}
+

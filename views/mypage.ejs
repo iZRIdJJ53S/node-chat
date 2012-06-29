@@ -149,7 +149,7 @@ var uaetc = 0;
 				}
 				</script>
 
-				<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror='this.src="/images/common/nowprinting_m.jpg"' class="dec_thumb_m"></a></div>
 				<h3><a href="/dec/<%= dec_list[i].id %>"><%= dec_list[i].title %></a></h3>
 				<p><%= dec_list[i].detail %></p>
 				<table class="table_b">
@@ -234,7 +234,7 @@ var uaetc = 0;
 		<div class="right_column">
 			<h3 id="community_recommend">オススメのコミュニティ</h3>
 			<article class="community_room">
-				<div class="txtc padb10"><a href="/dec/1"><img src="/images/01.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<div class="mypage_osusume_tumb"><a href="/dec/1"><img src="/images/01.jpg" onerror='this.src="/images/common/nowprinting_osusume.jpg"' class="dec_thumb_s"></a></div>
 				<h4><a href="/dec/1">ようこそ！シャベリハウスへ</a></h4>
 				<p>シャベリハウス初心者のひとが集まるチャット部屋です。</p>
 				<!--table class="table_s">
@@ -256,7 +256,7 @@ var uaetc = 0;
 				</table-->
 			</article>
 			<article class="community_room bg_g">
-				<div class="txtc padb10"><a href="/dec/7"><img src="/data/7/images/thumb_l.jpg" width="193" class="imgborder" onerror='this.src="/images/common/nowprinting_m.jpg"'></a></div>
+				<div class="mypage_osusume_tumb"><a href="/dec/7"><img src="/data/7/images/thumb_l.jpg" onerror='this.src="/images/common/nowprinting_osusume.jpg"' class="dec_thumb_s"></a></div>
 				<h4><a href="/dec/7">うまい棒</a></h4>
 				<p>うまい棒 たこ焼き？ いいえ、 めんたいこ。</p>
 				<!--table class="table_s">
@@ -285,12 +285,12 @@ var uaetc = 0;
 			<article class="community_room">
 				<table class="friends_joind">
 					<tr>
-					<td><a href="#"><img src="<%= fr_sup_list[kk].user_image %>" width="40" height="40"></a></td>
+					<td><img src="<%= fr_sup_list[kk].user_image %>" width="40" height="40"></td>
 					<td><%= fr_sup_list[kk].user_name %></td>
 					</tr>
 				</table>
-				<div class="txtc"><a href="#"><img src="/data/<%= fr_sup_list[kk].id %>/images/thumb_m.jpg" width="193" onerror='this.src="/images/common/nowprinting_m.jpg"' class="imgborder"></a></div>
-				<h4><%= fr_sup_list[kk].title %></h4>
+				<div class="mypage_friend_tumb"><a href="/dec/<%= fr_sup_list[kk].id %>"><img src="/data/<%= fr_sup_list[kk].id %>/images/thumb_s.jpg" onerror='this.src="/images/common/nowprinting_osusume.jpg"' class="dec_thumb_s"></a></div>
+				<h4><a href="/dec/<%= fr_sup_list[kk].id %>"><%= fr_sup_list[kk].title %></a></h4>
 			</article>
 			<% } %>
 		</div><!--/.right_column-->

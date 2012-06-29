@@ -61,6 +61,7 @@ function makeEventListParts(data) {
 	var write_data = '';
 
 	//サイズ違いのarticleに対応するための変数
+	var size;
 	var widever;
 	var topthumb;
 	var thumb;
@@ -86,6 +87,7 @@ function makeEventListParts(data) {
 
 			if(i==0 || i==9){
 				//サイズの大きいarticleの場合
+				size="m";
 			 	widever = "widever";
 				topthumb = "topthumb_b";
 				thumb="thumb_m";
@@ -111,6 +113,7 @@ function makeEventListParts(data) {
 			}else{
 				if(uaiph ==1 || uaand == 1){
 					//サイズの大きいarticleの場合
+					size="max-width:m";
 				 	widever = "widever";
 					topthumb = "topthumb_b";
 					thumb="thumb_m";
@@ -128,6 +131,7 @@ function makeEventListParts(data) {
 					data.event_data[i].detail = data.event_data[i].detail.slice(0,100); if( data.event_data[i].detail.length == 100 ){ data.event_data[i].detail = data.event_data[i].detail+"…"; };
 				}else{
 					//サイズの小さいarticleの場合
+					size="s";
 					widever = "";
 					topthumb = "topthumb";
 					thumb = "thumb_s";
@@ -162,7 +166,7 @@ function makeEventListParts(data) {
 			if(data.event_data[i].live){
 			write_data += '<div class="'+live+'">LIVE</div>';
 			}
-			write_data += '<div class="'+topthumb+'"><a href="/dec/'+last_id+'"><img src="/data/'+last_id+'/images/'+thumb+'.jpg" onerror=\'this.src="/images/common/'+nowprinting+'.jpg"\' ></a></div>'
+			write_data += '<div class="'+topthumb+'"><a href="/dec/'+last_id+'"><img src="/data/'+last_id+'/images/'+thumb+'.jpg" onerror=\'this.src="/images/common/'+nowprinting+'.jpg"\'  class="dec_thumb_'+size+'"></a></div>'
 			write_data += '<h3><a href="/dec/'+last_id+'">'+data.event_data[i].title+'</a></h3>';
 			write_data += '<p>'+data.event_data[i].detail+'</p>';
 			write_data += '<table class="'+table+'">';
@@ -493,6 +497,45 @@ $('a[name="join-button-right"], a[name="join-button-bottom"]').live('click', fun
     },
     error: function(data){
       // error
+    }
+  });
+
+  return false;
+});
+
+
+$('a[name="dec-delete-button"]').live('click', function() {
+  if (window.confirm('本当に削除しますか？')) {
+
+  } else {
+    return false;
+  }
+
+  var obj = $(this);
+  var event_obj = obj;
+  var event_id  = event_obj.attr('id');
+  event_id = parseInt(event_id);
+
+  //var loader_img = $('<img src="/img/loader-mini.gif">');
+  //event_obj.html(loader_img);
+
+  var onetime_token = $('#onetime_token').val();
+
+  $.ajax({
+    type: 'POST',
+    url: '/delete-dec',
+    data: {dec_id: event_id, onetime_token: onetime_token},
+    success: function(data){
+      if (data.flg_delete_dec === 'ok') {
+        alert("削除されました");
+	location.href='/mypage';
+      }
+
+    },
+    error: function(data){
+      // error
+      obj.hide();
+      alert('エラーが発生しました');
     }
   });
 

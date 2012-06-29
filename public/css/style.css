@@ -1489,9 +1489,42 @@ div.live_b{
 	left:21px;
 	background:url('/images/top_live_b.png') no-repeat;
 	text-indent:-9999px;
-	z-index:9999;
+	/*z-index:9999;*/
 }
 /*TO DETAIL*/
 .to_detailb{
 	margin-top:10px;
 }
+
+
+/*COMMUNITLY THUMB*/
+.dec_thumb_l{
+	max-width:457px;
+	max-height:247px;
+}
+.dec_thumb_m{
+	max-width:457px;
+	max-height:247px;
+}
+.dec_thumb_s{
+	max-width:215px;
+	max-height:111px;
+}
+
+.mypage_osusume_tumb{
+	width:193px;
+	height:111px;
+	border: solid 1px #C2C2C2;
+	margin:0px auto 5px auto;
+	background-color:#FFF;
+	text-align:center;
+}
+.mypage_friend_tumb{
+	width:193px;
+	height:111px;
+	border: solid 1px #C2C2C2;
+	margin:8px auto 5px auto;
+	background-color:#FFF;
+	text-align:center;
+}
+

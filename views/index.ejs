@@ -157,12 +157,12 @@ window.fbAsyncInit = function() {
 					if(<%= dec_list[i].live %>){
 						document.write('<div class="live_b">LIVE</div>');
 					}
-					document.write('<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror=\'this.src="/images/common/nowprinting_m.jpg"\'></a></div>');
+					document.write('<div class="topthumb_b"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_m.jpg" onerror=\'this.src="/images/common/nowprinting_m.jpg"\' class="dec_thumb_m"></a></div>');
 				}else{
 					if(<%= dec_list[i].live %>){
 						document.write('<div class="live<% if(i == 0 || i == 9) { %>_b<% } %>">LIVE</div>');
 					}
-					document.write('<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" onerror=\'this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"\'></a></div>');
+					document.write('<div class="topthumb<% if(i == 0 || i == 9) { %>_b<% } %>"><a href="/dec/<%= dec_list[i].id %>"><img src="/data/<%= dec_list[i].id %>/images/thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg" onerror=\'this.src="/images/common/nowprinting_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>.jpg"\' class="dec_thumb_<% if(i == 0 || i == 9) { %>m<% } else { %>s<% } %>"></a></div>');
 				}
 			</script>
 
