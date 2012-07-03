@@ -4591,6 +4591,22 @@ logger.debug(socket);
       logger.info('join-conn: ok');
     });
 
+	/**
+	 * ----------------------------------------------------
+	 * ブログ化のお知らせ
+	 * ----------------------------------------------------
+	 */
+	socket.on('blog info', function (data)
+	{
+		socket.get('house_data', function(err, house_data)
+		{
+			var resArray = house_data.split('___');
+			// 自分以外、全員に配信
+			socket.broadcast.to(resArray[0]).emit( 'blog alert', { 'blog_message':"ブログ化されました。ブログページに遷移します。", 'blog_data':data });
+		})
+		return;
+	});
+
     /**
      * ----------------------------------------------------
      * チャットメッセージのやり取り

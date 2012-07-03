@@ -216,6 +216,12 @@ var chat = {
   _bindSubscribers: function () {
     var that = this;
 
+	// blog化した後、リダイレクトを行う
+    $.subscribe( 'user:blog-alert', function ( event, data ) {
+    	alert(data.blog_message);
+    	location.href = "/suc/" + data.blog_data;
+    });
+
     $.subscribe( 'user:message-received', function ( event, data ) {
       that._addMessage(data.comment_id, data.userName, data.user_image
         , data.userMessage, data.image_src, data.message_time

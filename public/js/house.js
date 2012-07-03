@@ -32,6 +32,11 @@ var house = {
   _bindPublishers: function () {
     var that = this;
 
+	// blog化する
+	this.socket.on( 'blog alert', function ( data ) {
+		$.publish( 'user:blog-alert', data );
+	});
+
     this.socket.on( 'chat message', function ( message ) {
       // user_image があったらiframeエリアへ描画する為
       // 必要なパラメータセット

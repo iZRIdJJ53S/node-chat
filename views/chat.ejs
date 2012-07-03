@@ -1138,6 +1138,8 @@ $(function(){
       success: function(data){
         if (data.flg_update) {
           //alert('成功しました。まとめログが作られました。');
+			var socket = io.connect('/houses');
+			socket.emit( 'blog info', <%= house_id %>);
           location.href = "/suc/<%= house_id %>";
           return;
         }
