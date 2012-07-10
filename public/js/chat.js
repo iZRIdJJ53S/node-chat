@@ -218,8 +218,9 @@ var chat = {
 
 	// blog化した後、リダイレクトを行う
     $.subscribe( 'user:blog-alert', function ( event, data ) {
+    	$('#comment_wrapp_inputarea').hide();
     	alert(data.blog_message);
-    	location.href = "/suc/" + data.blog_data;
+    	location.replace( "/suc/" + data.blog_data );
     });
 
     $.subscribe( 'user:message-received', function ( event, data ) {

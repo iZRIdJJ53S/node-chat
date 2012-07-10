@@ -1353,313 +1353,314 @@ app.get('/mypage', function (req, res) {
 	var dec_list = [];
 	var dec_list_live = [];
 	var ans = 0;
-	if (req.session && req.session.auth) {
+	if (req.session && req.session.auth)
+	{
 		onetime_token = __getOnetimeToken(req.session.auth.user_id);
 	}
 	// 最新のリストを取得
 
-var fr_list = [];
-var fr_queryValue = '';
-client.query(
-	'SELECT friend_list FROM users WHERE id = ?',
-	[req.session.auth.user_id],
-	function(fr_err, fr_results)
-	{
-		if (fr_err) {throw fr_err;}
-		if (fr_results.length === 0)
-		{
-		}
-		else
-		{
-			// fr_list の内容はparseした内容にする
-			fr_list = JSON.parse(fr_results[0].friend_list);
-			fr_list = JSON.parse(JSON.stringify(fr_list.data));
-			for( var kk = 0; kk < fr_list.length; kk++ )
-			{
-				if( kk + 1 == fr_list.length )
-				{
-					// 最終処理
-					fr_queryValue += fr_list[kk].id;
-				}
-				else
-				{
-					fr_queryValue += fr_list[kk].id + ',';
-				}
-			}
-			if( fr_queryValue == '' )
-			{
-				fr_queryValue = '\'\'';
-			}
-
-	// ユーザIDの一覧を取得
-	var oauth_service_queryValue = '';
+	var fr_list = [];
+	var fr_queryValue = '';
 	client.query(
-		'SELECT id FROM users WHERE oauth_service_id IN ( '+fr_queryValue+' )',
-//		[fr_queryValue],
-		function(oauth_service_err, oauth_service_results)
+		'SELECT friend_list FROM users WHERE id = ?',
+		[req.session.auth.user_id],
+		function(fr_err, fr_results)
 		{
-			if (oauth_service_err) {throw oauth_service_err;}
-			if (oauth_service_results.length === 0)
+			if (fr_err) {throw fr_err;}
+			if (fr_results.length === 0)
 			{
-				// 友人がシャベリに参加していない
+			}
+			else
+			{
+				// fr_list の内容はparseした内容にする
+				if( fr_results[0].friend_list != '' )
+				{
+					fr_list = JSON.parse(fr_results[0].friend_list);
+					fr_list = JSON.parse(JSON.stringify(fr_list.data));
+					for( var kk = 0; kk < fr_list.length; kk++ )
+					{
+						if( kk + 1 == fr_list.length )
+						{
+							// 最終処理
+							fr_queryValue += fr_list[kk].id;
+						}
+						else
+						{
+							fr_queryValue += fr_list[kk].id + ',';
+						}
+					}
+				}
+				if( fr_queryValue == '' )
+				{
+					fr_queryValue = '\'\'';
+				}
+
+				// ユーザIDの一覧を取得
+				var oauth_service_queryValue = '';
 				client.query(
-					'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
-					'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
-					' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-					' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
-					[FLG_SUPPORTER_WANT_STAT],
-					function(err, results, fields) {
-						if (err) {throw err;}
-						if (results.length === 0) {
-								res.render('mypage', {
-						          'dec_list_owner': dec_list_owner
-							,'dec_list': dec_list
-						        , 'onetime_token': onetime_token
-						        , 'meta_title': 'マイページ｜'
-							, 'is_auth_login': is_auth_login
-							,'user_dec_list':user_results
-							,'fr_sup_list':fr_sup_list
-							});
-							return;
-						} else {
-//							var max_dec_num = results.length;
-//							for (var i = 0; i < max_dec_num; i++) {
-//								dec_list[i] = results[i];
-//								if(house.manager.rooms['/dec/' + results[i].id]){
-//									dec_list[i].live = true;
-//								}else{
-//									dec_list[i].live = false;
-//								}
-//							}
-							var max_dec_num = results.length;
-							// 条件を連結する
-							var room_live_queryValue = '';
-							for( var mm = 0; mm < max_dec_num; mm++ )
+					'SELECT id FROM users WHERE oauth_service_id IN ( '+fr_queryValue+' )',
+					function(oauth_service_err, oauth_service_results)
+					{
+						if (oauth_service_err) {throw oauth_service_err;}
+						if (oauth_service_results.length === 0)
+						{
+							// 友人がシャベリに参加していないもしくは存在しない
+							client.query(
+								'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
+								'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
+								' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+								' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
+								[FLG_SUPPORTER_WANT_STAT],
+								function(err, results, fields)
+								{
+									if (err) {throw err;}
+									if (results.length === 0)
+									{
+										res.render('mypage',
+										{
+											'dec_list_owner': dec_list_owner
+											,'dec_list': dec_list
+											, 'onetime_token': onetime_token
+											, 'meta_title': 'マイページ｜'
+											, 'is_auth_login': is_auth_login
+											,'user_dec_list':user_results
+											,'fr_sup_list':fr_sup_list
+										});
+										return;
+									}
+									else
+									{
+										var max_dec_num = results.length;
+										// 条件を連結する
+										var room_live_queryValue = '';
+										for( var mm = 0; mm < max_dec_num; mm++ )
+										{
+											if( mm + 1 == max_dec_num )
+											{
+												// 最終処理
+												room_live_queryValue += results[mm].id;
+											}
+											else
+											{
+												room_live_queryValue += results[mm].id + ',';
+											}
+										}
+										if( room_live_queryValue == '' )
+										{
+											room_live_queryValue = '\'\'';
+										}
+
+										// 部屋をそれぞれ取得する(コミュニティのIDつき)
+										client.query(
+											'SELECT d.id AS dec_id, chat.*'+
+											' FROM '+TABLE_DECLARATIONS+' AS d'+
+											' LEFT JOIN '+TABLE_DECLARATIONS_CH+' AS chat ON d.id = chat.dec_relation_id'+
+											' WHERE chat.status = 2 AND d.id IN ('+room_live_queryValue+') ORDER BY d.created_at DESC',
+											function(room_err, room_results)
+											{
+												if (room_err) {throw room_err;}
+												if (room_results.length === 0)
+												{
+													// コミュニティに関連付くチャットが無いのでライブ処理は行わない
+												}
+												else
+												{
+													for(var i = 0; i < max_dec_num; i++)
+													{
+														dec_list[i] = results[i];
+														// 部屋の数だけ回す
+														for(var j = 0; j < room_results.length; j++)
+														{
+															if( room_results[j].dec_id == results[i].id )
+															{
+																// ここの判定処理を考える
+																console.log( j + ":" + house.manager.rooms['/houses/' + room_results[j].id] );
+																// idが一致したら、ライブ判定をする
+																if(house.manager.rooms['/houses/' + room_results[j].id] != undefined )
+																{
+																	dec_list[i].live = true;
+																	break;
+																}
+																else
+																{
+																	dec_list[i].live = false;
+																}
+															}
+														}
+													}
+
+													res.render('mypage',
+													{
+														'dec_list_owner': dec_list_owner
+														,'dec_list': dec_list
+														, 'onetime_token': onetime_token
+														, 'meta_title': 'マイページ｜'
+														, 'is_auth_login': is_auth_login
+														,'user_dec_list':user_results
+														,'fr_sup_list':fr_sup_list
+													});
+													return;
+												}
+											}
+										);
+									}
+								}
+							);
+						}
+						else
+						{
+							for( var ll = 0; ll < oauth_service_results.length; ll++ )
 							{
-								if( mm + 1 == max_dec_num )
+								if( ll + 1 == oauth_service_results.length )
 								{
 									// 最終処理
-									room_live_queryValue += results[mm].id;
+									oauth_service_queryValue += oauth_service_results[ll].id;
 								}
 								else
 								{
-									room_live_queryValue += results[mm].id + ',';
+									oauth_service_queryValue += oauth_service_results[ll].id + ',';
 								}
 							}
-							if( room_live_queryValue == '' )
+							if( oauth_service_queryValue == '' )
 							{
-								room_live_queryValue = '\'\'';
+								oauth_service_queryValue = '\'\'';
 							}
-				// 部屋をそれぞれ取得する(コミュニティのIDつき)
-				client.query(
-					'SELECT d.id AS dec_id, chat.*'+
-					' FROM '+TABLE_DECLARATIONS+' AS d'+
-					' LEFT JOIN '+TABLE_DECLARATIONS_CH+' AS chat ON d.id = chat.dec_relation_id'+
-					' WHERE chat.status = 2 AND d.id IN ('+room_live_queryValue+') ORDER BY d.created_at DESC',
-					function(room_err, room_results) {
-						if (room_err) {throw room_err;}
-						if (room_results.length === 0)
-						{
-							// コミュニティに関連付くチャットが無いのでライブ処理は行わない
-						}
-						else
-						{
-							for(var i = 0; i < max_dec_num; i++)
-							{
-								dec_list[i] = results[i];
-								// 部屋の数だけ回す
-								for(var j = 0; j < room_results.length; j++)
+
+							// 友人が参加した順にする
+							client.query(
+								'SELECT d.id AS id, d.title AS title, d.image AS image, sup.id AS sup_id, sup.declaration_id AS sup_dec_id, sup.user_id AS sup_user_id, d.created_at, d.user_id ' +
+								' ,COUNT( spt.declaration_id ) AS supporter_num ' +
+								' ,d.target_num, d.deadline, d.status ' +
+								' ,u.name AS user_name, u.image AS user_image ' +
+								' FROM ' +TABLE_SUPPORTERS+' AS sup ' +
+								' LEFT JOIN ' +TABLE_DECLARATIONS + ' AS d ON sup.declaration_id = d.id ' +
+								' LEFT JOIN ' +TABLE_SUPPORTERS+ ' AS spt ON d.id = spt.declaration_id ' +
+								' LEFT JOIN ' +TABLE_USERS+ ' AS u ON sup.user_id = u.id ' +
+								' WHERE sup.user_id in( ' + oauth_service_queryValue + ' )'+
+								' GROUP BY sup_id'+
+								' ORDER BY sup.created_at DESC'+
+								' LIMIT 5',
+								function(fr_sup_err, fr_sup_results)
 								{
-									if( room_results[j].dec_id == results[i].id )
+									if (fr_sup_err) {throw fr_sup_err;}
+									if (fr_sup_results.length === 0)
 									{
-										// ここの判定処理を考える
-										console.log( j + ":" + house.manager.rooms['/houses/' + room_results[j].id] );
-										// idが一致したら、ライブ判定をする
-										if(house.manager.rooms['/houses/' + room_results[j].id] != undefined )
-										{
-											dec_list[i].live = true;
-											break;
-										}
-										else
-										{
-											dec_list[i].live = false;
-										}
+
 									}
-								}
-							}
-					      res.render('mypage', {
-					          'dec_list_owner': dec_list_owner
-						,'dec_list': dec_list
-					        , 'onetime_token': onetime_token
-					        , 'meta_title': 'マイページ｜'
-						, 'is_auth_login': is_auth_login
-						,'user_dec_list':user_results
-						,'fr_sup_list':fr_sup_list
-					      });
-					      return;
-						}
-				});
-				}
-				});
-			}
-			else
-			{
-				for( var ll = 0; ll < oauth_service_results.length; ll++ )
-				{
-					if( ll + 1 == oauth_service_results.length )
-					{
-						// 最終処理
-						oauth_service_queryValue += oauth_service_results[ll].id;
-					}
-					else
-					{
-						oauth_service_queryValue += oauth_service_results[ll].id + ',';
-					}
-				}
-				
-				
-				if( oauth_service_queryValue == '' )
-				{
-					oauth_service_queryValue = '\'\'';
-				}
-
-				// 友人が参加した順にする
-				client.query(
-					'SELECT d.id AS id, d.title AS title, d.image AS image, sup.id AS sup_id, sup.declaration_id AS sup_dec_id, sup.user_id AS sup_user_id, d.created_at, d.user_id ' +
-					' ,COUNT( spt.declaration_id ) AS supporter_num ' +
-					' ,d.target_num, d.deadline, d.status ' +
-					' ,u.name AS user_name, u.image AS user_image ' +
-					' FROM ' +TABLE_SUPPORTERS+' AS sup ' +
-					' LEFT JOIN ' +TABLE_DECLARATIONS + ' AS d ON sup.declaration_id = d.id ' +
-					' LEFT JOIN ' +TABLE_SUPPORTERS+ ' AS spt ON d.id = spt.declaration_id ' +
-					' LEFT JOIN ' +TABLE_USERS+ ' AS u ON sup.user_id = u.id ' +
-					' WHERE sup.user_id in( ' + oauth_service_queryValue + ' )'+
-					' GROUP BY sup_id'+
-					' ORDER BY sup.created_at DESC'+
-					' LIMIT 5',
-//					[oauth_service_queryValue],
-					function(fr_sup_err, fr_sup_results)
-					{
-						if (fr_sup_err) {throw fr_sup_err;}
-						if (fr_sup_results.length === 0)
-						{
-
-						}
-						else
-						{
-							
-							fr_sup_list = fr_sup_results;
-						}
-
-	client.query(
-		'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
-		'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
-		' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
-		' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
-		[FLG_SUPPORTER_WANT_STAT],
-		function(err, results, fields) {
-			if (err) {throw err;}
-			if (results.length === 0) {
-					res.render('mypage', {
-			          'dec_list_owner': dec_list_owner
-				,'dec_list': dec_list
-			        , 'onetime_token': onetime_token
-			        , 'meta_title': 'マイページ｜'
-				, 'is_auth_login': is_auth_login
-				,'user_dec_list':user_results
-				,'fr_sup_list':fr_sup_list
-				});
-				return;
-			}
-			else
-			{
-				var max_dec_num = results.length;
-				// 条件を連結する
-				var room_live_queryValue = '';
-				for( var mm = 0; mm < max_dec_num; mm++ )
-				{
-					if( mm + 1 == max_dec_num )
-					{
-						// 最終処理
-						room_live_queryValue += results[mm].id;
-					}
-					else
-					{
-						room_live_queryValue += results[mm].id + ',';
-					}
-				}
-				if( room_live_queryValue == '' )
-				{
-					room_live_queryValue = '\'\'';
-				}
-				// 部屋をそれぞれ取得する(コミュニティのIDつき)
-				client.query(
-					'SELECT d.id AS dec_id, chat.*'+
-					' FROM '+TABLE_DECLARATIONS+' AS d'+
-					' LEFT JOIN '+TABLE_DECLARATIONS_CH+' AS chat ON d.id = chat.dec_relation_id'+
-					' WHERE chat.status = 2 AND d.id IN ('+room_live_queryValue+') ORDER BY d.created_at DESC',
-					function(room_err, room_results) {
-						if (room_err) {throw room_err;}
-						if (room_results.length === 0)
-						{
-							// コミュニティに関連付くチャットが無いのでライブ処理は行わない
-						}
-						else
-						{
-							for(var i = 0; i < max_dec_num; i++)
-							{
-								dec_list[i] = results[i];
-								// 部屋の数だけ回す
-								for(var j = 0; j < room_results.length; j++)
-								{
-									if( room_results[j].dec_id == results[i].id )
+									else
 									{
-										// ここの判定処理を考える
-										console.log( j + ":" + house.manager.rooms['/houses/' + room_results[j].id] );
-										// idが一致したら、ライブ判定をする
-										if(house.manager.rooms['/houses/' + room_results[j].id] != undefined )
-										{
-											dec_list[i].live = true;
-											break;
-										}
-										else
-										{
-											dec_list[i].live = false;
-										}
+										
+										fr_sup_list = fr_sup_results;
 									}
-								}
-							}
 
-					      res.render('mypage', {
-					          'dec_list_owner': dec_list_owner
-						,'dec_list': dec_list
-					        , 'onetime_token': onetime_token
-					        , 'meta_title': 'マイページ｜'
-						, 'is_auth_login': is_auth_login
-						,'user_dec_list':user_results
-						,'fr_sup_list':fr_sup_list
-					      });
-					      return;
+									client.query(
+										'SELECT d.id, d.created_at, d.title, d.detail, d.user_id, d.target_num, d.deadline, d.status, d.image, COUNT( spt.declaration_id ) AS supporter_num'+
+										'  , (COUNT(spt.declaration_id) / d.target_num) * 100 AS ratio , u.name AS user_name, u.image AS user_image FROM '+TABLE_DECLARATIONS+' AS d'+
+										' LEFT JOIN '+TABLE_SUPPORTERS+' AS spt ON d.id = spt.declaration_id LEFT JOIN '+TABLE_USERS+' AS u ON d.user_id = u.id'+
+										' WHERE d.status = ? GROUP BY d.id ORDER BY d.created_at DESC LIMIT 10',
+										[FLG_SUPPORTER_WANT_STAT],
+										function(err, results, fields)
+										{
+											if (err) {throw err;}
+											if (results.length === 0)
+											{
+												res.render('mypage',
+												{
+													'dec_list_owner': dec_list_owner
+													,'dec_list': dec_list
+													, 'onetime_token': onetime_token
+													, 'meta_title': 'マイページ｜'
+													, 'is_auth_login': is_auth_login
+													,'user_dec_list':user_results
+													,'fr_sup_list':fr_sup_list
+												});
+												return;
+											}
+											else
+											{
+												var max_dec_num = results.length;
+												// 条件を連結する
+												var room_live_queryValue = '';
+												for( var mm = 0; mm < max_dec_num; mm++ )
+												{
+													if( mm + 1 == max_dec_num )
+													{
+														// 最終処理
+														room_live_queryValue += results[mm].id;
+													}
+													else
+													{
+														room_live_queryValue += results[mm].id + ',';
+													}
+												}
+												if( room_live_queryValue == '' )
+												{
+													room_live_queryValue = '\'\'';
+												}
+												// 部屋をそれぞれ取得する(コミュニティのIDつき)
+												client.query(
+													'SELECT d.id AS dec_id, chat.*'+
+													' FROM '+TABLE_DECLARATIONS+' AS d'+
+													' LEFT JOIN '+TABLE_DECLARATIONS_CH+' AS chat ON d.id = chat.dec_relation_id'+
+													' WHERE chat.status = 2 AND d.id IN ('+room_live_queryValue+') ORDER BY d.created_at DESC',
+													function(room_err, room_results)
+													{
+														if (room_err) {throw room_err;}
+														if (room_results.length === 0)
+														{
+															// コミュニティに関連付くチャットが無いのでライブ処理は行わない
+														}
+														else
+														{
+															for(var i = 0; i < max_dec_num; i++)
+															{
+																dec_list[i] = results[i];
+																// 部屋の数だけ回す
+																for(var j = 0; j < room_results.length; j++)
+																{
+																	if( room_results[j].dec_id == results[i].id )
+																	{
+																		// ここの判定処理を考える
+																		console.log( j + ":" + house.manager.rooms['/houses/' + room_results[j].id] );
+																		// idが一致したら、ライブ判定をする
+																		if(house.manager.rooms['/houses/' + room_results[j].id] != undefined )
+																		{
+																			dec_list[i].live = true;
+																			break;
+																		}
+																		else
+																		{
+																			dec_list[i].live = false;
+																		}
+																	}
+																}
+															}
+
+															res.render('mypage',
+															{
+																'dec_list_owner': dec_list_owner
+																,'dec_list': dec_list
+																, 'onetime_token': onetime_token
+																, 'meta_title': 'マイページ｜'
+																, 'is_auth_login': is_auth_login
+																,'user_dec_list':user_results
+																,'fr_sup_list':fr_sup_list
+															});
+															return;
+														}
+													}
+												);
+											}
+										}
+									);
+								}
+							);
 						}
 					}
 				);
 			}
-//			      res.render('mypage', {
-//			          'dec_list_owner': dec_list_owner
-//				,'dec_list': dec_list
-//			        , 'onetime_token': onetime_token
-//			        , 'meta_title': 'マイページ｜'
-//				, 'is_auth_login': is_auth_login
-//				,'user_dec_list':user_results
-//				,'fr_sup_list':fr_sup_list
-//			      });
-//			      return;
-		});
-					});
-			}
-		});
 		}
-	});
+	);
 
 	});
 });
@@ -3149,9 +3150,8 @@ app.post('/join-commit', function (req, res) {
           'INSERT INTO '+TABLE_SUPPORTERS+'('+
           '  created_at, declaration_id , user_id'+
           ') VALUES ('+
-          '  NOW(), ?, ?'+
-          ')',
-          [req.body.id, req.session.auth.user_id],
+          '  NOW(), ' + req.body.id + ',' + req.session.auth.user_id + ')',
+//          [req.body.id, req.session.auth.user_id],
           function(err) {
             if (err) {throw err;}
             res.json(
@@ -3752,6 +3752,8 @@ app.post('/set-twitter-friends', function (req, res) {
     res.json({login_flg: false, return: false }, 200);
     return;
   } else {
+  	  // ツイッターアカウントに改行の含まれるアカウントがいるため、改行を空文字に変換
+  	  req.body.friend_list=req.body.friend_list.replace(/\n/g, "");
 	        logger.debug('---------- oauth_id ------');
 		logger.debug(req.session.auth.oauth_service_id);
 
